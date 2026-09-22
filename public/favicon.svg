@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Obsidian Shield Background -->
+  <polygon points="32,4 58,16 50,54 32,62 14,54 6,16" fill="#0a0a0c" stroke="#d4af37" stroke-width="3" stroke-linejoin="round"/>
+  
+  <!-- 24K Gold Inner Bevel -->
+  <polygon points="32,10 52,20 46,49 32,56 18,49 12,20" fill="#141418" stroke="#ffe066" stroke-width="1.5" stroke-linejoin="round"/>
+  
+  <!-- Stylized Championship 'W' -->
+  <path d="M16 22 L24 44 L32 28 L40 44 L48 22 L42 22 L36 36 L32 28 L28 36 L22 22 Z" fill="#ffd700" stroke="#fff" stroke-width="0.8" stroke-linejoin="round"/>
+  
+  <!-- Kinetic Crimson Accent Swoosh -->
+  <path d="M14 40 Q32 34 50 40 L48 44 Q32 38 16 44 Z" fill="#ff1a35"/>
+  
+  <!-- Center Diamond Sparkle -->
+  <circle cx="32" cy="18" r="2" fill="#ffffff"/>
+</svg>
