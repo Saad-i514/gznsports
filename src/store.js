@@ -1,19 +1,19 @@
-// GZNSPORTS E-Commerce Store & Product Catalog
+// GENZ SPORTS E-Commerce Store & Product Catalog
 import { playPunchImpact, playMetallicClick } from './audio.js';
 
 export const PRODUCTS = [
   {
-    id: 'gzn-undisputed-belt',
+    id: 'genz-undisputed-belt',
     title: 'WWE Undisputed Championship Title Belt',
-    category: 'striking',
+    category: 'belts',
     categoryName: 'CHAMPIONSHIP // TROPHY ARMOR',
     price: 499,
     tag: 'FLAGSHIP 24K DUAL-PLATED',
     rating: 5.0,
     reviewsCount: 312,
-    sizes: ['OFFICIAL REPLICA', 'DELUXE CAST 24K'],
-    defaultSize: 'OFFICIAL REPLICA',
-    image: '/images/gear-macro.jpg',
+    sizes: ['OFFICIAL REPLICA (52")', 'DELUXE CAST 24K'],
+    defaultSize: 'OFFICIAL REPLICA (52")',
+    image: '/images/hero-dual-showcase.jpg',
     description: 'The pinnacle of sports entertainment glory. 8mm CNC deep-relief 24K dual-gold plates, hand-set cubic zirconia crystals, authentic globe side medallions, and full-grain saddle leather strap.',
     specs: [
       { label: 'Plate Metal', value: '8mm CNC Deep-Relief 24K Dual-Plated Gold' },
@@ -23,156 +23,143 @@ export const PRODUCTS = [
     ]
   },
   {
-    id: 'gzn-x1',
-    title: 'GZN-X1 Apex Pro Sparring Glove',
-    category: 'striking',
-    categoryName: 'STRIKING // BOXING',
-    price: 185,
-    tag: 'FLAGSHIP BIOMECHANICS',
+    id: 'genz-world-heavyweight',
+    title: 'World Heavyweight Championship "Big Gold" Belt',
+    category: 'belts',
+    categoryName: 'HISTORIC // HEAVYWEIGHT CROWN',
+    price: 479,
+    tag: '8MM DEEP FLORAL RELIEF',
     rating: 4.9,
-    reviewsCount: 184,
-    sizes: ['12-OZ', '14-OZ', '16-OZ'],
-    defaultSize: '16-OZ',
-    image: '/images/gear-macro.jpg',
-    description: 'Engineered with hand-selected 1.2mm full-grain nappa cowhide, quad-density IMF core, and dual-spine carbon-composite wrist stabilization.',
+    reviewsCount: 248,
+    sizes: ['STANDARD REPLICA (54")', 'PRO HEAVY BRASS CAST'],
+    defaultSize: 'STANDARD REPLICA (54")',
+    image: '/images/belts/world-heavyweight-belt.jpg',
+    description: 'The legendary Big Gold standard. Meticulously cast with intricate floral filigree engraving, faceted ruby cabochons, crowned globe medallion, and midnight saddle leather.',
     specs: [
-      { label: 'Leather', value: '1.2mm Hand-Picked Full-Grain Nappa' },
-      { label: 'Core', value: 'Quad-Layer Micro-Cellular IMF' },
-      { label: 'Wrist Lock', value: 'Dual-Spine Carbon Exoskeleton' },
-      { label: 'Lining', value: 'Silver-Ion Antimicrobial SilverThread™' }
+      { label: 'Plate Relief', value: '8mm Deep-Relief Hand-Chiseled Filigree' },
+      { label: 'Finish', value: '24K Dual-Dip Mirror & Stippled Gold' },
+      { label: 'Crystals', value: 'Faceted Ruby Cabochon Accents' },
+      { label: 'Leather', value: '4mm Beveled Obsidian Saddle Hide' }
     ]
   },
   {
-    id: 'gzn-mitts',
-    title: 'Precision Micro Target Mitts',
-    category: 'striking',
-    categoryName: 'STRIKING // COACHING',
-    price: 95,
-    tag: 'HIGH-VELOCITY REBOUND',
-    rating: 4.8,
-    reviewsCount: 92,
-    sizes: ['STANDARD'],
-    defaultSize: 'STANDARD',
-    image: '/images/striking-hero.jpg',
-    description: 'Curved anatomical palm ball design for flawless grip tension, reduced coach wrist fatigue, and satisfying high-decibel pop on impact.',
+    id: 'genz-intercontinental',
+    title: 'Classic Intercontinental Championship Belt',
+    category: 'belts',
+    categoryName: 'WORKHORSE // TITLE LEGEND',
+    price: 399,
+    tag: 'PRISTINE WHITE LEATHER',
+    rating: 4.9,
+    reviewsCount: 195,
+    sizes: ['WHITE SADDLE LEATHER', 'OBSIDIAN BLACK LEATHER'],
+    defaultSize: 'WHITE SADDLE LEATHER',
+    image: '/images/belts/intercontinental-belt.jpg',
+    description: 'The title that forged legends. Features brilliant 24K mirror-polished gold plates on hand-selected pristine white saddle leather with dual globe sideplates and ornate gold tip.',
     specs: [
-      { label: 'Design', value: 'Concave Micro-Impact Pocket' },
-      { label: 'Padding', value: 'High-Density Layered EVA Foam' },
-      { label: 'Grip', value: 'Ergonomic Spherical Palm Anchor' }
+      { label: 'Leather Strap', value: 'Pristine White Handcrafted Cowhide (50")' },
+      { label: 'Medallions', value: 'Triple Globe Cartography in 24K Gold' },
+      { label: 'Plates', value: '6mm Solid Cast Mirror Finished Brass' },
+      { label: 'Accents', value: 'Sapphire & Ruby Micro-Prism Crystals' }
     ]
   },
   {
-    id: 'gzn-headgear',
-    title: 'Armored Full-Face Combat Headgear',
-    category: 'striking',
-    categoryName: 'STRIKING // DEFENSE',
-    price: 145,
-    tag: 'ZERO-BLINDSPOT CAGE',
+    id: 'genz-hoodie-heavyweight-450',
+    title: 'GENZ Apex 450GSM French Terry Heavyweight Hoodie',
+    category: 'hoodies',
+    categoryName: 'STREETWEAR // 450GSM FLEECE',
+    price: 125,
+    tag: '450GSM COMBAT FLEECE',
     rating: 5.0,
-    reviewsCount: 76,
-    sizes: ['M', 'L', 'XL'],
-    defaultSize: 'L',
-    image: '/images/gear-macro.jpg',
-    description: '360-degree cranial defense with reinforced cheek and chin deflection geometry, low-profile ear canals, and secure cross-lacing system.',
-    specs: [
-      { label: 'Field of View', value: '180° Panoramic Peripheral Sight' },
-      { label: 'Protection', value: 'Molded Cheek & Mandible Shield' },
-      { label: 'Weight', value: 'Ultra-lightweight 14.2oz' }
-    ]
-  },
-  {
-    id: 'gzn-mma-4oz',
-    title: 'Stealth Grapple 4oz Hybrid Glove',
-    category: 'mma',
-    categoryName: 'MMA // GRAPPLING',
-    price: 115,
-    tag: 'UFC-GRADE METACARPAL',
-    rating: 4.9,
-    reviewsCount: 118,
-    sizes: ['S/M', 'L/XL'],
-    defaultSize: 'L/XL',
-    image: '/images/mma-athlete.jpg',
-    description: 'Segmented knuckle contour allows unrestricted finger flexion and transitions between heavy striking and submission grappling.',
-    specs: [
-      { label: 'Palm', value: 'Open-Palm Biomechanical Mobility' },
-      { label: 'Foam', value: 'Gel-Infused 35mm Knuckle Shield' },
-      { label: 'Closure', value: 'Dual-Directional Elastic Wrap' }
-    ]
-  },
-  {
-    id: 'gzn-shin',
-    title: 'Carbon-Flex Combat Shin Armor',
-    category: 'mma',
-    categoryName: 'MMA // MUAY THAI',
-    price: 130,
-    tag: 'TIBIAL DEFLECTION',
-    rating: 4.9,
-    reviewsCount: 142,
-    sizes: ['M', 'L', 'XL'],
-    defaultSize: 'L',
-    image: '/images/striking-hero.jpg',
-    description: 'Anatomically molded tibia spine deflects bone-on-bone impact during checked kicks. Dual anti-slip neoprene straps guarantee zero mid-round shifting.',
-    specs: [
-      { label: 'Spine', value: 'Carbon-Reinforced High-Impact Ridge' },
-      { label: 'Foot Shield', value: 'Articulated Metatarsal Hinge' },
-      { label: 'Stability', value: 'Dual 50mm Silicon-Grip Neoprene Straps' }
-    ]
-  },
-  {
-    id: 'gzn-hydro-150',
-    title: '150lb Hydro-Core Heavy Bag',
-    category: 'bags',
-    categoryName: 'IMPACT ARCHITECTURE',
-    price: 285,
-    tag: 'WATER DISPERSION CORE',
-    rating: 5.0,
-    reviewsCount: 64,
-    sizes: ['150-LB'],
-    defaultSize: '150-LB',
-    image: '/images/striking-hero.jpg',
-    description: 'Combines a dense pressurized water core with marine-grade vinyl and shock-dampening foam to recreate the authentic density of human muscle tissue.',
-    specs: [
-      { label: 'Capacity', value: '150 lbs Hydro-Fillable Mass' },
-      { label: 'Shell', value: 'Reinforced 1000D Ballistic Vinyl' },
-      { label: 'Swivel', value: '360° Industrial Anodized Steel Bearing' }
-    ]
-  },
-  {
-    id: 'gzn-speed',
-    title: 'Italian Cowhide Speed Bag',
-    category: 'bags',
-    categoryName: 'BAGS // CADENCE',
-    price: 75,
-    tag: 'BALANCED CADENCE',
-    rating: 4.7,
-    reviewsCount: 53,
-    sizes: ['8x5 PRO', '9x6 TRAINING'],
-    defaultSize: '8x5 PRO',
-    image: '/images/gear-macro.jpg',
-    description: 'Precision balanced center of gravity with welded butyl rubber bladder for ultra-consistent rebound frequency and hand-eye cadence.',
-    specs: [
-      { label: 'Leather', value: 'Supple Italian Tanned Cowhide' },
-      { label: 'Bladder', value: 'Air-Lock Welded Butyl Rubber' },
-      { label: 'Seams', value: 'Heavy-Duty Waxed Cord Welting' }
-    ]
-  },
-  {
-    id: 'gzn-rashguard',
-    title: 'Sub-Zero Thermal Rashguard',
-    category: 'apparel',
-    categoryName: 'TECHNICAL APPAREL',
-    price: 68,
-    tag: 'SECOND-SKIN COMPRESSION',
-    rating: 4.8,
-    reviewsCount: 89,
+    reviewsCount: 420,
     sizes: ['S', 'M', 'L', 'XL', '2XL'],
     defaultSize: 'L',
-    image: '/images/mma-athlete.jpg',
-    description: 'Engineered with 4-way stretch moisture expulsion matrix, flatlock anti-chafing seams, and silicon waistband grip that will never ride up during sparring.',
+    image: '/images/hoodies/genz-heavyweight-hoodie.jpg',
+    description: 'Built like combat armor for streetwear champions. Cut from 450GSM ultra-dense combed cotton French Terry with custom 3D chrome & orange GENZ hardware, thick double-layered hood, and 24K gold dipped aglets.',
     specs: [
-      { label: 'Fabric', value: '82% Technical Polyester, 18% Elastane' },
-      { label: 'Hem', value: 'Non-Slip Micro-Ribbed Silicon Grip' },
-      { label: 'Protection', value: 'SPF 50+ / Mat Burn Shield' }
+      { label: 'Weight', value: '450 GSM Ultra-Heavy French Terry Cotton' },
+      { label: 'Hardware', value: '24K Gold Dipped Metal Drawstring Aglets' },
+      { label: 'Emblem', value: 'High-Density 3D Molded Chrome & Orange' },
+      { label: 'Fit', value: 'Custom Drop-Shoulder Relaxed Streetwear Cut' }
+    ]
+  },
+  {
+    id: 'genz-hoodie-raw-cut',
+    title: 'GENZ Raw-Cut Vintage Combat Hoodie',
+    category: 'hoodies',
+    categoryName: 'COMBAT // RAW-CUT HEAVY',
+    price: 115,
+    tag: 'VINTAGE ENZYME WASH',
+    rating: 4.8,
+    reviewsCount: 167,
+    sizes: ['S', 'M', 'L', 'XL', '2XL'],
+    defaultSize: 'L',
+    image: '/images/hoodies/genz-raw-cut-hoodie.jpg',
+    description: 'An aggressive silhouette featuring raw-cut distressed hem, vintage mineral enzyme wash, and heavyweight 420GSM fleece. Reinforced side gussets allow maximum mobility.',
+    specs: [
+      { label: 'Fleece', value: '420 GSM Mineral Enzyme Washed Cotton' },
+      { label: 'Hem', value: 'Hand-Distressed Raw Combat Cut' },
+      { label: 'Gussets', value: 'Ribbed Biomechanical Mobility Panels' },
+      { label: 'Crest', value: 'Tonal Matte Silicone Chevron Chest Seal' }
+    ]
+  },
+  {
+    id: 'genz-hoodie-zip-championship',
+    title: 'GENZ Championship Full-Zip Gold Aglet Hoodie',
+    category: 'hoodies',
+    categoryName: 'CHAMPIONSHIP // DUAL ZIP',
+    price: 135,
+    tag: '24K GOLD ZIP HARDWARE',
+    rating: 4.9,
+    reviewsCount: 215,
+    sizes: ['S', 'M', 'L', 'XL', '2XL'],
+    defaultSize: 'L',
+    image: '/images/hoodies/genz-zip-hoodie.jpg',
+    description: 'The athlete walkout essential. Premium heavy fleece equipped with two-way heavy brass zipper, 24K gold hardware accents, tonal GENZ wrist embroidery, and fleece-lined kangaroo pockets.',
+    specs: [
+      { label: 'Zipper', value: 'Two-Way Heavy-Duty Solid Brass Hardware' },
+      { label: 'Weight', value: '440 GSM Dense Brushed Cotton Fleece' },
+      { label: 'Embroidery', value: 'Metallic Gold Thread Capped Monogram' },
+      { label: 'Pockets', value: 'Concealed Interior Tech Security Pockets' }
+    ]
+  },
+  {
+    id: 'genz-belt-wall-mount',
+    title: 'Heavy-Duty Championship Title Belt Wall Mount',
+    category: 'accessories',
+    categoryName: 'DISPLAY // ARMORY HARDWARE',
+    price: 45,
+    tag: 'LASER-CUT STEEL',
+    rating: 5.0,
+    reviewsCount: 94,
+    sizes: ['STANDARD SINGLE MOUNT', 'DUAL BELT PACK'],
+    defaultSize: 'STANDARD SINGLE MOUNT',
+    image: '/images/gear-macro.jpg',
+    description: 'Showcase your championship gold with museum-grade strength. Precision laser-cut 4mm cold-rolled steel coated in obsidian black powder coat with heavy brass snap anchors.',
+    specs: [
+      { label: 'Material', value: '4mm Cold-Rolled Laser-Cut Steel' },
+      { label: 'Coating', value: 'Matte Obsidian Anti-Scratch Powder Coat' },
+      { label: 'Capacity', value: 'Holds Belts up to 25 lbs (11.3 kg)' },
+      { label: 'Hardware', value: 'Heavy Drywall & Stud Anchors Included' }
+    ]
+  },
+  {
+    id: 'genz-belt-velvet-case',
+    title: 'Luxury Velvet & Leather Belt Travel Armor Case',
+    category: 'accessories',
+    categoryName: 'TRANSIT // COMBAT ARMOR',
+    price: 65,
+    tag: 'PLUSH VELVET LINING',
+    rating: 4.8,
+    reviewsCount: 73,
+    sizes: ['54" PRO CASE'],
+    defaultSize: '54" PRO CASE',
+    image: '/images/gear-macro.jpg',
+    description: 'Engineered for champions on tour. 1680D ballistic nylon exterior lined with deep crush velvet and 10mm high-density impact foam to ensure zero gold plate scratching.',
+    specs: [
+      { label: 'Shell', value: '1680D Water-Resistant Ballistic Nylon' },
+      { label: 'Lining', value: 'Crush Royal Velvet with 10mm Foam Core' },
+      { label: 'Length', value: '56" Overall Length (Fits All Pro Belts)' },
+      { label: 'Zipper', value: 'Heavy Duty Self-Healing YKK Zippers' }
     ]
   }
 ];
@@ -181,6 +168,71 @@ class Store {
   constructor() {
     this.cart = this.loadCart();
     this.listeners = [];
+    this.currency = 'USD';
+    this.rates = {
+      USD: 1.0,
+      GBP: 0.79,
+      EUR: 0.92,
+      CAD: 1.36,
+      AUD: 1.52
+    };
+    this.symbols = {
+      USD: '$',
+      GBP: '£',
+      EUR: '€',
+      CAD: 'CA$',
+      AUD: 'A$'
+    };
+    this.discountCode = null;
+    this.discountPercent = 0;
+    this.discountAmount = 0;
+  }
+
+  setCurrency(cur) {
+    if (this.rates[cur]) {
+      this.currency = cur;
+      this.notify();
+    }
+  }
+
+  getCurrency() {
+    return this.currency;
+  }
+
+  getCurrencySymbol() {
+    return this.symbols[this.currency] || '$';
+  }
+
+  formatPrice(amountInUSD) {
+    const rate = this.rates[this.currency] || 1.0;
+    const symbol = this.getCurrencySymbol();
+    const converted = amountInUSD * rate;
+    return `${symbol}${converted.toFixed(2)}`;
+  }
+
+  applyPromoCode(code) {
+    const clean = (code || '').trim().toUpperCase();
+    if (clean === 'CHAMPION10') {
+      this.discountCode = clean;
+      this.discountPercent = 10;
+      this.discountAmount = 0;
+      this.notify();
+      return { success: true, message: '10% Champion Discount Applied!' };
+    } else if (clean === 'GENZVIP') {
+      this.discountCode = clean;
+      this.discountPercent = 0;
+      this.discountAmount = 50;
+      this.notify();
+      return { success: true, message: '$50 VIP Combat Credit Applied!' };
+    }
+    return { success: false, message: 'Invalid or expired promotional code.' };
+  }
+
+  removePromoCode() {
+    this.discountCode = null;
+    this.discountPercent = 0;
+    this.discountAmount = 0;
+    this.notify();
   }
 
   loadCart() {
@@ -263,8 +315,25 @@ class Store {
     return this.cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   }
 
+  getCartDiscount() {
+    const subtotal = this.getCartSubtotal();
+    if (this.discountPercent > 0) {
+      return (subtotal * this.discountPercent) / 100;
+    }
+    if (this.discountAmount > 0) {
+      return Math.min(subtotal, this.discountAmount);
+    }
+    return 0;
+  }
+
+  getCartTotal() {
+    const subtotal = this.getCartSubtotal();
+    const discount = this.getCartDiscount();
+    return Math.max(0, subtotal - discount);
+  }
+
   getFreeShippingProgress() {
-    const threshold = 150;
+    const threshold = 100;
     const subtotal = this.getCartSubtotal();
     const percent = Math.min(100, Math.round((subtotal / threshold) * 100));
     const remaining = Math.max(0, threshold - subtotal);

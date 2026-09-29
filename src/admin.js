@@ -344,10 +344,9 @@ async function loadProductsTab() {
             <div class="form-group">
               <label>CATEGORY</label>
               <select id="edit-product-category">
-                <option value="striking">STRIKING // BOXING</option>
-                <option value="mma">MMA & HYBRID</option>
-                <option value="bags">IMPACT BAGS</option>
-                <option value="apparel">TECHNICAL APPAREL</option>
+                <option value="belts">🏆 WRESTLING TITLE BELTS</option>
+                <option value="hoodies">🧥 450GSM HOODIES</option>
+                <option value="accessories">🛡️ ACCESSORIES & MOUNTS</option>
               </select>
             </div>
 
@@ -368,12 +367,12 @@ async function loadProductsTab() {
 
             <div class="form-group full-width">
               <label>IMAGE URL / PATH</label>
-              <input type="text" id="edit-product-image" placeholder="/images/belt/belt-center.jpg or URL" required />
+              <input type="text" id="edit-product-image" placeholder="/images/belts/world-heavyweight-belt.jpg or URL" required />
             </div>
 
             <div class="form-group full-width">
               <label>SIZES (COMMA SEPARATED)</label>
-              <input type="text" id="edit-product-sizes" placeholder="12-OZ, 14-OZ, 16-OZ or STANDARD" />
+              <input type="text" id="edit-product-sizes" placeholder="S, M, L, XL, 2XL or 52-54 INCH ADULT REPLICA" />
             </div>
 
             <div class="form-group full-width">

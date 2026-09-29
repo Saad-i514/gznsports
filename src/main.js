@@ -1,29 +1,23 @@
-// GZNSPORTS // MASTER APPLICATION ORCHESTRATOR
+// GENZ SPORTS // MASTER APPLICATION ORCHESTRATOR
 import { initCursor } from './cursor.js';
-import { Gzn3DEngine } from './gzn3d.js';
 import { PRODUCTS, store } from './store.js';
 import { toggleSound, isSoundEnabled, playPunchImpact, playMetallicClick } from './audio.js';
 import { initAdminPanel, openAdminPanel } from './admin.js';
 import { initAuthModal, openAuthModal } from './auth-modal.js';
+import { initModals, openSearchModal, openModal } from './modals.js';
 import { adminApi } from './lib/admin-api.js';
 import { realtimeEngine } from './lib/realtime-engine.js';
 import { auth } from './lib/supabase.js';
 
-let gzn3D = null;
 let currentCategory = 'all';
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
   renderApp();
   initCursor();
+  initModals();
   initAdminPanel();
   initAuthModal();
-
-  // Initialize 3D Engine in Hero
-  const canvasContainer = document.getElementById('hero-3d-canvas-wrap');
-  if (canvasContainer) {
-    gzn3D = new Gzn3DEngine(canvasContainer);
-  }
 
   // Subscribe to Store changes
   store.subscribe(updateCartUI);
@@ -43,171 +37,143 @@ document.addEventListener('DOMContentLoaded', async () => {
 function renderApp() {
   const app = document.getElementById('app');
   app.innerHTML = `
-    <!-- 0. TOP ANNOUNCEMENT BAR (RDX ATHLETIC TICKER) -->
+    <!-- 0. TOP ANNOUNCEMENT BAR (GENZ TICKER) -->
     <div class="top-announcement-bar">
       <div class="announcement-inner">
         <div class="announcement-pill" id="announcement-pill-container">
           <span>⚡ MOVE. IMPROVE. EVOLVE.</span>
           <span class="announcement-sep">|</span>
-          <span>FREE US SHIPPING OVER $50</span>
+          <span>FREE WORLDWIDE AIR DISPATCH OVER $100</span>
           <span class="announcement-sep">|</span>
-          <span>365-DAY STRIKE WARRANTY</span>
+          <span>365-DAY STRIKE & SNAP WARRANTY</span>
         </div>
         <div class="announcement-right-links">
-          <a href="#dossier" class="announcement-link">FIGHT LAB</a>
+          <a href="#lab" class="announcement-link" data-modal="lab">FIGHT LAB</a>
           <span class="announcement-sep">|</span>
-          <a href="#standard" class="announcement-link">WHY GZN?</a>
+          <a href="#why" class="announcement-link" data-modal="why">WHY GENZ?</a>
           <span class="announcement-sep">|</span>
-          <a href="#terminal" class="announcement-link">HELP / FAQ</a>
+          <a href="#faq" class="announcement-link" data-modal="faq">HELP / FAQ</a>
         </div>
       </div>
     </div>
 
-    <!-- 1. OFFICIAL RDX-STYLE ATHLETIC HEADER -->
+    <!-- 1. OFFICIAL ATHLETIC HEADER -->
     <header class="rdx-main-header" id="rdx-main-header">
       <div class="rdx-header-inner">
         
-        <!-- BRAND LOGO (3D GENZ COMBAT EMBLEM) -->
+        <!-- BRAND LOGO (GENZ COMBAT EMBLEM) -->
         <a href="#" class="rdx-brand-wrap" aria-label="GENZ SPORTS Home">
           <img src="/images/genz-3d-logo.png" alt="GENZ SPORTS" class="genz-header-logo" />
         </a>
 
         <!-- CENTER NAVIGATION LINKS -->
         <nav class="rdx-nav-menu" aria-label="Primary Navigation">
-          <!-- BOXING -->
+          <!-- WRESTLING BELTS -->
           <div class="rdx-nav-item has-dropdown">
-            <a href="#armory" class="rdx-nav-link" data-cat="striking">
-              <span>BOXING</span>
+            <a href="#armory" class="rdx-nav-link" data-cat="belts">
+              <span>WRESTLING BELTS</span>
               <svg class="chevron-icon" viewBox="0 0 10 6" width="9" height="5"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
             </a>
             <div class="rdx-mega-menu">
               <div class="mega-column">
-                <h4 class="mega-heading">GLOVES</h4>
-                <a href="#armory" class="mega-link" data-cat="striking">Sparring Gloves (14-16oz)</a>
-                <a href="#armory" class="mega-link" data-cat="striking">Bag & Training Gloves</a>
-                <a href="#armory" class="mega-link" data-cat="striking">Pro Competition Lace-Up</a>
-                <a href="#armory" class="mega-link" data-cat="striking">Inner Glove Gel Wraps</a>
+                <h4 class="mega-heading">TITLE BELTS</h4>
+                <a href="#armory" class="mega-link" data-cat="belts">WWE Undisputed Championship</a>
+                <a href="#armory" class="mega-link" data-cat="belts">World Heavyweight "Big Gold"</a>
+                <a href="#armory" class="mega-link" data-cat="belts">Intercontinental Dual-Globe</a>
+                <a href="#armory" class="mega-link" data-cat="belts">Custom Promotion Title Belts</a>
               </div>
               <div class="mega-column">
-                <h4 class="mega-heading">PROTECTION</h4>
-                <a href="#armory" class="mega-link" data-cat="striking">Armored Headgear</a>
-                <a href="#armory" class="mega-link" data-cat="striking">180" Mexican Handwraps</a>
-                <a href="#armory" class="mega-link" data-cat="striking">Dual-Density Mouthguards</a>
-                <a href="#armory" class="mega-link" data-cat="striking">Groin & Chest Protectors</a>
+                <h4 class="mega-heading">BELT CRAFTSMANSHIP</h4>
+                <a href="#armory" class="mega-link" data-cat="belts">8mm Solid CNC Brass Casting</a>
+                <a href="#armory" class="mega-link" data-cat="belts">24K Dual-Dip Electroplating</a>
+                <a href="#armory" class="mega-link" data-cat="belts">4mm Full-Grain Saddle Leather</a>
+                <a href="#armory" class="mega-link" data-cat="belts">Hand-Set Diamond Gemstones</a>
               </div>
               <div class="mega-column">
-                <h4 class="mega-heading">PUNCH BAGS</h4>
-                <a href="#armory" class="mega-link" data-cat="bags">150lb Hydro-Core Heavy Bag</a>
-                <a href="#armory" class="mega-link" data-cat="bags">Italian Cowhide Speed Bag</a>
-                <a href="#armory" class="mega-link" data-cat="bags">Teardrop Angle Bags</a>
-                <a href="#armory" class="mega-link" data-cat="bags">Ceiling Anchors & Swivels</a>
+                <h4 class="mega-heading">DISPLAY & MOUNTS</h4>
+                <a href="#armory" class="mega-link" data-cat="accessories">Heavy-Duty Steel Wall Mount</a>
+                <a href="#armory" class="mega-link" data-cat="accessories">Luxury Velvet Travel Armor Case</a>
+                <a href="#armory" class="mega-link" data-cat="accessories">Polished Acrylic Table Cradle</a>
+                <a href="#armory" class="mega-link" data-cat="accessories">Gold Replacement Snap Screws</a>
               </div>
               <div class="mega-featured">
-                <img src="/images/gear-macro.jpg" alt="Featured Glove" />
+                <img src="/images/belts/world-heavyweight-belt.jpg" alt="Featured Title Belt" />
                 <div class="mega-featured-info">
                   <span class="mono-tag" style="color:#b71234;">BEST SELLER</span>
-                  <strong>GZN-X1 APEX PRO</strong>
-                  <span class="featured-price">$185.00</span>
-                  <a href="#armory" class="mega-featured-btn">SHOP NOW →</a>
+                  <strong>WORLD HEAVYWEIGHT "BIG GOLD"</strong>
+                  <span class="featured-price">$449.00</span>
+                  <a href="#armory" class="mega-featured-btn">SHOP TITLE BELTS →</a>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- MMA -->
+          <!-- 450GSM HOODIES -->
           <div class="rdx-nav-item has-dropdown">
-            <a href="#armory" class="rdx-nav-link" data-cat="mma">
-              <span>MMA</span>
+            <a href="#armory" class="rdx-nav-link" data-cat="hoodies">
+              <span>450GSM HOODIES</span>
               <svg class="chevron-icon" viewBox="0 0 10 6" width="9" height="5"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
             </a>
             <div class="rdx-mega-menu">
               <div class="mega-column">
-                <h4 class="mega-heading">MMA GLOVES</h4>
-                <a href="#armory" class="mega-link" data-cat="mma">4oz UFC Hybrid Gloves</a>
-                <a href="#armory" class="mega-link" data-cat="mma">7oz Sparring Grapple Gloves</a>
-                <a href="#armory" class="mega-link" data-cat="mma">Shooto Style Gloves</a>
+                <h4 class="mega-heading">COMBAT STREETWEAR</h4>
+                <a href="#armory" class="mega-link" data-cat="hoodies">GENZ Apex 450GSM Heavyweight</a>
+                <a href="#armory" class="mega-link" data-cat="hoodies">Raw-Cut Vintage Mineral Wash</a>
+                <a href="#armory" class="mega-link" data-cat="hoodies">Championship Dual Full-Zip</a>
+                <a href="#armory" class="mega-link" data-cat="hoodies">Drop-Shoulder Oversized Cut</a>
               </div>
               <div class="mega-column">
-                <h4 class="mega-heading">MMA PROTECTION</h4>
-                <a href="#armory" class="mega-link" data-cat="mma">Carbon-Flex Shin Armor</a>
-                <a href="#armory" class="mega-link" data-cat="mma">High-Density Knee Pads</a>
-                <a href="#armory" class="mega-link" data-cat="mma">Ankle Support Sleeves</a>
+                <h4 class="mega-heading">TEXTILE STANDARDS</h4>
+                <a href="#armory" class="mega-link" data-cat="hoodies">450GSM Combed Long-Staple Cotton</a>
+                <a href="#armory" class="mega-link" data-cat="hoodies">Double-Layer Structured Hood</a>
+                <a href="#armory" class="mega-link" data-cat="hoodies">24K Gold Dipped Metal Aglets</a>
+                <a href="#armory" class="mega-link" data-cat="hoodies">High-Density Chrome Chest Crest</a>
               </div>
               <div class="mega-featured">
-                <img src="/images/mma-athlete.jpg" alt="Featured MMA" />
+                <img src="/images/hoodies/genz-heavyweight-hoodie.jpg" alt="Featured Hoodie" />
                 <div class="mega-featured-info">
-                  <span class="mono-tag" style="color:#b71234;">PRO OCTAGON</span>
-                  <strong>STEALTH GRAPPLE 4OZ</strong>
-                  <span class="featured-price">$115.00</span>
-                  <a href="#armory" class="mega-featured-btn">SHOP NOW →</a>
+                  <span class="mono-tag" style="color:#b71234;">APEX HEAVYWEIGHT</span>
+                  <strong>GENZ 450GSM COMBAT HOODIE</strong>
+                  <span class="featured-price">$120.00</span>
+                  <a href="#armory" class="mega-featured-btn">SHOP HOODIES →</a>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- FITNESS -->
+          <!-- ACCESSORIES -->
           <div class="rdx-nav-item has-dropdown">
-            <a href="#armory" class="rdx-nav-link" data-cat="bags">
-              <span>FITNESS</span>
+            <a href="#armory" class="rdx-nav-link" data-cat="accessories">
+              <span>ACCESSORIES</span>
               <svg class="chevron-icon" viewBox="0 0 10 6" width="9" height="5"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
             </a>
-            <div class="rdx-mega-menu" style="width: 500px;">
+            <div class="rdx-mega-menu" style="width: 480px;">
               <div class="mega-column">
-                <h4 class="mega-heading">FITNESS GEAR</h4>
-                <a href="#armory" class="mega-link" data-cat="bags">Weightlifting Belts</a>
-                <a href="#armory" class="mega-link" data-cat="bags">Heavy Jump Ropes</a>
-                <a href="#armory" class="mega-link" data-cat="bags">Grip Trainers & Chalk</a>
-              </div>
-              <div class="mega-column">
-                <h4 class="mega-heading">TRAINING BAGS</h4>
-                <a href="#armory" class="mega-link" data-cat="bags">150lb Hydro Bag</a>
-                <a href="#armory" class="mega-link" data-cat="bags">Speed Bags</a>
+                <h4 class="mega-heading">ARMORY ACCESSORIES</h4>
+                <a href="#armory" class="mega-link" data-cat="accessories">Laser-Cut Steel Belt Wall Mount</a>
+                <a href="#armory" class="mega-link" data-cat="accessories">Velvet & Ballistic Nylon Travel Case</a>
+                <a href="#armory" class="mega-link" data-cat="accessories">Replacement Brass Snap Hardware</a>
               </div>
             </div>
           </div>
 
-          <!-- YOGA -->
-          <div class="rdx-nav-item has-dropdown">
-            <a href="#armory" class="rdx-nav-link" data-cat="apparel">
-              <span>YOGA</span>
-              <svg class="chevron-icon" viewBox="0 0 10 6" width="9" height="5"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+          <!-- CUSTOM LAB -->
+          <div class="rdx-nav-item">
+            <a href="#lab" class="rdx-nav-link" data-modal="lab">
+              <span>CUSTOM LAB</span>
             </a>
           </div>
 
-          <!-- APPAREL -->
-          <div class="rdx-nav-item has-dropdown">
-            <a href="#armory" class="rdx-nav-link" data-cat="apparel">
-              <span>APPAREL</span>
-              <svg class="chevron-icon" viewBox="0 0 10 6" width="9" height="5"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
-            </a>
-          </div>
-
-          <!-- COLLECTIONS -->
-          <div class="rdx-nav-item has-dropdown">
-            <a href="#kit-builder" class="rdx-nav-link">
-              <span>COLLECTIONS</span>
-              <svg class="chevron-icon" viewBox="0 0 10 6" width="9" height="5"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
-            </a>
-          </div>
-
-          <!-- KIDS -->
-          <div class="rdx-nav-item has-dropdown">
-            <a href="#armory" class="rdx-nav-link" data-cat="striking">
-              <span>KIDS</span>
-              <svg class="chevron-icon" viewBox="0 0 10 6" width="9" height="5"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
-            </a>
-          </div>
-
-          <!-- SALE -->
+          <!-- CHAMPION BUNDLE -->
           <div class="rdx-nav-item">
             <a href="#kit-builder" class="rdx-nav-link rdx-sale-link">
-              <span>SALE</span>
+              <span>🏆 CHAMPION BUNDLE (-18%)</span>
             </a>
           </div>
 
           <!-- GIFT CARD -->
           <div class="rdx-nav-item">
-            <a href="#kit-builder" class="rdx-nav-link rdx-giftcard-link">
+            <a href="#armory" class="rdx-nav-link rdx-giftcard-link">
               <span>🎁 GIFT CARD</span>
             </a>
           </div>
@@ -215,11 +181,11 @@ function renderApp() {
 
         <!-- RIGHT UTILITY ACTIONS -->
         <div class="rdx-utility-actions">
-          <!-- Country Selector -->
+          <!-- Country / Currency Selector -->
           <div class="rdx-country-selector" id="rdx-country-dropdown">
             <button class="rdx-country-btn" id="country-btn" aria-label="Select Country">
               <span class="flag-icon">🇺🇸</span>
-              <span class="country-code">US</span>
+              <span class="country-code">USD</span>
               <svg class="chevron-icon" viewBox="0 0 10 6" width="8" height="5"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
             </button>
             <div class="country-dropdown-menu" id="country-menu">
@@ -232,7 +198,7 @@ function renderApp() {
           </div>
 
           <!-- Search Icon Button -->
-          <button class="rdx-util-btn" id="header-search-btn" title="Search Products" aria-label="Search">
+          <button class="rdx-util-btn" id="header-search-btn" title="Search Products (Ctrl+K or /)" aria-label="Search">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -272,14 +238,14 @@ function renderApp() {
       </div>
     </header>
 
-    <!-- 2. HERO VIEWPORT: THE THRESHOLD -->
+    <!-- 2. HERO VIEWPORT: THE APEX SHOWCASE -->
     <section class="hero-section" id="hero">
       <div class="hero-background-grid"></div>
       <div class="container hero-grid-layout">
         <div class="hero-content">
           <div class="hero-badge-row">
-            <span class="mono-tag crimson">[ UNDISPUTED CHAMPIONSHIP ARMOR ]</span>
-            <span class="mono-tag">SPEC: 24K DUAL-PLATED // FULL-GRAIN LEATHER</span>
+            <span class="mono-tag crimson">[ OFFICIAL CHAMPIONSHIP ARMOR ]</span>
+            <span class="mono-tag">24K GOLD TITLE BELTS // 450GSM COMBAT HOODIES</span>
           </div>
 
           <h1 class="hero-headline" id="hero-headline-element">
@@ -288,86 +254,122 @@ function renderApp() {
           </h1>
 
           <p class="hero-subhead" id="hero-subhead-element">
-            Forged for the apex of combat glory. Featuring CNC 8mm deep-relief 24K gold plates, hand-set cubic zirconia diamond crystals, and authentic dual globe side medallions on handcrafted saddle leather.
+            Forged for the apex of combat glory. Featuring CNC 8mm deep-relief 24K gold plates, hand-set cubic zirconia diamond crystals, and 450GSM ultra-dense French Terry fleece.
           </p>
 
           <div class="hero-cta-group">
             <a href="#armory" class="btn-primary" id="hero-explore-btn">
-              <span>EXPLORE THE ARMORY</span>
+              <span>EXPLORE TITLE BELTS & HOODIES</span>
               <span>→</span>
             </a>
-            <button class="btn-secondary" id="hero-deconstruct-trigger">
-              <span>DECONSTRUCT TITLE BELT (3D LAB)</span>
+            <button class="btn-secondary" id="hero-lab-trigger" data-modal="lab">
+              <span>THE CRAFTSMANSHIP LAB (SPEC ARCHIVE)</span>
             </button>
+          </div>
+
+          <div class="hero-trust-row">
+            <div class="trust-item">
+              <span class="trust-icon">🏆</span>
+              <div>
+                <strong>8MM CNC 24K GOLD</strong>
+                <small>Deep 3D Sculpted Relief</small>
+              </div>
+            </div>
+            <div class="trust-item">
+              <span class="trust-icon">🧥</span>
+              <div>
+                <strong>450GSM FRENCH TERRY</strong>
+                <small>100% Combed Heavy Cotton</small>
+              </div>
+            </div>
+            <div class="trust-item">
+              <span class="trust-icon">🛡️</span>
+              <div>
+                <strong>FULL-GRAIN LEATHER</strong>
+                <small>Dual-Row 8-Snap Box</small>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="hero-canvas-wrapper" id="hero-3d-canvas-wrap">
-          <!-- 3D HUD Tooltip Pins -->
-          <div class="hud-pin" style="top: 6%; left: 2%;">
-            <span class="hud-pin-dot"></span>
-            <span>24K GOLD MAIN PLATE // 8MM CNC RELIEF</span>
-          </div>
-          <div class="hud-pin" style="bottom: 12%; right: 2%;">
-            <span class="hud-pin-dot"></span>
-            <span>DUAL-ROW HEAVY SNAP BOX & SADDLE LEATHER</span>
-          </div>
-
-          <!-- Canvas HUD Controls -->
-          <div class="canvas-hud-overlay">
-            <div class="hud-mode-group">
-              <span class="mono-tag">3D ANIMATION:</span>
-              <button class="size-pill" data-mode="showcase" title="Showcase 360 Drift">SHOWCASE 360°</button>
-              <button class="size-pill active" data-mode="curved" title="Curved Champion Waist Wrap">WAIST WRAP</button>
-              <button class="size-pill" data-mode="flat" title="Flat Exhibition Display">FLAT DISPLAY</button>
+        <!-- HERO INTERACTIVE DUAL SHOWCASE STUDIO -->
+        <div class="hero-showcase-container" id="hero-showcase-container">
+          <div class="hero-showcase-card" id="hero-showcase-card">
+            <div class="hero-showcase-img-wrap">
+              <img src="/images/hero-dual-showcase.jpg" alt="GENZ Wrestling Title Belt & 450GSM Heavyweight Combat Hoodie" id="hero-showcase-img" class="hero-showcase-img" />
+              <div class="hero-glint-beam" id="hero-glint-beam"></div>
             </div>
-            <button class="explode-toggle-btn" id="canvas-explode-btn">
-              <span>EXPLODE LAYERS</span>
-            </button>
+
+            <!-- Telemetry HUD Pins -->
+            <div class="hud-pin" style="top: 8%; left: 4%;">
+              <span class="hud-pin-dot"></span>
+              <span>8MM 24K GOLD MAIN PLATE // CNC RELIEF</span>
+            </div>
+            <div class="hud-pin" style="bottom: 18%; left: 4%;">
+              <span class="hud-pin-dot"></span>
+              <span>450GSM FRENCH TERRY // COMBED LONG-STAPLE COTTON</span>
+            </div>
+            <div class="hud-pin" style="top: 24%; right: 4%;">
+              <span class="hud-pin-dot"></span>
+              <span>4MM FULL-GRAIN SADDLE LEATHER & 8-SNAP BOX</span>
+            </div>
+
+            <!-- Showcase Studio Controller -->
+            <div class="hero-showcase-controls">
+              <div class="hero-mode-group">
+                <span class="mono-tag" style="color:#ffd700; font-size:0.68rem;">STUDIO VIEW:</span>
+                <button class="hero-mode-pill active" data-mode="dual" data-img="/images/hero-dual-showcase.jpg" title="Dual Belt & Hoodie Apex Showcase">⚡ DUAL APEX</button>
+                <button class="hero-mode-pill" data-mode="belt" data-img="/images/belts/world-heavyweight-belt.jpg" title="24K World Heavyweight Title Belt">🏆 24K TITLE BELT</button>
+                <button class="hero-mode-pill" data-mode="hoodie" data-img="/images/hoodies/genz-heavyweight-hoodie.jpg" title="450GSM Heavyweight Combat Hoodie">🧥 450GSM HOODIE</button>
+              </div>
+              <button class="btn-glint-trigger" id="hero-glint-trigger" title="Simulate Arena Light Glint">
+                <span>✨ REFLECTION</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 3. THE CRUCIBLE: BRAND MANIFESTO & TENSION -->
+    <!-- 3. THE CRUCIBLE: BRAND MANIFESTO & METALLURGY -->
     <section class="crucible-section" id="crucible">
-      <div class="crucible-watermark">GZNSPORTS</div>
+      <div class="crucible-watermark">GENZ SPORTS</div>
       <div class="container crucible-grid">
         <div class="crucible-text-block">
-          <span class="mono-tag crimson">// THE PHILOSOPHY OF IMPACT</span>
+          <span class="mono-tag crimson">// THE PHILOSOPHY OF EXCELLENCE</span>
           <h2 class="crucible-quote" id="crucible-quote-element">
-            "THE BAG DOES NOT CARE ABOUT EXCUSES. THE RING DOES NOT FORGIVE WEAK WRISTS. WE DO NOT BUILD SPORTING GOODS. <em>WE FORGE COMBAT ARMOR.</em>"
+            "THE MAT DOES NOT FORGIVE COMPROMISE. WE DO NOT BUILD PLASTIC REPLICAS. <em>WE FORGE CHAMPIONSHIP GOLD & HEAVYWEIGHT COMBAT HOODIES.</em>"
           </h2>
           <p class="crucible-body" id="crucible-body-element">
-            Mass-market combat brands rely on synthetic split-leather, single-foam molds, and flimsy velcro that collapses within six months. GZNSPORTS was built for fighters who spar five days a week and demand equipment that protects their metacarpals and wrist ligaments at maximum velocity.
+            Mass-market companies cut corners with hollow zinc plates, cracking vinyl leatherette, and flimsy 260GSM polyester hoodies that lose their shape in three washes. GENZ SPORTS is forged for champions and dedicated combat athletes who demand authentic 8mm 24K gold relief plates, vegetable-tanned saddle leather, and 450GSM combed cotton with lifetime structural integrity.
           </p>
           <div>
             <button class="btn-secondary" id="punch-test-btn" style="padding: 0.8rem 1.6rem;">
-              <span>⚡ TEST IMPACT TELEMETRY (AUDIO PUNCH)</span>
+              <span>⚡ AUDIT METALLURGY TELEMETRY (AUDIO PUNCH)</span>
             </button>
           </div>
         </div>
 
         <div class="crucible-stats-grid">
           <div class="crucible-stat-card">
-            <span class="stat-number">99.4<span>%</span></span>
-            <span class="mono-tag">FORCE DISSIPATION</span>
-            <p class="mono-tag" style="font-size:0.65rem; color:#777;">Tested across 10,000 concussive strikes</p>
+            <span class="stat-number">24<span>K</span></span>
+            <span class="mono-tag">DUAL-ELECTROPLATED GOLD</span>
+            <p class="mono-tag" style="font-size:0.65rem; color:#777;">Mirror polished 8mm CNC brass relief</p>
           </div>
           <div class="crucible-stat-card">
-            <span class="stat-number">1.2<span>mm</span></span>
-            <span class="mono-tag">FULL-GRAIN NAPPA</span>
-            <p class="mono-tag" style="font-size:0.65rem; color:#777;">Hand-selected top-tier cowhide</p>
+            <span class="stat-number">450<span>GSM</span></span>
+            <span class="mono-tag">FRENCH TERRY COTTON</span>
+            <p class="mono-tag" style="font-size:0.65rem; color:#777;">100% Combed heavy long-staple fleece</p>
+          </div>
+          <div class="crucible-stat-card">
+            <span class="stat-number">4.0<span>mm</span></span>
+            <span class="mono-tag">FULL-GRAIN SADDLE LEATHER</span>
+            <p class="mono-tag" style="font-size:0.65rem; color:#777;">Obsidian wax treated with 8-snap brass box</p>
           </div>
           <div class="crucible-stat-card">
             <span class="stat-number">365<span>D</span></span>
-            <span class="mono-tag">STRIKE GUARANTEE</span>
-            <p class="mono-tag" style="font-size:0.65rem; color:#777;">Zero-risk replacement pledge</p>
-          </div>
-          <div class="crucible-stat-card">
-            <span class="stat-number">0.04<span>s</span></span>
-            <span class="mono-tag">RECOIL RECOVERY</span>
-            <p class="mono-tag" style="font-size:0.65rem; color:#777;">Instant kinetic memory foam</p>
+            <span class="mono-tag">REPLACEMENT GUARANTEE</span>
+            <p class="mono-tag" style="font-size:0.65rem; color:#777;">Zero-risk gemstone, snap & seam warranty</p>
           </div>
         </div>
       </div>
@@ -383,11 +385,10 @@ function renderApp() {
           </div>
 
           <div class="filter-bar" id="category-filter-bar">
-            <button class="filter-tab active" data-cat="all">ALL WEAPONRY</button>
-            <button class="filter-tab" data-cat="striking">STRIKING</button>
-            <button class="filter-tab" data-cat="mma">MMA & HYBRID</button>
-            <button class="filter-tab" data-cat="bags">BAGS</button>
-            <button class="filter-tab" data-cat="apparel">APPAREL</button>
+            <button class="filter-tab active" data-cat="all">ALL GEAR</button>
+            <button class="filter-tab" data-cat="belts">🏆 TITLE BELTS</button>
+            <button class="filter-tab" data-cat="hoodies">🧥 450GSM HOODIES</button>
+            <button class="filter-tab" data-cat="accessories">🛡️ ACCESSORIES & MOUNTS</button>
           </div>
         </div>
 
@@ -397,14 +398,14 @@ function renderApp() {
       </div>
     </section>
 
-    <!-- 5. THE ANATOMY LAB: INTERACTIVE 3D EXPLODED VIEW -->
+    <!-- 5. THE ANATOMY LAB: STRUCTURAL ARCHIVE -->
     <section class="anatomy-lab-section" id="anatomy-lab">
       <div class="container">
         <div style="margin-bottom: 3rem; text-align: center;">
-          <span class="mono-tag crimson">// BIOMECHANICAL R&D ARCHIVE</span>
+          <span class="mono-tag crimson">// METALLURGY & TEXTILE R&D ARCHIVE</span>
           <h2 class="section-title">THE ANATOMY LAB</h2>
           <p style="color: var(--gzn-slate); max-width: 600px; margin: 0.8rem auto 0;">
-            Deconstruct the four proprietary structural tiers of the WWE Undisputed Championship Title Belt.
+            Deconstruct the four proprietary structural tiers of the WWE Undisputed Championship Title Belt and 450GSM French Terry weave.
           </p>
         </div>
 
@@ -413,10 +414,10 @@ function renderApp() {
             <div class="lab-tab-item active" data-layer="layer-1">
               <div class="lab-tab-header">
                 <span class="lab-tab-title">01. Hand-Crafted Full-Grain Saddle Leather</span>
-                <span class="mono-tag crimson">[ STRAP SUBSTRATE ]</span>
+                <span class="mono-tag crimson">[ 4MM STRAP ]</span>
               </div>
               <p class="lab-tab-desc">
-                Anatomically contoured 4mm saddle leather treated with obsidian wax. Features dual-row 8-snap gold closure box, embossed WWE monogram crest, and polished gold curved belt tip.
+                Anatomically contoured 4mm vegetable-tanned saddle leather treated with hot obsidian wax. Features dual-row 8-snap solid brass closure box, embossed GENZ monogram seal, and polished 24K gold curved belt tip.
               </p>
             </div>
 
@@ -426,36 +427,36 @@ function renderApp() {
                 <span class="mono-tag crimson">[ 24K FOUNDATION ]</span>
               </div>
               <p class="lab-tab-desc">
-                Deep-relief CNC sculpted heptagonal center plate featuring hammered stippled gold grain and lower embossed "UNDISPUTED CHAMPION" ribbon with beveled frame borders.
+                Deep-relief CNC sculpted heptagonal center plate featuring hammered stippled gold grain and lower embossed "UNDISPUTED CHAMPION" ribbon with mirror-beveled frame borders.
               </p>
             </div>
 
             <div class="lab-tab-item" data-layer="layer-3">
               <div class="lab-tab-header">
-                <span class="lab-tab-title">03. Hand-Set Cubic Zirconia & Ruby Frame</span>
+                <span class="lab-tab-title">03. Hand-Set Cubic Zirconia Diamond Frame</span>
                 <span class="mono-tag crimson">[ JEWELRY ARMOR ]</span>
               </div>
               <p class="lab-tab-desc">
-                Continuous perimeter of brilliant square-cut diamond gems with 16 faceted ruby cabochon crystals at the top and bottom corners for unmatched light refraction.
+                Continuous perimeter of brilliant square-cut diamond crystals with 16 faceted ruby cabochon stones at the apex corners for unmatched light refraction under arena spotlights.
               </p>
             </div>
 
             <div class="lab-tab-item" data-layer="layer-4">
               <div class="lab-tab-header">
-                <span class="lab-tab-title">04. 3D Diamond 'W' & Dual Globe Medallions</span>
-                <span class="mono-tag crimson">[ CREST & SIDES ]</span>
+                <span class="lab-tab-title">04. 450GSM Combed French Terry Cotton</span>
+                <span class="mono-tag crimson">[ TEXTILE WEAVE ]</span>
               </div>
               <p class="lab-tab-desc">
-                Raised diamond-studded center 'W' insignia filled with black faceted gemstones and crimson enamel swoosh, flanked by concentric globe side medallions and polished separator bars.
+                Heavyweight 450GSM 100% combed long-staple cotton fleece. Engineered with drop-shoulder athletic cut, double-layer structured hood, and 24K gold dipped drawcord aglets.
               </p>
             </div>
           </div>
 
           <div style="background: var(--gzn-void); border: 1px solid var(--gzn-border); border-radius: var(--radius-md); padding: 2.5rem;">
             <div style="position: relative; width: 100%; height: 260px; overflow: hidden; border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
-              <img src="/images/gear-macro.jpg" alt="Championship Belt Macro" style="width: 100%; height: 100%; object-fit: cover;" />
+              <img src="/images/belts/world-heavyweight-belt.jpg" alt="Championship Belt Macro Detail" style="width: 100%; height: 100%; object-fit: cover;" />
               <div style="position: absolute; bottom: 1rem; left: 1rem; background: rgba(10,10,12,0.85); padding: 0.3rem 0.6rem; border: 1px solid var(--gzn-border); font-family: var(--font-mono); font-size: 0.72rem;">
-                MICROSCOPIC CROSS-SECTION // 24K GOLD & DIAMOND
+                MICROSCOPIC CROSS-SECTION // 8MM 24K GOLD RELIEF
               </div>
             </div>
 
@@ -469,14 +470,14 @@ function renderApp() {
                 <div class="metric-label">CNC Plate Relief</div>
               </div>
               <div class="lab-metric-card">
-                <div class="metric-value">1,000+</div>
-                <div class="metric-label">Faceted Crystals</div>
+                <div class="metric-value">450 GSM</div>
+                <div class="metric-label">French Terry Cotton</div>
               </div>
             </div>
 
             <div style="margin-top: 1.8rem;">
               <button class="btn-primary" id="lab-quick-arm-btn" style="width: 100%;">
-                <span>ACQUIRE UNDISPUTED TITLE BELT ($499)</span>
+                <span>ACQUIRE UNDISPUTED TITLE BELT ($499.00)</span>
               </button>
             </div>
           </div>
@@ -489,9 +490,9 @@ function renderApp() {
       <div class="container">
         <div style="margin-bottom: 3.5rem;">
           <span class="mono-tag crimson">// EMPIRICAL SPECIFICATION AUDIT</span>
-          <h2 class="section-title">THE GZN STANDARD VS COMMODITY GEAR</h2>
+          <h2 class="section-title">THE GENZ STANDARD VS COMMODITY REPLICAS</h2>
           <p style="color: var(--gzn-slate); max-width: 620px; margin-top: 0.8rem;">
-            See why pro gyms and combat athletes refuse to settle for mass-market Amazon or RDX equipment.
+            See why wrestling promotions, title collectors, and combat athletes refuse to settle for hollow zinc belts or cheap polyester hoodies.
           </p>
         </div>
 
@@ -500,59 +501,59 @@ function renderApp() {
             <thead>
               <tr>
                 <th>ENGINEERING BENCHMARK</th>
-                <th>COMMODITY GEAR (RDX / STANDARD)</th>
-                <th class="highlight-col">★ GZNSPORTS FLAGSHIP SPEC</th>
+                <th>COMMODITY REPLICAS & HOODIES</th>
+                <th class="highlight-col">★ GENZ SPORTS FLAGSHIP SPEC</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>
-                  <div class="comparison-feature-name">Leather Shell Grade</div>
-                  <div class="comparison-feature-sub">Tensile tear and sweat resistance</div>
+                  <div class="comparison-feature-name">Belt Main Plate Metallurgy</div>
+                  <div class="comparison-feature-sub">Thickness, depth, and gold finish</div>
                 </td>
-                <td>Synthetic PU or Split Leather (Peels in 4-6 mos)</td>
+                <td>2mm Hollow Zinc Alloy (Dents & scratches, dull yellow tint)</td>
                 <td class="highlight-col">
-                  <span class="gzn-badge-check">✓ 1.2mm Hand-Selected Full-Grain Nappa</span>
+                  <span class="gzn-badge-check">✓ Solid CNC 8mm Deep-Relief 24K Dual-Plated Brass</span>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <div class="comparison-feature-name">Knuckle Shock Dispersion</div>
-                  <div class="comparison-feature-sub">Protection for metacarpal bones</div>
+                  <div class="comparison-feature-name">Strap Substrate & Snaps</div>
+                  <div class="comparison-feature-sub">Tensile tear and longevity</div>
                 </td>
-                <td>Single-Layer Recycled Sponge Foam</td>
+                <td>Synthetic PU or Split Vinyl (Cracks & peels in 3 months)</td>
                 <td class="highlight-col">
-                  <span class="gzn-badge-check">✓ Quad-Density IMF + Viscoelastic Cryo-Gel</span>
+                  <span class="gzn-badge-check">✓ 4mm Handcrafted Full-Grain Saddle Leather + Dual-Row 8-Snap Box</span>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <div class="comparison-feature-name">Wrist Stabilization Spine</div>
-                  <div class="comparison-feature-sub">Prevention of hyperextension sprains</div>
+                  <div class="comparison-feature-name">Hoodie Fleece Density & Weight</div>
+                  <div class="comparison-feature-sub">Fabric drape, warmth, and wash longevity</div>
                 </td>
-                <td>Single Elastic Velcro Strap (Zero rigid bone lock)</td>
+                <td>260–280 GSM Polyester Blend (Pills & loses shape rapidly)</td>
                 <td class="highlight-col">
-                  <span class="gzn-badge-check">✓ Dual-Spine Carbon-Composite Exoskeleton</span>
+                  <span class="gzn-badge-check">✓ 450 GSM 100% Combed Long-Staple French Terry Cotton</span>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <div class="comparison-feature-name">Microbial & Odor Protection</div>
-                  <div class="comparison-feature-sub">Inner lining longevity and hygiene</div>
+                  <div class="comparison-feature-name">Hardware & Aglets</div>
+                  <div class="comparison-feature-sub">Drawstring aglets and snap screws</div>
                 </td>
-                <td>Basic Tricot Mesh (Accumulates odor permanently)</td>
+                <td>Hollow Plastic Aglets & Aluminum Screws</td>
                 <td class="highlight-col">
-                  <span class="gzn-badge-check">✓ Silver-Ion SilverThread™ Antimicrobial</span>
+                  <span class="gzn-badge-check">✓ 24K Gold Dipped Solid Metal Aglets & Heavy Brass Screws</span>
                 </td>
               </tr>
               <tr>
                 <td>
-                  <div class="comparison-feature-name">Combat Guarantee</div>
+                  <div class="comparison-feature-name">Championship Guarantee</div>
                   <div class="comparison-feature-sub">Warranty and replacement policy</div>
                 </td>
-                <td>30 to 60 Days Limited</td>
+                <td>30 Days Limited</td>
                 <td class="highlight-col">
-                  <span class="gzn-badge-check">✓ 365-Day Unconditional Strike Warranty</span>
+                  <span class="gzn-badge-check">✓ 365-Day Unconditional Strike & Snap Replacement Warranty</span>
                 </td>
               </tr>
             </tbody>
@@ -561,33 +562,33 @@ function renderApp() {
       </div>
     </section>
 
-    <!-- 7. THE FIGHT DOSSIER: ATHLETE SOCIAL PROOF & AUDIO -->
+    <!-- 7. THE FIGHT DOSSIER: ATHLETE SOCIAL PROOF -->
     <section class="dossier-section" id="dossier">
       <div class="container">
         <div style="margin-bottom: 3.5rem;">
-          <span class="mono-tag crimson">// VERIFIED FIGHT LAB TELEMETRY</span>
-          <h2 class="section-title">THE FIGHT DOSSIER</h2>
+          <span class="mono-tag crimson">// VERIFIED CHAMPION TELEMETRY</span>
+          <h2 class="section-title">THE CHAMPION DOSSIER</h2>
           <p style="color: var(--gzn-slate); max-width: 600px; margin-top: 0.8rem;">
-            Real debriefs from professional fighters and coaches testing GZN weaponry in sparring camps.
+            Direct telemetry from professional wrestling champions and combat streetwear collectors testing GENZ armor.
           </p>
         </div>
 
         <div class="dossier-grid">
           <div class="dossier-card">
             <div class="dossier-media">
-              <img src="/images/striking-hero.jpg" alt="Alexandre Silva" />
-              <div class="dossier-tag">UFC WELTERWEIGHT PRO // 17-3</div>
+              <img src="/images/belts/world-heavyweight-belt.jpg" alt="Marcus Vance Heavyweight Champion" />
+              <div class="dossier-tag">PRO WRESTLING HEAVYWEIGHT // 22-1</div>
             </div>
             <div class="dossier-content">
               <p class="dossier-quote">
-                "The dual carbon wrist lock on the GZN-X1 is unlike anything in boxing right now. I landed over 80 hard hooks on 150lb bags with zero wrist rolling or knuckle pain."
+                "The 8mm plate depth and mirror-polished 24K gold on this World Heavyweight belt blew our promotion away. The saddle leather strap drapes over the shoulder with genuine heavyweight prestige."
               </p>
               <div class="dossier-fighter-meta">
                 <div>
-                  <div class="fighter-name">Alexandre "The Anvil" Silva</div>
-                  <div class="fighter-gym">American Kickboxing Academy</div>
+                  <div class="fighter-name">Marcus "Titan" Vance</div>
+                  <div class="fighter-gym">Apex Pro Wrestling Federation</div>
                 </div>
-                <button class="hud-icon-btn audio-preview-btn" data-fighter="Silva" style="font-size:0.7rem;">
+                <button class="hud-icon-btn audio-preview-btn" data-fighter="Marcus" style="font-size:0.7rem;">
                   <span>▶ PLAY AUDIO (12s)</span>
                 </button>
               </div>
@@ -596,19 +597,19 @@ function renderApp() {
 
           <div class="dossier-card">
             <div class="dossier-media">
-              <img src="/images/mma-athlete.jpg" alt="Elena Rostova" />
-              <div class="dossier-tag">ONE CHAMPIONSHIP MUAY THAI // 24-2</div>
+              <img src="/images/hoodies/genz-heavyweight-hoodie.jpg" alt="Jaxson Rivera Combat Athlete" />
+              <div class="dossier-tag">COMBAT STREETWEAR // DESIGN DIRECTOR</div>
             </div>
             <div class="dossier-content">
               <p class="dossier-quote">
-                "The Cryo-Gel shield absorbs peak strike trauma immediately. When checking heavy kicks or sparring power punchers, the gear gives absolute peace of mind."
+                "This 450GSM French Terry hoodie has the most insane weight and drape of anything in my collection. The 24K gold dipped aglets and double-layer hood give it an unmistakable luxury presence."
               </p>
               <div class="dossier-fighter-meta">
                 <div>
-                  <div class="fighter-name">Elena Rostova</div>
-                  <div class="fighter-gym">Tiger Muay Thai & MMA</div>
+                  <div class="fighter-name">Jaxson Rivera</div>
+                  <div class="fighter-gym">Iron Clan Fight Athletics</div>
                 </div>
-                <button class="hud-icon-btn audio-preview-btn" data-fighter="Elena" style="font-size:0.7rem;">
+                <button class="hud-icon-btn audio-preview-btn" data-fighter="Jaxson" style="font-size:0.7rem;">
                   <span>▶ PLAY AUDIO (14s)</span>
                 </button>
               </div>
@@ -618,46 +619,46 @@ function renderApp() {
       </div>
     </section>
 
-    <!-- 8. ASSEMBLE YOUR ARMOR: 3-STEP KIT BUILDER -->
+    <!-- 8. ASSEMBLE YOUR ARMOR: THE CHAMPION'S BUNDLE -->
     <section class="kit-builder-section" id="kit-builder">
       <div class="container">
         <div class="kit-builder-card">
           <div>
-            <span class="mono-tag crimson">// BUNDLE & SAVE 20%</span>
-            <h2 class="section-title" style="margin: 0.5rem 0 1rem;">ASSEMBLE YOUR ARMOR</h2>
+            <span class="mono-tag crimson">// BUNDLE & SAVE 18%</span>
+            <h2 class="section-title" style="margin: 0.5rem 0 1rem;">THE CHAMPION'S BUNDLE</h2>
             <p style="color: var(--gzn-slate); margin-bottom: 2rem;">
-              Complete your three-piece combat striking kit and instantly unlock a 20% discount plus free express flight case packaging.
+              Equip the official Undisputed Championship Title Belt, the Apex 450GSM Combat Hoodie, and Heavy-Duty Wall Mount in one synchronized dispatch and save $115.
             </p>
 
             <div class="kit-step-list">
               <div class="kit-step-item selected" id="kit-item-1">
                 <div>
-                  <span class="mono-tag crimson">STEP 01: PRO STRIKING GLOVE</span>
+                  <span class="mono-tag crimson">STEP 01: 24K TITLE BELT</span>
                   <div style="font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; margin-top: 0.2rem;">
-                    GZN-X1 Apex Pro (16-oz)
+                    WWE Undisputed Championship Replica
                   </div>
                 </div>
-                <div style="font-family: var(--font-mono); font-weight: 700;">$185.00</div>
+                <div style="font-family: var(--font-mono); font-weight: 700;">$499.00</div>
               </div>
 
               <div class="kit-step-item selected" id="kit-item-2">
                 <div>
-                  <span class="mono-tag crimson">STEP 02: HIGH-TENSION HAND WRAPS</span>
+                  <span class="mono-tag crimson">STEP 02: 450GSM HEAVYWEIGHT HOODIE</span>
                   <div style="font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; margin-top: 0.2rem;">
-                    180" Mexican Weave Wrap System
+                    GENZ Apex 450GSM French Terry Hoodie (L)
                   </div>
                 </div>
-                <div style="font-family: var(--font-mono); font-weight: 700;">$18.00</div>
+                <div style="font-family: var(--font-mono); font-weight: 700;">$120.00</div>
               </div>
 
               <div class="kit-step-item selected" id="kit-item-3">
                 <div>
-                  <span class="mono-tag crimson">STEP 03: TIBIAL DEFENSE SHIELD</span>
+                  <span class="mono-tag crimson">STEP 03: STEEL ARMORY WALL MOUNT</span>
                   <div style="font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; margin-top: 0.2rem;">
-                    Carbon-Flex Shin Armor (L)
+                    Heavy-Duty Laser-Cut Steel Belt Mount
                   </div>
                 </div>
-                <div style="font-family: var(--font-mono); font-weight: 700;">$130.00</div>
+                <div style="font-family: var(--font-mono); font-weight: 700;">$45.00</div>
               </div>
             </div>
           </div>
@@ -666,21 +667,21 @@ function renderApp() {
             <span class="mono-tag">// BUNDLE DISPATCH SUMMARY</span>
             <div class="pricing-row">
               <span style="color: var(--gzn-slate);">INDIVIDUAL VALUE:</span>
-              <span style="font-family: var(--font-mono); text-decoration: line-through; color: var(--gzn-slate);">$333.00</span>
+              <span style="font-family: var(--font-mono); text-decoration: line-through; color: var(--gzn-slate);">$664.00</span>
             </div>
             <div class="pricing-row">
               <span style="color: var(--gzn-titanium); font-weight: 700;">BUNDLE SAVINGS:</span>
-              <span class="discount-badge">-20% (SAVE $67.00)</span>
+              <span class="discount-badge">-18% (SAVE $115.00)</span>
             </div>
             <div class="pricing-row" style="border-top: 1px solid var(--gzn-border); padding-top: 1rem;">
-              <span style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 700;">TOTAL KIT:</span>
-              <span style="font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700; color: var(--gzn-crimson);">$266.00</span>
+              <span style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 700;">TOTAL BUNDLE:</span>
+              <span style="font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700; color: #ffd700;">$549.00</span>
             </div>
 
             <button class="btn-primary" id="claim-bundle-btn" style="width: 100%; margin-top: 1rem;">
-              <span>CLAIM COMPLETE KIT ($266)</span>
+              <span>CLAIM CHAMPION'S BUNDLE ($549.00)</span>
             </button>
-            <span class="mono-tag" style="text-align: center; font-size: 0.68rem;">✓ FREE EXPRESS DISPATCH & TACTICAL FLIGHT CASE</span>
+            <span class="mono-tag" style="text-align: center; font-size: 0.68rem;">✓ FREE PRIORITY AIR DISPATCH & ARMORED PACKAGING</span>
           </div>
         </div>
       </div>
@@ -692,30 +693,30 @@ function renderApp() {
         <div class="terminal-content">
           <span class="mono-tag crimson">[ THE FINAL COMMAND ]</span>
           <h2 class="terminal-title">
-            STOP FIGHTING YOUR GEAR.<br />
-            <span>EQUIP YOUR WEAPONRY.</span>
+            WEAR THE GOLD.<br />
+            <span>COMMAND THE STREETS.</span>
           </h2>
           <p style="color: var(--gzn-slate); font-size: 1.15rem; max-width: 600px; line-height: 1.6;">
-            Every day you train with compromised equipment is a day you risk injury and stall progression. Step into the GZN ecosystem now.
+            Elevate your collection with 24K gold championship glory and 450GSM luxury combat fleece. Step into the GENZ ecosystem now.
           </p>
 
           <a href="#armory" class="btn-primary" style="padding: 1.2rem 3rem; font-size: 0.95rem;">
-            <span>ENTER SHOP & ARMOR UP</span>
+            <span>ENTER ARMORY & ACQUIRE GOLD</span>
             <span>→</span>
           </a>
 
           <div class="terminal-guarantees">
             <div class="guarantee-item">
               <span style="color: var(--gzn-crimson);">✓</span>
-              <span>365-DAY STRIKE WARRANTY</span>
+              <span>365-DAY STRIKE & SNAP WARRANTY</span>
             </div>
             <div class="guarantee-item">
               <span style="color: var(--gzn-crimson);">✓</span>
-              <span>SAME-DAY GLOBAL DISPATCH</span>
+              <span>WORLDWIDE PRIORITY AIR DISPATCH</span>
             </div>
             <div class="guarantee-item">
               <span style="color: var(--gzn-crimson);">✓</span>
-              <span>FREE 30-DAY COMBAT RETURNS</span>
+              <span>FREE 30-DAY HASSLE-FREE RETURNS</span>
             </div>
           </div>
         </div>
@@ -729,7 +730,7 @@ function renderApp() {
           <div class="footer-brand-col">
             <img src="/images/genz-3d-logo.png" alt="GENZ SPORTS" class="genz-footer-logo" />
             <p style="color: var(--gzn-slate); font-size: 0.9rem; line-height: 1.6; max-width: 320px;">
-              Engineered combat weaponry and high-performance protection forged for those who refuse to compromise in training or battle.
+              Handcrafted 24K dual-plated wrestling championship title belts and 450GSM luxury combat streetwear hoodies forged for modern champions.
             </p>
             <span class="mono-tag" style="margin-top: 0.5rem;">CAGE CODE: #GENZ-984-COMBAT</span>
           </div>
@@ -737,11 +738,12 @@ function renderApp() {
           <div>
             <h4 class="footer-col-title">ARMORY</h4>
             <ul class="footer-links">
-              <li><a href="#armory">Boxing Gloves</a></li>
-              <li><a href="#armory">MMA & Grappling</a></li>
-              <li><a href="#armory">Heavy Strike Bags</a></li>
-              <li><a href="#armory">Precision Target Mitts</a></li>
-              <li><a href="#armory">Compression Wear</a></li>
+              <li><a href="#armory" data-cat="belts">Undisputed Title Belt</a></li>
+              <li><a href="#armory" data-cat="belts">World Heavyweight "Big Gold"</a></li>
+              <li><a href="#armory" data-cat="belts">Intercontinental Belt</a></li>
+              <li><a href="#armory" data-cat="hoodies">Apex 450GSM Hoodie</a></li>
+              <li><a href="#armory" data-cat="hoodies">Raw-Cut Vintage Hoodie</a></li>
+              <li><a href="#armory" data-cat="accessories">Belt Wall Mounts & Cases</a></li>
             </ul>
           </div>
 
@@ -749,21 +751,21 @@ function renderApp() {
             <h4 class="footer-col-title">TECHNOLOGY</h4>
             <ul class="footer-links">
               <li><a href="#anatomy-lab">The Anatomy Lab</a></li>
-              <li><a href="#standard">The GZN Standard</a></li>
-              <li><a href="#dossier">Fighter Dossier</a></li>
-              <li><a href="#">365-Day Guarantee</a></li>
-              <li><a href="#">Wholesale & Gym Pro</a></li>
+              <li><a href="#standard">The GENZ Standard</a></li>
+              <li><a href="#dossier">Champion Dossier</a></li>
+              <li><a href="#" data-modal="why">365-Day Guarantee</a></li>
+              <li><a href="#" data-modal="faq">Dispatch & Sizing Terminal</a></li>
             </ul>
           </div>
 
           <div class="footer-newsletter">
-            <h4 class="footer-col-title">FIGHT DISPATCH</h4>
+            <h4 class="footer-col-title">CHAMPION DISPATCH</h4>
             <p style="color: var(--gzn-slate); font-size: 0.85rem; margin-bottom: 1rem;">
-              Receive confidential equipment release drops, fighter camp telemetry, and technical combat analysis.
+              Receive confidential title belt release drops, exclusive promo codes, and 450GSM textile telemetry.
             </p>
-            <form id="newsletter-form" onsubmit="event.preventDefault(); alert('Subscribed to GZN Flight Dispatch.');">
-              <input type="email" placeholder="ENTER YOUR ATHLETE EMAIL" required />
-              <button class="btn-primary" style="width: 100%; padding: 0.8rem;">
+            <form id="newsletter-form">
+              <input type="email" id="newsletter-email" placeholder="ENTER YOUR ATHLETE EMAIL" required />
+              <button type="submit" class="btn-primary" style="width: 100%; padding: 0.8rem;">
                 <span>SUBSCRIBE TO DISPATCH</span>
               </button>
             </form>
@@ -771,11 +773,11 @@ function renderApp() {
         </div>
 
         <div class="footer-bottom">
-          <span class="mono-tag">© 2026 GZNSPORTS. ALL RIGHTS RESERVED. ENGINEERED FOR COMBAT.</span>
+          <span class="mono-tag">© 2026 GENZ SPORTS. ALL RIGHTS RESERVED. FORGED FOR CHAMPIONS.</span>
           <div style="display: flex; gap: 1.5rem;">
-            <a href="#" class="mono-tag" style="text-decoration: none;">PRIVACY POLICY</a>
-            <a href="#" class="mono-tag" style="text-decoration: none;">TERMS OF ENGAGEMENT</a>
-            <a href="#" class="mono-tag" style="text-decoration: none;">SECURITY COMPLIANCE</a>
+            <a href="#" class="mono-tag policy-link" data-policy="Privacy Policy" style="text-decoration: none;">PRIVACY POLICY</a>
+            <a href="#" class="mono-tag policy-link" data-policy="Terms of Engagement" style="text-decoration: none;">TERMS OF ENGAGEMENT</a>
+            <a href="#" class="mono-tag policy-link" data-policy="Security Compliance" style="text-decoration: none;">SECURITY COMPLIANCE</a>
           </div>
         </div>
       </div>
@@ -806,10 +808,29 @@ function renderApp() {
         <!-- Rendered dynamically -->
       </div>
 
+      <!-- PROMO CODE INPUT SECTION -->
+      <div class="cart-promo-section">
+        <div class="cart-promo-form">
+          <input type="text" id="cart-promo-input" placeholder="PROMO CODE (e.g. CHAMPION10)" />
+          <button id="cart-promo-btn" class="btn-promo-apply">APPLY</button>
+        </div>
+        <div id="cart-promo-status" class="cart-promo-status"></div>
+      </div>
+
       <div class="cart-drawer-footer">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="color: var(--gzn-slate); font-family: var(--font-mono); font-size: 0.82rem;">SUBTOTAL:</span>
-          <span style="font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; color: var(--gzn-titanium);" id="cart-subtotal-price">$0.00</span>
+        <div class="cart-totals-breakdown">
+          <div class="totals-row">
+            <span>SUBTOTAL:</span>
+            <span id="cart-subtotal-price">$0.00</span>
+          </div>
+          <div class="totals-row discount-row" id="cart-discount-row" style="display:none; color: #27c93f;">
+            <span id="cart-discount-label">PROMO DISCOUNT:</span>
+            <span id="cart-discount-amount">-$0.00</span>
+          </div>
+          <div class="totals-row" style="border-top:1px solid var(--gzn-border); padding-top:0.6rem; font-weight:700;">
+            <span style="font-family: var(--font-display); font-size: 1.15rem; color: var(--gzn-titanium);">TOTAL:</span>
+            <span id="cart-total-price" style="font-size:1.35rem; color:#ffd700;">$0.00</span>
+          </div>
         </div>
 
         <button class="btn-primary" id="checkout-btn" style="width: 100%; padding: 1.1rem;">
@@ -817,7 +838,7 @@ function renderApp() {
           <span>→</span>
         </button>
 
-        <div style="display: flex; justify-content: center; gap: 1rem; opacity: 0.6; margin-top: 0.2rem;">
+        <div style="display: flex; justify-content: center; gap: 1rem; opacity: 0.6; margin-top: 0.5rem;">
           <span class="mono-tag" style="font-size: 0.65rem;">APPLE PAY</span>
           <span class="mono-tag" style="font-size: 0.65rem;">SHOP PAY</span>
           <span class="mono-tag" style="font-size: 0.65rem;">KLARNA 4X</span>
@@ -825,7 +846,7 @@ function renderApp() {
       </div>
     </aside>
 
-    <!-- 12. QUICK VIEW / 3D INSPECT MODAL -->
+    <!-- 12. QUICK VIEW / INSPECT MODAL -->
     <div class="modal-overlay" id="quick-view-modal">
       <div class="modal-content" id="quick-view-content">
         <!-- Injected dynamically on click -->
@@ -858,7 +879,7 @@ function renderProducts() {
       <div class="card-info">
         <div class="card-title-row">
           <h3 class="card-title">${product.title}</h3>
-          <span class="card-price">$${product.price}</span>
+          <span class="card-price">${store.formatPrice(product.price)}</span>
         </div>
 
         <p class="card-desc">${product.description}</p>
@@ -871,7 +892,7 @@ function renderProducts() {
         </div>
 
         <button class="btn-primary card-add-btn add-to-cart-trigger" data-id="${product.id}">
-          <span>ARMOR UP (+ $${product.price})</span>
+          <span>ARMOR UP (+ ${store.formatPrice(product.price)})</span>
         </button>
       </div>
     </article>
@@ -940,7 +961,7 @@ function setupEventListeners() {
   });
 
   // Header Nav & Mega Menu quick jump filters
-  document.querySelectorAll('.rdx-nav-link, .mega-link').forEach(link => {
+  document.querySelectorAll('.rdx-nav-link, .mega-link, .footer-links a[data-cat]').forEach(link => {
     link.addEventListener('click', (e) => {
       const cat = link.getAttribute('data-cat');
       if (cat) {
@@ -975,6 +996,10 @@ function setupEventListeners() {
         if (codeEl) codeEl.textContent = code;
         if (flagEl) flagEl.textContent = flag;
         countryMenu.classList.remove('open');
+        store.setCurrency(code);
+        renderProducts();
+        updateCartUI();
+        showNotificationToast(`Currency switched to ${code}`, 'info');
         playMetallicClick();
       });
     });
@@ -984,33 +1009,78 @@ function setupEventListeners() {
     });
   }
 
-  // Header Search Trigger
+  // Header Search Trigger: Opens Interactive Tactical Search Palette Modal
   const searchBtn = document.getElementById('header-search-btn');
   if (searchBtn) {
     searchBtn.addEventListener('click', () => {
       playMetallicClick();
-      const query = prompt('SEARCH GZN COMBAT WEAPONRY:\nEnter product keyword (e.g. Apex Glove, MMA 4oz, Hydro Bag, Shin):');
-      if (query) {
-        document.getElementById('armory')?.scrollIntoView({ behavior: 'smooth' });
-        const q = query.toLowerCase().trim();
-        const match = PRODUCTS.find(p => p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.description.toLowerCase().includes(q));
-        if (match) {
-          currentCategory = match.category;
-          document.querySelectorAll('#category-filter-bar .filter-tab').forEach(t => {
-            t.classList.toggle('active', t.getAttribute('data-cat') === currentCategory);
-          });
-          renderProducts();
-        } else {
-          alert('No specific equipment found matching "' + query + '". Showing all weaponry.');
-          currentCategory = 'all';
-          document.querySelectorAll('#category-filter-bar .filter-tab').forEach(t => {
-            t.classList.toggle('active', t.getAttribute('data-cat') === 'all');
-          });
-          renderProducts();
-        }
-      }
+      openSearchModal();
     });
   }
+
+  // Hero Dual Showcase Studio Mode Selector
+  document.querySelectorAll('.hero-mode-pill').forEach(pill => {
+    pill.addEventListener('click', (e) => {
+      document.querySelectorAll('.hero-mode-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const imgPath = pill.getAttribute('data-img');
+      const imgEl = document.getElementById('hero-showcase-img');
+      if (imgEl && imgPath) {
+        imgEl.style.opacity = '0.4';
+        imgEl.style.transform = 'scale(0.97)';
+        setTimeout(() => {
+          imgEl.src = imgPath;
+          imgEl.style.opacity = '1';
+          imgEl.style.transform = 'scale(1)';
+        }, 150);
+      }
+
+      // Trigger glint beam on switch
+      const beam = document.getElementById('hero-glint-beam');
+      if (beam) {
+        beam.classList.remove('glint-active');
+        void beam.offsetWidth;
+        beam.classList.add('glint-active');
+      }
+      playPunchImpact();
+    });
+  });
+
+  // Hero Showcase 3D Perspective Tilt on Mouse Movement
+  const showcaseCard = document.getElementById('hero-showcase-card');
+  if (showcaseCard) {
+    showcaseCard.addEventListener('mousemove', (e) => {
+      const rect = showcaseCard.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = ((y - centerY) / centerY) * -8;
+      const rotateY = ((x - centerX) / centerX) * 8;
+      showcaseCard.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`;
+    });
+
+    showcaseCard.addEventListener('mouseleave', () => {
+      showcaseCard.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+    });
+  }
+
+  // Hero Glint Beam Trigger
+  const glintBtn = document.getElementById('hero-glint-trigger');
+  const glintBeam = document.getElementById('hero-glint-beam');
+  if (glintBtn && glintBeam) {
+    glintBtn.addEventListener('click', () => {
+      glintBeam.classList.remove('glint-active');
+      void glintBeam.offsetWidth;
+      glintBeam.classList.add('glint-active');
+      playMetallicClick();
+    });
+  }
+
+  // Hero Lab trigger button
+  document.getElementById('hero-lab-trigger')?.addEventListener('click', () => {
+    openModal('lab-modal');
+  });
 
   // Header Admin Console Trigger
   const adminBtn = document.getElementById('header-admin-btn');
@@ -1059,45 +1129,6 @@ function setupEventListeners() {
     });
   });
 
-  // 3D Canvas Animation Mode Selector (Showcase, Waist Wrap, Flat Display)
-  document.querySelectorAll('.hud-mode-group .size-pill, .hud-weight-group .size-pill').forEach(pill => {
-    pill.addEventListener('click', (e) => {
-      document.querySelectorAll('.hud-mode-group .size-pill, .hud-weight-group .size-pill').forEach(p => p.classList.remove('active'));
-      e.target.classList.add('active');
-      const mode = e.target.getAttribute('data-mode') || e.target.getAttribute('data-weight');
-      if (gzn3D) {
-        gzn3D.setMode(mode);
-        playPunchImpact();
-      }
-    });
-  });
-
-  // 3D Canvas Explode Button
-  const explodeBtn = document.getElementById('canvas-explode-btn');
-  if (explodeBtn) {
-    explodeBtn.addEventListener('click', () => {
-      const active = explodeBtn.classList.toggle('active');
-      explodeBtn.querySelector('span').textContent = active ? 'ASSEMBLE MODEL' : 'EXPLODE LAYERS';
-      if (gzn3D) {
-        gzn3D.setExploded(active);
-        playMetallicClick();
-      }
-    });
-  }
-
-  // Hero Deconstruct Trigger (Smooth scrolls and explodes)
-  const heroDeconstruct = document.getElementById('hero-deconstruct-trigger');
-  if (heroDeconstruct) {
-    heroDeconstruct.addEventListener('click', () => {
-      if (explodeBtn) {
-        explodeBtn.classList.add('active');
-        explodeBtn.querySelector('span').textContent = 'ASSEMBLE MODEL';
-        if (gzn3D) gzn3D.setExploded(true);
-        playMetallicClick();
-      }
-    });
-  }
-
   // Anatomy Lab Layer Tabs
   document.querySelectorAll('#lab-tabs .lab-tab-item').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -1111,33 +1142,86 @@ function setupEventListeners() {
   const labArmBtn = document.getElementById('lab-quick-arm-btn');
   if (labArmBtn) {
     labArmBtn.addEventListener('click', () => {
-      store.addToCart('gzn-undisputed-belt', 'OFFICIAL REPLICA');
+      store.addToCart('genz-undisputed-belt', 'OFFICIAL REPLICA');
       openCart();
     });
   }
 
-  // Bundle Claim Button
+  // Champion's Bundle Claim Button
   const bundleBtn = document.getElementById('claim-bundle-btn');
   if (bundleBtn) {
     bundleBtn.addEventListener('click', () => {
-      store.addToCart('gzn-x1', '16-OZ');
-      store.addToCart('gzn-shin', 'L');
+      store.addToCart('genz-undisputed-belt', 'OFFICIAL REPLICA');
+      store.addToCart('genz-hoodie-heavyweight-450', 'L');
+      store.addToCart('genz-belt-wall-mount', 'STANDARD SINGLE MOUNT');
       playPunchImpact();
+      showNotificationToast("🏆 Champion's Bundle dispatched to Armory bag (Saved $115)!", 'success');
       openCart();
     });
   }
 
+  // Cart Promo Code Application
+  const promoBtn = document.getElementById('cart-promo-btn');
+  const promoInput = document.getElementById('cart-promo-input');
+  const promoStatus = document.getElementById('cart-promo-status');
+  if (promoBtn && promoInput) {
+    promoBtn.addEventListener('click', () => {
+      const code = promoInput.value.trim();
+      if (!code) return;
+      const res = store.applyPromoCode(code);
+      if (res.success) {
+        if (promoStatus) promoStatus.innerHTML = `<span style="color:#27c93f;">✓ ${res.message}</span>`;
+        playPunchImpact();
+        showNotificationToast(res.message, 'success');
+      } else {
+        if (promoStatus) promoStatus.innerHTML = `<span style="color:var(--gzn-crimson);">✕ ${res.message}</span>`;
+        playMetallicClick();
+      }
+      updateCartUI();
+    });
+
+    promoInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        promoBtn.click();
+      }
+    });
+  }
+
+  // Newsletter Submission
+  const newsletterForm = document.getElementById('newsletter-form');
+  if (newsletterForm) {
+    newsletterForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('newsletter-email')?.value;
+      playPunchImpact();
+      showNotificationToast(`🛡️ Subscribed ${email} to GENZ Champion Dispatch!`, 'success');
+      newsletterForm.reset();
+    });
+  }
+
+  // Policy modal triggers
+  document.querySelectorAll('.policy-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const policy = link.getAttribute('data-policy') || 'Terms of Engagement';
+      const titleEl = document.getElementById('legal-modal-title');
+      if (titleEl) titleEl.textContent = policy.toUpperCase();
+      openModal('legal-modal');
+    });
+  });
+
   // Cart Drawer open/close triggers
-  document.getElementById('cart-toggle-btn').addEventListener('click', openCart);
-  document.getElementById('cart-close-btn').addEventListener('click', closeCart);
-  document.getElementById('cart-overlay').addEventListener('click', closeCart);
+  document.getElementById('cart-toggle-btn')?.addEventListener('click', openCart);
+  document.getElementById('cart-close-btn')?.addEventListener('click', closeCart);
+  document.getElementById('cart-overlay')?.addEventListener('click', closeCart);
 
   // Checkout Button
   const checkoutBtn = document.getElementById('checkout-btn');
   if (checkoutBtn) {
     checkoutBtn.addEventListener('click', async () => {
       if (store.getCartCount() === 0) {
-        alert('Your tactical bag is currently empty. Select weaponry from the Armory.');
+        alert('Your tactical bag is currently empty. Select title belts or hoodies from the Armory.');
         return;
       }
 
@@ -1148,20 +1232,21 @@ function setupEventListeners() {
 
       try {
         const user = await auth.getUser();
-        const customerEmail = user?.email || 'combatant.guest@gznsports.internal';
+        const customerEmail = user?.email || 'champion.guest@gznsports.internal';
         const subtotal = store.getCartSubtotal();
+        const total = store.getCartTotal();
 
         const orderData = {
           customer_name: customerEmail.split('@')[0].toUpperCase(),
           customer_email: customerEmail,
           subtotal: subtotal,
-          total: subtotal,
+          total: total,
           status: 'PROCESSING',
           payment_status: 'PAID',
           items: [...store.cart],
           shipping_address: {
-            method: 'Standard Express Combat Air',
-            destination: 'Direct Fighter Deployment'
+            method: 'Priority Armored Air Dispatch',
+            destination: 'Direct Champion Delivery'
           }
         };
 
@@ -1173,7 +1258,7 @@ function setupEventListeners() {
 
         const orderShortId = (createdOrder.id || 'CONFIRMED').slice(0, 8).toUpperCase();
         showNotificationToast(`🛡️ ORDER RECORDED IN SUPABASE #${orderShortId}`, 'success');
-        alert(`⚡ GZN COMBAT DISPATCH INITIALIZED\n\nOrder Ref: #${orderShortId}\nPayment Status: VERIFIED & PAID\nItems: ${orderData.items.length}\nTotal: $${subtotal.toFixed(2)}\n\nThank you for choosing GZNSPORTS.`);
+        alert(`⚡ GENZ COMBAT DISPATCH INITIALIZED\n\nOrder Ref: #${orderShortId}\nPayment Status: VERIFIED & PAID\nItems: ${orderData.items.length}\nTotal: ${store.formatPrice(total)}\n\nThank you for choosing GENZ SPORTS.`);
       } catch (err) {
         console.error('Checkout error:', err);
         alert(`Tactical dispatch warning: ${err.message}`);
@@ -1190,6 +1275,9 @@ function updateCartUI() {
   const counter = document.getElementById('cart-counter-badge');
   const itemsContainer = document.getElementById('cart-items-container');
   const subtotalEl = document.getElementById('cart-subtotal-price');
+  const discountRow = document.getElementById('cart-discount-row');
+  const discountAmountEl = document.getElementById('cart-discount-amount');
+  const totalEl = document.getElementById('cart-total-price');
   const meterFill = document.getElementById('shipping-meter-fill');
   const meterPercent = document.getElementById('shipping-percent-text');
   const meterStatus = document.getElementById('shipping-status-text');
@@ -1199,7 +1287,23 @@ function updateCartUI() {
     counter.textContent = count;
     counter.classList.toggle('has-items', count > 0);
   }
-  if (subtotalEl) subtotalEl.textContent = `$${store.getCartSubtotal().toFixed(2)}`;
+
+  const subtotal = store.getCartSubtotal();
+  const discount = store.getCartDiscount();
+  const total = store.getCartTotal();
+
+  if (subtotalEl) subtotalEl.textContent = store.formatPrice(subtotal);
+
+  if (discountRow && discountAmountEl) {
+    if (discount > 0) {
+      discountRow.style.display = 'flex';
+      discountAmountEl.textContent = `-${store.formatPrice(discount)}`;
+    } else {
+      discountRow.style.display = 'none';
+    }
+  }
+
+  if (totalEl) totalEl.textContent = store.formatPrice(total);
 
   // Shipping progress
   const shipping = store.getFreeShippingProgress();
@@ -1207,8 +1311,8 @@ function updateCartUI() {
   if (meterPercent) meterPercent.textContent = `${shipping.percent}%`;
   if (meterStatus) {
     meterStatus.textContent = shipping.unlocked
-      ? 'FREE COMBAT DISPATCH UNLOCKED! ✓'
-      : `ADD $${shipping.remaining.toFixed(2)} FOR FREE EXPRESS AIR DISPATCH`;
+      ? 'FREE PRIORITY AIR DISPATCH UNLOCKED! ✓'
+      : `ADD ${store.formatPrice(shipping.remaining)} FOR FREE PRIORITY AIR DISPATCH`;
   }
 
   // Cart Items
@@ -1216,9 +1320,9 @@ function updateCartUI() {
     if (store.cart.length === 0) {
       itemsContainer.innerHTML = `
         <div style="text-align: center; padding: 4rem 1rem; color: var(--gzn-slate);">
-          <div style="font-size: 2.5rem; margin-bottom: 1rem;">🛡️</div>
+          <div style="font-size: 2.5rem; margin-bottom: 1rem;">🏆</div>
           <div style="font-family: var(--font-display); font-size: 1.1rem; color: var(--gzn-titanium); margin-bottom: 0.5rem;">YOUR ARMORY BAG IS EMPTY</div>
-          <p class="mono-tag">NO EQUIPMENT SLOTTED FOR DISPATCH</p>
+          <p class="mono-tag">NO TITLE BELTS OR HOODIES SLOTTED FOR DISPATCH</p>
         </div>
       `;
       return;
@@ -1229,7 +1333,7 @@ function updateCartUI() {
         <img src="${item.image}" alt="${item.title}" class="cart-item-img" />
         <div>
           <div class="cart-item-title">${item.title}</div>
-          <div class="cart-item-size">SIZE: ${item.size} // $${item.price}</div>
+          <div class="cart-item-size">SIZE: ${item.size} // ${store.formatPrice(item.price)}</div>
           <div class="cart-qty-ctrl">
             <button class="qty-btn" onclick="window.updateCartQty('${item.id}', '${item.size}', -1)">-</button>
             <span class="mono-tag" style="min-width: 18px; text-align: center;">${item.quantity}</span>
@@ -1237,8 +1341,8 @@ function updateCartUI() {
           </div>
         </div>
         <div>
-          <div style="font-family: var(--font-mono); font-weight: 700; margin-bottom: 0.4rem;">
-            $${(item.price * item.quantity).toFixed(2)}
+          <div style="font-family: var(--font-mono); font-weight: 700; margin-bottom: 0.4rem; color: #ffd700;">
+            ${store.formatPrice(item.price * item.quantity)}
           </div>
           <button class="mono-tag" style="background:none; border:none; color:var(--gzn-crimson); cursor:pointer; text-decoration:underline;" onclick="window.removeCartItem('${item.id}', '${item.size}')">REMOVE</button>
         </div>
@@ -1269,6 +1373,7 @@ function closeCart() {
 }
 
 // Quick View Modal
+window.openQuickView = openQuickView;
 function openQuickView(productId) {
   const product = PRODUCTS.find(p => p.id === productId);
   if (!product) return;
@@ -1284,16 +1389,16 @@ function openQuickView(productId) {
         <img src="${product.image}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;" />
       </div>
       <div>
-        <span class="mono-tag crimson">${product.categoryName}</span>
+        <span class="mono-tag crimson">${product.categoryName || product.category.toUpperCase()}</span>
         <h2 style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; margin: 0.4rem 0;">${product.title}</h2>
-        <div style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--gzn-crimson); margin-bottom: 1rem;">
-          $${product.price}.00
+        <div style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: #ffd700; margin-bottom: 1rem;">
+          ${store.formatPrice(product.price)}
         </div>
         <p style="color: var(--gzn-slate); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.5rem;">${product.description}</p>
         
         <div style="background: var(--gzn-void); border: 1px solid var(--gzn-border); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
           <span class="mono-tag" style="display: block; margin-bottom: 0.5rem;">LAB SPECIFICATIONS:</span>
-          ${product.specs.map(s => `
+          ${(product.specs || []).map(s => `
             <div style="display: flex; justify-content: space-between; font-size: 0.8rem; padding: 0.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
               <span style="color: var(--gzn-slate);">${s.label}:</span>
               <span style="font-family: var(--font-mono); color: var(--gzn-titanium);">${s.value}</span>
@@ -1302,7 +1407,7 @@ function openQuickView(productId) {
         </div>
 
         <button class="btn-primary" id="modal-add-btn" style="width: 100%;">
-          <span>ADD TO ARMORY ($${product.price}.00)</span>
+          <span>ADD TO ARMORY (${store.formatPrice(product.price)})</span>
         </button>
       </div>
     </div>
