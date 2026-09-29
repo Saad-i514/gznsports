@@ -2,8 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 export const SUPABASE_CONFIG = {
-  url: 'https://xoizeqnphqtjjyodcfwk.supabase.co',
-  publishableKey: 'sb_publishable_IijJ_4VjjFEgHOOb2PGDzQ_iwHMV5iO'
+  url: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || 'https://xoizeqnphqtjjyodcfwk.supabase.co',
+  publishableKey: (typeof import.meta !== 'undefined' && (import.meta.env?.VITE_SUPABASE_ANON_KEY || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY)) || 'sb_publishable_IijJ_4VjjFEgHOOb2PGDzQ_iwHMV5iO'
 };
 
 // Initialize client with Realtime websocket options
