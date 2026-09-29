@@ -270,6 +270,22 @@ class Store {
     const remaining = Math.max(0, threshold - subtotal);
     return { threshold, subtotal, percent, remaining, unlocked: remaining === 0 };
   }
+
+  setProducts(newProducts) {
+    if (!Array.isArray(newProducts) || newProducts.length === 0) return;
+    PRODUCTS.splice(0, PRODUCTS.length, ...newProducts);
+    this.notify();
+  }
+
+  getProducts() {
+    return PRODUCTS;
+  }
+
+  clearCart() {
+    this.cart = [];
+    this.saveCart();
+  }
 }
 
 export const store = new Store();
+

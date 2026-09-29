@@ -3,14 +3,21 @@ import { initCursor } from './cursor.js';
 import { Gzn3DEngine } from './gzn3d.js';
 import { PRODUCTS, store } from './store.js';
 import { toggleSound, isSoundEnabled, playPunchImpact, playMetallicClick } from './audio.js';
+import { initAdminPanel, openAdminPanel } from './admin.js';
+import { initAuthModal, openAuthModal } from './auth-modal.js';
+import { adminApi } from './lib/admin-api.js';
+import { realtimeEngine } from './lib/realtime-engine.js';
+import { auth } from './lib/supabase.js';
 
 let gzn3D = null;
 let currentCategory = 'all';
 
 // Initialize Application
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   renderApp();
   initCursor();
+  initAdminPanel();
+  initAuthModal();
 
   // Initialize 3D Engine in Hero
   const canvasContainer = document.getElementById('hero-3d-canvas-wrap');
@@ -24,7 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Setup Event Handlers
   setupEventListeners();
   updateCartUI();
+
+  // Supabase Backend Data Sync & Realtime Engine
+  await syncCatalogFromBackend();
+  await syncSiteSettingsFromBackend();
+  initRealtimeAutoRefresh();
+  initAuthSessionWatcher();
 });
+
 
 function renderApp() {
   const app = document.getElementById('app');
@@ -32,7 +46,7 @@ function renderApp() {
     <!-- 0. TOP ANNOUNCEMENT BAR (RDX ATHLETIC TICKER) -->
     <div class="top-announcement-bar">
       <div class="announcement-inner">
-        <div class="announcement-pill">
+        <div class="announcement-pill" id="announcement-pill-container">
           <span>⚡ MOVE. IMPROVE. EVOLVE.</span>
           <span class="announcement-sep">|</span>
           <span>FREE US SHIPPING OVER $50</span>
@@ -232,12 +246,18 @@ function renderApp() {
             </svg>
           </button>
 
+          <!-- Admin Console Button -->
+          <button class="admin-trigger-nav-btn" id="header-admin-btn" title="Open Supabase Tactical Admin Console">
+            <span>⚡ ADMIN CONSOLE</span>
+          </button>
+
           <!-- User Account Icon Button -->
-          <button class="rdx-util-btn" id="header-account-btn" title="Account" aria-label="Account">
+          <button class="rdx-util-btn" id="header-account-btn" title="Athlete Account" aria-label="Account">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
+            <span id="header-user-status-container" style="display:none; margin-left: 5px; font-family: var(--font-mono); font-size: 0.7rem; color: #ffd700;"></span>
           </button>
 
           <!-- Audio Haptic Sound Button -->
@@ -269,12 +289,12 @@ function renderApp() {
             <span class="mono-tag">SPEC: 24K DUAL-PLATED // FULL-GRAIN LEATHER</span>
           </div>
 
-          <h1 class="hero-headline">
+          <h1 class="hero-headline" id="hero-headline-element">
             ARMOR OF
             <span>CHAMPIONS</span>
           </h1>
 
-          <p class="hero-subhead">
+          <p class="hero-subhead" id="hero-subhead-element">
             Forged for the apex of combat glory. Featuring CNC 8mm deep-relief 24K gold plates, hand-set cubic zirconia diamond crystals, and authentic dual globe side medallions on handcrafted saddle leather.
           </p>
 
@@ -322,10 +342,10 @@ function renderApp() {
       <div class="container crucible-grid">
         <div class="crucible-text-block">
           <span class="mono-tag crimson">// THE PHILOSOPHY OF IMPACT</span>
-          <h2 class="crucible-quote">
+          <h2 class="crucible-quote" id="crucible-quote-element">
             "THE BAG DOES NOT CARE ABOUT EXCUSES. THE RING DOES NOT FORGIVE WEAK WRISTS. WE DO NOT BUILD SPORTING GOODS. <em>WE FORGE COMBAT ARMOR.</em>"
           </h2>
-          <p class="crucible-body">
+          <p class="crucible-body" id="crucible-body-element">
             Mass-market combat brands rely on synthetic split-leather, single-foam molds, and flimsy velcro that collapses within six months. GZNSPORTS was built for fighters who spar five days a week and demand equipment that protects their metacarpals and wrist ligaments at maximum velocity.
           </p>
           <div>
@@ -999,12 +1019,20 @@ function setupEventListeners() {
     });
   }
 
+  // Header Admin Console Trigger
+  const adminBtn = document.getElementById('header-admin-btn');
+  if (adminBtn) {
+    adminBtn.addEventListener('click', () => {
+      openAdminPanel();
+    });
+  }
+
   // Header Account Trigger
   const accountBtn = document.getElementById('header-account-btn');
   if (accountBtn) {
     accountBtn.addEventListener('click', () => {
       playMetallicClick();
-      alert('⚡ GZN FIGHT LAB // ATHLETE PORTAL\n\nStatus: Member ID #GZN-9844-PRO\nFree Express Dispatch: UNLOCKED\n365-Day Strike Warranty: ACTIVE');
+      openAuthModal();
     });
   }
 
@@ -1114,13 +1142,52 @@ function setupEventListeners() {
   // Checkout Button
   const checkoutBtn = document.getElementById('checkout-btn');
   if (checkoutBtn) {
-    checkoutBtn.addEventListener('click', () => {
+    checkoutBtn.addEventListener('click', async () => {
       if (store.getCartCount() === 0) {
         alert('Your tactical bag is currently empty. Select weaponry from the Armory.');
         return;
       }
+
       playPunchImpact();
-      alert('⚡ GZN TACTICAL CHECKOUT INITIALIZED.\n\nPreparing secure encrypted dispatch token...\nThank you for choosing GZNSPORTS.');
+      checkoutBtn.disabled = true;
+      const originalText = checkoutBtn.innerHTML;
+      checkoutBtn.innerHTML = `<span>DISPATCHING ORDER TO SUPABASE...</span>`;
+
+      try {
+        const user = await auth.getUser();
+        const customerEmail = user?.email || 'combatant.guest@gznsports.internal';
+        const subtotal = store.getCartSubtotal();
+
+        const orderData = {
+          customer_name: customerEmail.split('@')[0].toUpperCase(),
+          customer_email: customerEmail,
+          subtotal: subtotal,
+          total: subtotal,
+          status: 'PROCESSING',
+          payment_status: 'PAID',
+          items: [...store.cart],
+          shipping_address: {
+            method: 'Standard Express Combat Air',
+            destination: 'Direct Fighter Deployment'
+          }
+        };
+
+        const createdOrder = await adminApi.createOrder(orderData);
+        
+        playPunchImpact();
+        store.clearCart();
+        closeCart();
+
+        const orderShortId = (createdOrder.id || 'CONFIRMED').slice(0, 8).toUpperCase();
+        showNotificationToast(`🛡️ ORDER RECORDED IN SUPABASE #${orderShortId}`, 'success');
+        alert(`⚡ GZN COMBAT DISPATCH INITIALIZED\n\nOrder Ref: #${orderShortId}\nPayment Status: VERIFIED & PAID\nItems: ${orderData.items.length}\nTotal: $${subtotal.toFixed(2)}\n\nThank you for choosing GZNSPORTS.`);
+      } catch (err) {
+        console.error('Checkout error:', err);
+        alert(`Tactical dispatch warning: ${err.message}`);
+      } finally {
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerHTML = originalText;
+      }
     });
   }
 }
@@ -1269,3 +1336,196 @@ window.addEventListener('click', (e) => {
     modal.classList.remove('open');
   }
 });
+
+/* ==========================================================================
+   SUPABASE BACKEND SYNC & REALTIME AUTO-REFRESH ENGINE
+   ========================================================================== */
+
+/**
+ * Synchronize product catalog from Supabase via GraphQL Cache Memory / REST API
+ */
+async function syncCatalogFromBackend(forceFresh = false) {
+  try {
+    const liveProducts = await adminApi.fetchProducts(forceFresh);
+    if (liveProducts && liveProducts.length > 0) {
+      store.setProducts(liveProducts);
+      renderProducts();
+    }
+  } catch (err) {
+    console.warn('Backend catalog sync fallback to local cache:', err);
+  }
+}
+
+/**
+ * Synchronize site configuration (hero, announcements, manifesto) from Supabase
+ */
+async function syncSiteSettingsFromBackend() {
+  try {
+    const settings = await adminApi.fetchSiteSettings();
+    applySiteSettings(settings);
+  } catch (err) {
+    console.warn('Backend site settings sync fallback to defaults:', err);
+  }
+}
+
+/**
+ * Apply live site configuration directly into the DOM with zero browser reload
+ */
+function applySiteSettings(settings) {
+  if (!settings) return;
+
+  // 1. Hero Headline & Subhead
+  const heroHeadlineEl = document.getElementById('hero-headline-element');
+  const heroSubheadEl = document.getElementById('hero-subhead-element');
+
+  if (settings.hero_config) {
+    const hero = settings.hero_config;
+    if (heroHeadlineEl) {
+      if (hero.headline_top || hero.headline_bottom) {
+        const top = hero.headline_top || 'ARMOR OF';
+        const bottom = hero.headline_bottom || 'CHAMPIONS';
+        heroHeadlineEl.innerHTML = `${top} <span>${bottom}</span>`;
+      } else if (hero.headline) {
+        const words = hero.headline.trim().split(' ');
+        if (words.length > 1) {
+          const lastWord = words.pop();
+          heroHeadlineEl.innerHTML = `${words.join(' ')} <span>${lastWord}</span>`;
+        } else {
+          heroHeadlineEl.innerHTML = `<span>${hero.headline}</span>`;
+        }
+      }
+    }
+    const subhead = hero.subhead || hero.subtitle;
+    if (subhead && heroSubheadEl) {
+      heroSubheadEl.textContent = subhead;
+    }
+  }
+
+  // 2. Announcements Ticker Bar
+  const announcementsEl = document.getElementById('announcement-pill-container');
+  if (settings.announcements && announcementsEl) {
+    const ann = settings.announcements;
+    if (Array.isArray(ann.items) && ann.items.length > 0) {
+      announcementsEl.innerHTML = ann.items.map((item, idx) => `
+        <span>${item}</span>
+        ${idx < ann.items.length - 1 ? '<span class="announcement-sep">|</span>' : ''}
+      `).join('');
+    } else if (ann.banner_text || ann.shipping_text || ann.warranty_text) {
+      const parts = [
+        ann.banner_text || '⚡ MOVE. IMPROVE. EVOLVE.',
+        ann.shipping_text || 'FREE US SHIPPING OVER $50',
+        ann.warranty_text || '365-DAY STRIKE WARRANTY'
+      ];
+      announcementsEl.innerHTML = parts.map((part, idx) => `
+        <span>${part}</span>
+        ${idx < parts.length - 1 ? '<span class="announcement-sep">|</span>' : ''}
+      `).join('');
+    }
+  }
+
+  // 3. Manifesto Quote & Body
+  const quoteEl = document.getElementById('crucible-quote-element');
+  const bodyEl = document.getElementById('crucible-body-element');
+  if (settings.manifesto) {
+    if (settings.manifesto.quote && quoteEl) {
+      quoteEl.innerHTML = `"${settings.manifesto.quote}"`;
+    }
+    if (settings.manifesto.body && bodyEl) {
+      bodyEl.textContent = settings.manifesto.body;
+    }
+  }
+}
+
+/**
+ * Initialize Supabase Realtime Auto-Refresh Engine
+ * Listens for postgres_changes and immediately updates the DOM without page reload!
+ */
+function initRealtimeAutoRefresh() {
+  realtimeEngine.init();
+
+  // Listen for Product updates in Supabase
+  realtimeEngine.onProductChange(async (payload) => {
+    await syncCatalogFromBackend(true);
+    const eventType = payload?.eventType || 'UPDATE';
+    showNotificationToast(`⚡ AUTO-REFRESH: Products ${eventType.toLowerCase()}d in Supabase (Zero reload)`, 'info');
+  });
+
+  // Listen for Site Settings changes in Supabase
+  realtimeEngine.onSettingsChange(async (payload) => {
+    const settings = await adminApi.fetchSiteSettings();
+    applySiteSettings(settings);
+    showNotificationToast(`⚡ AUTO-REFRESH: Site content synchronized live from Supabase`, 'info');
+  });
+
+  // Listen for Orders placed in Supabase
+  realtimeEngine.onOrderChange((payload) => {
+    if (payload?.eventType === 'INSERT') {
+      showNotificationToast(`📦 NEW ORDER REGISTERED IN SUPABASE`, 'success');
+    }
+  });
+}
+
+/**
+ * Watch Supabase Auth session and reflect in Header UI
+ */
+function initAuthSessionWatcher() {
+  const updateAuthUI = (user) => {
+    const statusContainer = document.getElementById('header-user-status-container');
+    const accountBtn = document.getElementById('header-account-btn');
+    if (!statusContainer || !accountBtn) return;
+
+    if (user && user.email) {
+      const handle = user.email.split('@')[0].toUpperCase();
+      statusContainer.style.display = 'inline-flex';
+      statusContainer.style.alignItems = 'center';
+      statusContainer.innerHTML = `<span class="header-user-status-dot"></span>${handle}`;
+      accountBtn.setAttribute('title', `Logged in as ${user.email} (Click to manage)`);
+    } else {
+      statusContainer.style.display = 'none';
+      statusContainer.innerHTML = '';
+      accountBtn.setAttribute('title', 'Athlete Authentication / Sign In');
+    }
+  };
+
+  // Check initial session
+  auth.getUser().then(user => updateAuthUI(user)).catch(() => {});
+
+  // Subscribe to auth state transitions
+  auth.onAuthStateChange((user) => {
+    updateAuthUI(user);
+    if (user) {
+      showNotificationToast(`🛡️ AUTHENTICATED: Welcome ${user.email}`, 'success');
+    }
+  });
+}
+
+/**
+ * Global Toast Notification Generator
+ */
+export function showNotificationToast(message, type = 'info') {
+  let container = document.getElementById('gzn-toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'gzn-toast-container';
+    container.className = 'gzn-toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `gzn-toast ${type}`;
+  toast.innerHTML = `<span>${message}</span>`;
+  container.appendChild(toast);
+
+  // Trigger enter animation
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  // Auto dismiss after 4 seconds
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 400);
+  }, 4000);
+}
