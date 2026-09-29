@@ -865,7 +865,7 @@ function renderProducts() {
 
         <div class="card-size-selector" data-id="${product.id}">
           <span class="mono-tag" style="margin-right: 0.3rem;">SIZE:</span>
-          ${product.sizes.map((s, idx) => `
+          ${(Array.isArray(product.sizes) ? product.sizes : [product.defaultSize || 'STANDARD']).map((s, idx) => `
             <button class="size-pill ${idx === 0 ? 'active' : ''}" data-size="${s}">${s}</button>
           `).join('')}
         </div>
@@ -1484,9 +1484,10 @@ function initAuthSessionWatcher() {
   auth.getUser().then(user => updateAuthUI(user)).catch(() => {});
 
   // Subscribe to auth state transitions
-  auth.onAuthStateChange((user) => {
+  auth.onAuthStateChange((event, session) => {
+    const user = session?.user || null;
     updateAuthUI(user);
-    if (user) {
+    if (user && event === 'SIGNED_IN') {
       showNotificationToast(`🛡️ AUTHENTICATED: Welcome ${user.email}`, 'success');
     }
   });

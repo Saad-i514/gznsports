@@ -11,6 +11,14 @@ export function initAuthModal() {
   checkCurrentSession();
 }
 
+function attachAuthListeners() {
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isAuthModalOpen) {
+      closeAuthModal();
+    }
+  });
+}
+
 function renderAuthModalContainer() {
   let modal = document.getElementById('gzn-auth-modal');
   if (!modal) {

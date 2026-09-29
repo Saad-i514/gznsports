@@ -9,6 +9,7 @@ export const adminApi = {
       cacheMemory.invalidateByTag('products');
     }
 
+    let prods = [];
     try {
       const data = await executeGraphQL(GQL_QUERIES.GET_ALL_PRODUCTS, {}, {
         useCache: !forceFresh,
@@ -17,20 +18,47 @@ export const adminApi = {
       });
 
       if (data?.productsCollection?.edges) {
-        return data.productsCollection.edges.map(e => e.node);
+        prods = data.productsCollection.edges.map(e => e.node);
       }
     } catch (e) {
       console.warn('[AdminAPI] GraphQL query failed, falling back to REST:', e);
     }
 
-    // Fallback to Supabase REST
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
+    if (!prods || prods.length === 0) {
+      // Fallback to Supabase REST
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data || [];
+      if (error) throw error;
+      prods = data || [];
+    }
+
+    return prods.map(p => {
+      let sizes = p.sizes;
+      if (typeof sizes === 'string') {
+        try { sizes = JSON.parse(sizes); } catch { sizes = sizes.split(',').map(s => s.trim()).filter(Boolean); }
+      }
+      if (!Array.isArray(sizes) || sizes.length === 0) {
+        sizes = ['STANDARD'];
+      }
+
+      let specs = p.specs;
+      if (typeof specs === 'string') {
+        try { specs = JSON.parse(specs); } catch { specs = []; }
+      }
+      if (!Array.isArray(specs)) specs = [];
+
+      return {
+        ...p,
+        price: parseFloat(p.price) || 0,
+        sizes,
+        defaultSize: p.default_size || p.defaultSize || sizes[0] || 'STANDARD',
+        categoryName: p.category_name || p.categoryName || (p.category ? p.category.toUpperCase() : 'WEAPONRY'),
+        specs
+      };
+    });
   },
 
   async createProduct(product) {
