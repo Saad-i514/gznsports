@@ -67,16 +67,9 @@ function renderApp() {
     <header class="rdx-main-header" id="rdx-main-header">
       <div class="rdx-header-inner">
         
-        <!-- BRAND LOGO (ANGULAR COMBAT SHIELD) -->
-        <a href="#" class="rdx-brand-wrap" aria-label="GZNSPORTS Home">
-          <svg class="rdx-brand-emblem" viewBox="0 0 44 44" width="38" height="38" fill="none">
-            <path d="M4 6L28 6L38 18L18 40L4 40L18 20L4 20Z" fill="#111111" />
-            <path d="M18 6L38 6L28 18L18 18L26 8L18 8Z" fill="#B71234" />
-          </svg>
-          <div class="rdx-brand-name">
-            <span class="brand-core">GZN</span>
-            <span class="brand-combat">SPORTS</span>
-          </div>
+        <!-- BRAND LOGO (3D GENZ COMBAT EMBLEM) -->
+        <a href="#" class="rdx-brand-wrap" aria-label="GENZ SPORTS Home">
+          <img src="/images/genz-3d-logo.png" alt="GENZ SPORTS" class="genz-header-logo" />
         </a>
 
         <!-- CENTER NAVIGATION LINKS -->
@@ -734,11 +727,11 @@ function renderApp() {
       <div class="container">
         <div class="footer-grid">
           <div class="footer-brand-col">
-            <div class="brand-monogram">GZN<span>SPORTS</span></div>
+            <img src="/images/genz-3d-logo.png" alt="GENZ SPORTS" class="genz-footer-logo" />
             <p style="color: var(--gzn-slate); font-size: 0.9rem; line-height: 1.6; max-width: 320px;">
               Engineered combat weaponry and high-performance protection forged for those who refuse to compromise in training or battle.
             </p>
-            <span class="mono-tag" style="margin-top: 0.5rem;">CAGE CODE: #GZN-984-COMBAT</span>
+            <span class="mono-tag" style="margin-top: 0.5rem;">CAGE CODE: #GENZ-984-COMBAT</span>
           </div>
 
           <div>
