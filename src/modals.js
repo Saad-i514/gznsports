@@ -52,9 +52,9 @@ function renderModalsContainer() {
       <div class="modal-content info-modal-card">
         <button class="modal-close-btn" id="close-lab-btn">✕</button>
         <div class="info-modal-header">
-          <span class="mono-tag crimson">[ BIOMECHANICAL R&D ARCHIVE ]</span>
+          <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ CRAFTSMANSHIP & R&D ARCHIVE ]</span>
           <h2>THE GENZ CRAFTSMANSHIP LAB</h2>
-          <p class="mono-tag" style="color:var(--gzn-slate);">PRECISION 8MM CNC GOLD CASTING & 450GSM FRENCH TERRY WEAVE</p>
+          <p class="mono-tag" style="color:#64748b;">PRECISION 8MM CNC GOLD CASTING & 450GSM FRENCH TERRY WEAVE</p>
         </div>
 
         <div class="lab-specs-grid">
@@ -77,8 +77,8 @@ function renderModalsContainer() {
         </div>
 
         <div style="margin-top: 2rem; text-align: center;">
-          <button class="btn-primary" id="lab-explore-btn" style="padding:0.9rem 2.2rem;">
-            <span>EXPLORE ARMORY COLLECTION →</span>
+          <button class="btn-primary" id="lab-explore-btn" style="padding:0.9rem 2.2rem; background:#0f172a; border-color:#1e293b;">
+            <span>EXPLORE CHAMPIONSHIP COLLECTION →</span>
           </button>
         </div>
       </div>
@@ -89,32 +89,32 @@ function renderModalsContainer() {
       <div class="modal-content info-modal-card">
         <button class="modal-close-btn" id="close-why-btn">✕</button>
         <div class="info-modal-header">
-          <span class="mono-tag crimson">[ THE GENZ STANDARD ]</span>
+          <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ THE GENZ STANDARD ]</span>
           <h2>WHY CHOOSE GENZ SPORTS?</h2>
-          <p class="mono-tag" style="color:var(--gzn-slate);">UNCOMPROMISING METALLURGY & TEXTILE EXCELLENCE</p>
+          <p class="mono-tag" style="color:#64748b;">UNCOMPROMISING METALLURGY & TEXTILE EXCELLENCE</p>
         </div>
 
         <div class="lab-specs-grid">
           <div class="lab-card">
-            <h4>⚡ 365-DAY STRIKE & SNAP WARRANTY</h4>
+            <h4>⚡ 365-DAY SNAP & CRAFT GUARANTEE</h4>
             <p>If any snap on your championship title belt loosens, any gemstone dislodges, or any seam on your 450GSM hoodie unravels within 365 days, we replace it free of charge. No questions asked.</p>
           </div>
           <div class="lab-card">
-            <h4>✈️ WORLDWIDE ARMORED DISPATCH</h4>
-            <p>Every order is dispatched in reinforced packaging. Belts include plush velvet transport covers; hoodies ship in sealed matte combat bags with serialized authenticity certificates.</p>
+            <h4>✈️ WORLDWIDE EXPRESS COURIER</h4>
+            <p>Every order is dispatched in reinforced presentation packaging. Belts include plush velvet transport covers; hoodies ship in sealed matte presentation bags with serialized authenticity certificates.</p>
           </div>
           <div class="lab-card">
             <h4>🚫 ZERO COMPROMISE GUARANTEE</h4>
-            <p>We reject zinc alloy plates, vinyl leatherette straps, and thin 280GSM polyester fleece. If your equipment does not feel like genuine championship armor, return it for a 100% refund.</p>
+            <p>We reject zinc alloy plates, vinyl leatherette straps, and thin 280GSM polyester fleece. If your equipment does not feel like genuine championship caliber, return it for a 100% refund.</p>
           </div>
           <div class="lab-card">
             <h4>🔒 SECURE ENCRYPTED CHECKOUT</h4>
-            <p>Direct Supabase PostgreSQL database architecture with 256-bit encrypted transactions, multi-currency support, and live order telemetry tracking.</p>
+            <p>Direct Supabase PostgreSQL database architecture with 256-bit encrypted transactions, multi-currency support, and live order tracking.</p>
           </div>
         </div>
 
         <div style="margin-top: 2rem; text-align: center;">
-          <button class="btn-primary" id="why-shop-btn" style="padding:0.9rem 2.2rem;">
+          <button class="btn-primary" id="why-shop-btn" style="padding:0.9rem 2.2rem; background:#0f172a; border-color:#1e293b;">
             <span>CLAIM YOUR GEAR NOW →</span>
           </button>
         </div>
@@ -126,9 +126,9 @@ function renderModalsContainer() {
       <div class="modal-content info-modal-card">
         <button class="modal-close-btn" id="close-faq-btn">✕</button>
         <div class="info-modal-header">
-          <span class="mono-tag crimson">[ ATHLETE ASSISTANCE ]</span>
-          <h2>DISPATCH & SIZING TERMINAL</h2>
-          <p class="mono-tag" style="color:var(--gzn-slate);">FREQUENTLY ASKED QUESTIONS & METRIC CHARTS</p>
+          <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ CUSTOMER CARE & SIZING ]</span>
+          <h2>SHIPPING & SIZING CONCIERGE</h2>
+          <p class="mono-tag" style="color:#64748b;">FREQUENTLY ASKED QUESTIONS & METRIC CHARTS</p>
         </div>
 
         <div class="faq-accordion-list">
@@ -144,7 +144,7 @@ function renderModalsContainer() {
 
           <div class="faq-item">
             <h4 class="faq-q">📦 WHAT ARE THE GLOBAL SHIPPING TIMELINES?</h4>
-            <p class="faq-a">Domestic orders dispatch within 24-48 hours via FedEx Priority Air (2-4 business days). International express shipments typically arrive within 4-7 business days with end-to-end telemetry tracking.</p>
+            <p class="faq-a">Domestic orders dispatch within 24-48 hours via FedEx Priority Air (2-4 business days). International express shipments typically arrive within 4-7 business days with end-to-end tracking.</p>
           </div>
 
           <div class="faq-item">
@@ -160,12 +160,12 @@ function renderModalsContainer() {
       <div class="modal-content info-modal-card">
         <button class="modal-close-btn" id="close-legal-btn">✕</button>
         <div class="info-modal-header">
-          <span class="mono-tag crimson">[ COMPLIANCE & PRIVACY ]</span>
-          <h2 id="legal-modal-title">TERMS OF ENGAGEMENT</h2>
-          <p class="mono-tag" style="color:var(--gzn-slate);">OFFICIAL GENZ SPORTS STORE POLICIES</p>
+          <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ STORE POLICIES ]</span>
+          <h2 id="legal-modal-title">TERMS & CONDITIONS</h2>
+          <p class="mono-tag" style="color:#64748b;">OFFICIAL GENZ SPORTS STORE POLICIES</p>
         </div>
-        <div id="legal-modal-body" style="color:var(--gzn-slate); line-height:1.7; font-size:0.9rem; max-height:450px; overflow-y:auto;">
-          <p>GENZ SPORTS guarantees the authenticity of all materials, including 24K gold electroplated cast brass, genuine vegetable-tanned leather, and 450GSM combed cotton fabrics. All customer transaction tokens are encrypted via Supabase Auth and industry-standard payment pipelines. We respect fighter confidentiality and never sell or distribute athlete dispatch telemetry.</p>
+        <div id="legal-modal-body" style="color:#334155; line-height:1.7; font-size:0.9rem; max-height:450px; overflow-y:auto;">
+          <p>GENZ SPORTS guarantees the authenticity of all materials, including 24K gold electroplated cast brass, genuine vegetable-tanned leather, and 450GSM combed cotton fabrics. All customer transaction tokens are encrypted via Supabase Auth and industry-standard payment pipelines. We respect customer privacy and never sell or distribute buyer telemetry or contact details.</p>
         </div>
       </div>
     </div>

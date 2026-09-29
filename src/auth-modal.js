@@ -93,48 +93,56 @@ function renderAuthModalContent() {
 
   modal.innerHTML = `
     <div class="auth-modal-card">
-      <button class="modal-close-btn" id="close-auth-modal-btn">✕</button>
+      <button class="modal-close-btn" id="close-auth-modal-btn" title="Close">✕</button>
 
       <div class="auth-modal-header">
-        <span class="mono-tag crimson">[ GZN ATHLETE IDENTIFICATION ]</span>
-        <h3 class="auth-title">${isSignIn ? 'ACCESS COMBAT ACCOUNT' : 'ENLIST NEW ATHLETE'}</h3>
+        <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ GENZ SPORTS VIP ACCESS ]</span>
+        <h3 class="auth-title">${isSignIn ? 'SIGN IN TO YOUR ACCOUNT' : 'CREATE YOUR VIP ACCOUNT'}</h3>
         <p class="auth-subhead">
           ${isSignIn 
-            ? 'Sign in with your verified credentials to track dispatches, access custom orders, and unlock member rates.' 
-            : 'Register your athlete identity for 365-day strike guarantee coverage and payment telemetry.'}
+            ? 'Sign in to access your championship orders, exclusive belt drops, and member concierge.' 
+            : 'Join the GENZ VIP registry for 365-day warranty coverage, private vault access, and expedited global dispatch.'}
         </p>
       </div>
 
       <form id="auth-form" class="auth-form">
         ${!isSignIn ? `
           <div class="form-group full-width">
-            <label>FULL ATHLETE NAME</label>
-            <input type="text" id="auth-name" placeholder="e.g. Alexandre Silva" required />
+            <label for="auth-name">FULL NAME</label>
+            <input type="text" id="auth-name" class="auth-input" placeholder="e.g. Saad Champion" required />
           </div>
         ` : ''}
 
         <div class="form-group full-width">
-          <label>ATHLETE EMAIL</label>
-          <input type="email" id="auth-email" placeholder="fighter@gznsports.com" required />
+          <label for="auth-email">EMAIL ADDRESS</label>
+          <input type="email" id="auth-email" class="auth-input" placeholder="champion@gznsports.com" required />
         </div>
 
         <div class="form-group full-width">
-          <label>SECURE PASSPHRASE</label>
-          <input type="password" id="auth-password" placeholder="••••••••••••" minlength="6" required />
+          <label for="auth-password">PASSWORD</label>
+          <input type="password" id="auth-password" class="auth-input" placeholder="••••••••••••" minlength="6" required />
         </div>
 
         <div id="auth-error-msg" class="auth-error-msg" style="display:none;"></div>
 
-        <button type="submit" class="btn-primary" id="auth-submit-btn" style="width: 100%; margin-top: 1rem; padding: 0.95rem;">
-          <span>${isSignIn ? 'AUTHENTICATE & ENTER' : 'COMPLETE ENLISTMENT'}</span>
+        <button type="submit" class="btn-primary auth-submit-btn" id="auth-submit-btn" style="width: 100%; margin-top: 0.5rem; padding: 0.95rem;">
+          <span>${isSignIn ? 'SIGN IN TO ACCOUNT' : 'CREATE VIP ACCOUNT'}</span>
         </button>
+
+        ${isSignIn ? `
+          <div class="demo-login-box">
+            <button type="button" id="demo-quick-login-btn" class="btn-demo-quick">
+              ⚡ 1-Click Demo Login (Saad Executive)
+            </button>
+          </div>
+        ` : ''}
       </form>
 
       <div class="auth-modal-footer">
         ${isSignIn ? `
-          <span>Need athlete clearance? <a href="#" id="toggle-to-signup" class="auth-toggle-link">Enlist Here →</a></span>
+          <span>Need VIP membership? <a href="#" id="toggle-to-signup" class="auth-toggle-link">Join GENZ VIP →</a></span>
         ` : `
-          <span>Already registered? <a href="#" id="toggle-to-signin" class="auth-toggle-link">Sign In Here →</a></span>
+          <span>Already a VIP member? <a href="#" id="toggle-to-signin" class="auth-toggle-link">Sign In Here →</a></span>
         `}
       </div>
     </div>
@@ -155,6 +163,21 @@ function renderAuthModalContent() {
     openAuthModal('signin');
   });
 
+  // 1-Click Demo Login Helper
+  document.getElementById('demo-quick-login-btn')?.addEventListener('click', async () => {
+    const emailInput = document.getElementById('auth-email');
+    const passInput = document.getElementById('auth-password');
+    if (emailInput && passInput) {
+      emailInput.value = 'saad@gznsports.com';
+      passInput.value = 'Championship2026!';
+      playMetallicClick();
+      
+      // Auto-submit
+      const submitBtn = document.getElementById('auth-submit-btn');
+      if (submitBtn) submitBtn.click();
+    }
+  });
+
   // Submit Handler
   const form = document.getElementById('auth-form');
   form?.addEventListener('submit', async (e) => {
@@ -173,20 +196,20 @@ function renderAuthModalContent() {
         await auth.signIn(email, password);
         playPunchImpact();
         closeAuthModal();
-        alert(`⚡ WELCOME BACK ATHLETE\nLogged in as ${email}`);
+        alert(`⚡ WELCOME BACK\nSigned in as ${email}`);
       } else {
         const fullName = document.getElementById('auth-name').value.trim();
         await auth.signUp(email, password, { full_name: fullName });
         playPunchImpact();
         closeAuthModal();
-        alert(`⚡ ENLISTMENT COMPLETE\nWelcome to GZNSPORTS, ${fullName}! Check your email or sign in.`);
+        alert(`⚡ VIP REGISTRATION COMPLETE\nWelcome to GENZ SPORTS, ${fullName}! Check your email or sign in.`);
       }
     } catch (err) {
       errorEl.textContent = err.message || 'Authentication error';
       errorEl.style.display = 'block';
     } finally {
       submitBtn.disabled = false;
-      submitBtn.innerHTML = `<span>${isSignIn ? 'AUTHENTICATE & ENTER' : 'COMPLETE ENLISTMENT'}</span>`;
+      submitBtn.innerHTML = `<span>${isSignIn ? 'SIGN IN TO ACCOUNT' : 'CREATE VIP ACCOUNT'}</span>`;
     }
   });
 }

@@ -206,12 +206,12 @@ function renderApp() {
           </button>
 
           <!-- Admin Console Button -->
-          <button class="admin-trigger-nav-btn" id="header-admin-btn" title="Open Supabase Tactical Admin Console">
-            <span>⚡ ADMIN CONSOLE</span>
+          <button class="admin-trigger-nav-btn" id="header-admin-btn" title="Open Executive Store Manager">
+            <span>⚡ STORE MANAGER</span>
           </button>
 
           <!-- User Account Icon Button -->
-          <button class="rdx-util-btn" id="header-account-btn" title="Athlete Account" aria-label="Account">
+          <button class="rdx-util-btn" id="header-account-btn" title="VIP Member Account" aria-label="Account">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
@@ -783,21 +783,21 @@ function renderApp() {
       </div>
     </footer>
 
-    <!-- 11. TACTICAL SLIDEOUT CART DRAWER -->
+    <!-- 11. SLIDEOUT CART DRAWER -->
     <div class="cart-overlay" id="cart-overlay"></div>
-    <aside class="cart-drawer" id="cart-drawer" aria-label="Tactical Armory Bag">
+    <aside class="cart-drawer" id="cart-drawer" aria-label="Shopping Bag">
       <div class="cart-drawer-header">
         <div>
-          <span class="mono-tag crimson">[ COMBAT DISPATCH ]</span>
-          <h3 class="cart-title">TACTICAL BAG</h3>
+          <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ GENZ VIP BAG ]</span>
+          <h3 class="cart-title">YOUR SHOPPING BAG</h3>
         </div>
         <button class="cart-close-btn" id="cart-close-btn" aria-label="Close Cart">✕</button>
       </div>
 
       <div class="shipping-meter" id="shipping-meter">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span class="mono-tag" id="shipping-status-text">FREE DISPATCH UNLOCK</span>
-          <span class="mono-tag crimson" id="shipping-percent-text">0%</span>
+          <span class="mono-tag" id="shipping-status-text">FREE EXPRESS SHIPPING</span>
+          <span class="mono-tag" id="shipping-percent-text" style="color:#b45309; font-weight:700;">0%</span>
         </div>
         <div class="meter-track">
           <div class="meter-fill" id="shipping-meter-fill" style="width: 0%;"></div>
@@ -821,20 +821,20 @@ function renderApp() {
         <div class="cart-totals-breakdown">
           <div class="totals-row">
             <span>SUBTOTAL:</span>
-            <span id="cart-subtotal-price">$0.00</span>
+            <span id="cart-subtotal-price" style="font-weight:700; color:#0f172a;">$0.00</span>
           </div>
-          <div class="totals-row discount-row" id="cart-discount-row" style="display:none; color: #27c93f;">
+          <div class="totals-row discount-row" id="cart-discount-row" style="display:none; color: #059669;">
             <span id="cart-discount-label">PROMO DISCOUNT:</span>
             <span id="cart-discount-amount">-$0.00</span>
           </div>
-          <div class="totals-row" style="border-top:1px solid var(--gzn-border); padding-top:0.6rem; font-weight:700;">
-            <span style="font-family: var(--font-display); font-size: 1.15rem; color: var(--gzn-titanium);">TOTAL:</span>
-            <span id="cart-total-price" style="font-size:1.35rem; color:#ffd700;">$0.00</span>
+          <div class="totals-row" style="border-top:1px solid #e2e8f0; padding-top:0.6rem; font-weight:700;">
+            <span style="font-family: var(--font-display); font-size: 1.15rem; color: #0f172a;">TOTAL:</span>
+            <span id="cart-total-price" style="font-size:1.35rem; color:#0f172a; font-weight:800;">$0.00</span>
           </div>
         </div>
 
-        <button class="btn-primary" id="checkout-btn" style="width: 100%; padding: 1.1rem;">
-          <span>PROCEED TO TACTICAL CHECKOUT</span>
+        <button class="btn-primary" id="checkout-btn" style="width: 100%; padding: 1.1rem; background:#0f172a; border-color:#1e293b;">
+          <span>PROCEED TO SECURE CHECKOUT</span>
           <span>→</span>
         </button>
 

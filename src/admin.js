@@ -97,29 +97,29 @@ async function renderAdminUI() {
       <div class="admin-header">
         <div class="admin-header-title">
           <div class="admin-brand">
-            <span class="mono-tag crimson">[ GZN COMMAND MATRIX ]</span>
-            <h2>TACTICAL ADMIN CONSOLE</h2>
+            <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ GENZ SPORTS STORE EXECUTIVE ]</span>
+            <h2>EXECUTIVE STORE MANAGER</h2>
           </div>
           <div id="admin-realtime-status" class="admin-status-badge ${status.toLowerCase()}">
             <span class="pulse-dot"></span> REALTIME: ${status}
           </div>
         </div>
-        <button class="admin-close-btn" id="admin-close-btn" title="Close Console">✕</button>
+        <button class="admin-close-btn" id="admin-close-btn" title="Close Store Manager">✕</button>
       </div>
 
       <!-- NAVIGATION TABS -->
       <div class="admin-nav-tabs">
         <button class="admin-tab-btn ${currentTab === 'overview' ? 'active' : ''}" data-tab="overview">
-          📊 TELEMETRY & OVERVIEW
+          📊 STORE OVERVIEW
         </button>
         <button class="admin-tab-btn ${currentTab === 'products' ? 'active' : ''}" data-tab="products">
-          🥊 PRODUCT ARMORY (CRUD)
+          🏆 TITLE BELTS & HOODIES
         </button>
         <button class="admin-tab-btn ${currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
-          ⚙️ SITE & HERO CUSTOMIZER
+          ⚙️ STOREFRONT & HERO EDITOR
         </button>
         <button class="admin-tab-btn ${currentTab === 'orders' ? 'active' : ''}" data-tab="orders">
-          📦 DISPATCH & ORDERS
+          📦 CUSTOMER ORDERS
         </button>
       </div>
 
@@ -127,7 +127,7 @@ async function renderAdminUI() {
       <div class="admin-content-area" id="admin-tab-content">
         <div class="admin-loading-spinner">
           <span class="spinner-ring"></span>
-          <span>INITIALIZING SECURE DATA LINK...</span>
+          <span>CONNECTING TO STORE DATABASE...</span>
         </div>
       </div>
     </div>
@@ -173,26 +173,26 @@ async function loadOverviewTab() {
       <div class="admin-metrics-grid">
         <div class="metric-box">
           <div class="metric-top">
-            <span class="mono-tag crimson">TOTAL REVENUE</span>
+            <span class="mono-tag" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a;">TOTAL REVENUE</span>
             <span class="metric-icon">💰</span>
           </div>
           <div class="metric-big-number">$${metrics.totalRevenue.toFixed(2)}</div>
-          <span class="metric-sub">Processed through combat checkout</span>
+          <span class="metric-sub">Processed through checkout</span>
         </div>
 
         <div class="metric-box">
           <div class="metric-top">
-            <span class="mono-tag">TOTAL ORDERS</span>
+            <span class="mono-tag" style="background:#eff6ff; color:#1d4ed8; border:1px solid #dbeafe;">TOTAL ORDERS</span>
             <span class="metric-icon">📦</span>
           </div>
           <div class="metric-big-number">${metrics.totalOrders}</div>
-          <span class="metric-sub">Customer dispatches recorded</span>
+          <span class="metric-sub">Verified customer purchases</span>
         </div>
 
         <div class="metric-box">
           <div class="metric-top">
-            <span class="mono-tag">CATALOG INVENTORY</span>
-            <span class="metric-icon">🛡️</span>
+            <span class="mono-tag" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;">CATALOG INVENTORY</span>
+            <span class="metric-icon">🏆</span>
           </div>
           <div class="metric-big-number">${metrics.totalProducts}</div>
           <span class="metric-sub">Live products in database</span>
@@ -200,10 +200,10 @@ async function loadOverviewTab() {
 
         <div class="metric-box">
           <div class="metric-top">
-            <span class="mono-tag" style="color: #ff9900;">LOW STOCK ALERT</span>
+            <span class="mono-tag" style="background:#fff7ed; color:#c2410c; border:1px solid #ffedd5;">LOW STOCK ALERT</span>
             <span class="metric-icon">⚠️</span>
           </div>
-          <div class="metric-big-number" style="color: ${metrics.lowStockCount > 0 ? '#ff4d6d' : 'var(--gzn-titanium)'};">
+          <div class="metric-big-number" style="color: ${metrics.lowStockCount > 0 ? '#ef4444' : '#0f172a'};">
             ${metrics.lowStockCount}
           </div>
           <span class="metric-sub">Items below 30 units threshold</span>
@@ -212,7 +212,7 @@ async function loadOverviewTab() {
 
       <div class="admin-section-block">
         <div class="admin-section-header">
-          <h3>RECENT COMBAT DISPATCHES</h3>
+          <h3>RECENT CUSTOMER ORDERS</h3>
           <button class="btn-secondary" style="font-size: 0.72rem; padding: 0.4rem 0.8rem;" id="refresh-overview-btn">
             🔄 REFRESH METRICS
           </button>
@@ -269,11 +269,11 @@ async function loadProductsTab() {
     content.innerHTML = `
       <div class="admin-section-header">
         <div>
-          <h3>ARMORY WEAPONRY INVENTORY</h3>
-          <p style="color:var(--gzn-slate); font-size:0.85rem;">Create, edit, modify pricing, and manage stock in real time.</p>
+          <h3>TITLE BELT & HOODIE CATALOG</h3>
+          <p style="color:var(--gzn-slate); font-size:0.85rem;">Create, edit pricing, manage stock levels, and publish products to live storefront.</p>
         </div>
         <button class="btn-primary" id="open-add-product-btn" style="padding:0.6rem 1.2rem; font-size:0.8rem;">
-          + DEPLOY NEW PRODUCT
+          + ADD NEW PRODUCT
         </button>
       </div>
 
@@ -294,7 +294,7 @@ async function loadProductsTab() {
             ${cachedProducts.map(p => `
               <tr data-id="${p.id}">
                 <td>
-                  <img src="${p.image}" alt="${p.title}" style="width:48px; height:48px; object-fit:cover; border-radius:2px; border:1px solid #333;" />
+                  <img src="${p.image}" alt="${p.title}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; border:1px solid #e2e8f0;" />
                 </td>
                 <td>
                   <strong>${p.title}</strong>
@@ -302,8 +302,8 @@ async function loadProductsTab() {
                     ${p.description || ''}
                   </div>
                 </td>
-                <td><span class="mono-tag">${p.category.toUpperCase()}</span></td>
-                <td style="font-family:var(--font-mono); font-weight:700; color:var(--gzn-gold-seal); font-size:1.05rem;">
+                <td><span class="mono-tag" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;">${p.category.toUpperCase()}</span></td>
+                <td style="font-family:var(--font-mono); font-weight:700; color:#b45309; font-size:1.05rem;">
                   $${parseFloat(p.price).toFixed(2)}
                 </td>
                 <td>
@@ -317,7 +317,7 @@ async function loadProductsTab() {
                 <td>
                   <div style="display:flex; gap:0.4rem;">
                     <button class="admin-icon-btn edit-product-trigger" data-id="${p.id}" title="Edit Product">✏️</button>
-                    <button class="admin-icon-btn delete-product-trigger" data-id="${p.id}" title="Delete Product" style="color:#ff4d6d;">🗑️</button>
+                    <button class="admin-icon-btn delete-product-trigger" data-id="${p.id}" title="Delete Product" style="color:#ef4444;">🗑️</button>
                   </div>
                 </td>
               </tr>
@@ -330,7 +330,7 @@ async function loadProductsTab() {
       <div id="product-editor-modal" class="admin-sub-modal">
         <div class="admin-sub-modal-content">
           <div class="admin-sub-header">
-            <h4 id="product-editor-title">DEPLOY NEW WEAPONRY SPECIFICATION</h4>
+            <h4 id="product-editor-title">ADD NEW PRODUCT SPECIFICATION</h4>
             <button class="admin-close-btn" id="close-product-editor">✕</button>
           </div>
           <form id="product-editor-form" class="admin-form-grid">
@@ -403,7 +403,7 @@ function attachProductEvents() {
   document.getElementById('open-add-product-btn')?.addEventListener('click', () => {
     form.reset();
     document.getElementById('edit-product-id').value = '';
-    document.getElementById('product-editor-title').textContent = 'DEPLOY NEW WEAPONRY SPECIFICATION';
+    document.getElementById('product-editor-title').textContent = 'ADD NEW PRODUCT SPECIFICATION';
     editorModal.classList.add('open');
     playMetallicClick();
   });
@@ -433,7 +433,7 @@ function attachProductEvents() {
       document.getElementById('edit-product-sizes').value = Array.isArray(prod.sizes) ? prod.sizes.join(', ') : prod.sizes;
       document.getElementById('edit-product-desc').value = prod.description || '';
 
-      document.getElementById('product-editor-title').textContent = `EDIT SPECIFICATION: ${prod.title}`;
+      document.getElementById('product-editor-title').textContent = `EDIT PRODUCT: ${prod.title}`;
       editorModal.classList.add('open');
       playMetallicClick();
     });
@@ -534,18 +534,18 @@ async function loadSettingsTab() {
     content.innerHTML = `
       <div class="admin-section-header">
         <div>
-          <h3>LIVE SITE & CONTENT CUSTOMIZER</h3>
-          <p style="color:var(--gzn-slate); font-size:0.85rem;">Modify hero headlines, promotional banners, and brand manifesto. Changes apply instantly to public storefront.</p>
+          <h3>STOREFRONT & HERO SHOWCASE EDITOR</h3>
+          <p style="color:var(--gzn-slate); font-size:0.85rem;">Modify hero headlines, promotional banners, and guarantees. Changes apply live to public storefront.</p>
         </div>
       </div>
 
       <div class="admin-settings-container">
         <!-- 1. HERO CONFIG -->
         <div class="admin-card-setting">
-          <h4 class="setting-card-title">🏆 3D HERO VIEWPORT CONFIGURATION</h4>
+          <h4 class="setting-card-title">🏆 HERO SHOWCASE STUDIO CONFIGURATION</h4>
           <form id="hero-settings-form" class="admin-form-grid">
             <div class="form-group">
-              <label>PRIMARY CRIMSON BADGE</label>
+              <label>PRIMARY ACCENT BADGE</label>
               <input type="text" id="set-hero-badge-1" value="${hero.badge_primary || ''}" />
             </div>
 
@@ -560,7 +560,7 @@ async function loadSettingsTab() {
             </div>
 
             <div class="form-group">
-              <label>HEADLINE BOTTOM (OUTLINE ACCENT)</label>
+              <label>HEADLINE BOTTOM (ACCENT)</label>
               <input type="text" id="set-hero-title-bottom" value="${hero.headline_bottom || ''}" />
             </div>
 
@@ -575,23 +575,23 @@ async function loadSettingsTab() {
             </div>
 
             <div class="form-group">
-              <label>SECONDARY 3D LAB TRIGGER</label>
+              <label>SECONDARY CRAFTSMANSHIP TRIGGER</label>
               <input type="text" id="set-hero-cta-2" value="${hero.cta_secondary_text || ''}" />
             </div>
 
             <div class="form-group">
-              <label>3D HUD PIN 01 (TOP LEFT)</label>
+              <label>SHOWCASE PIN 01 (TOP LEFT)</label>
               <input type="text" id="set-hero-pin-1" value="${hero.pin_top_text || ''}" />
             </div>
 
             <div class="form-group">
-              <label>3D HUD PIN 02 (BOTTOM RIGHT)</label>
+              <label>SHOWCASE PIN 02 (BOTTOM RIGHT)</label>
               <input type="text" id="set-hero-pin-2" value="${hero.pin_bottom_text || ''}" />
             </div>
 
             <div class="form-actions full-width">
               <button type="submit" class="btn-primary" style="padding:0.6rem 1.4rem;">
-                ⚡ BROADCAST HERO CONFIG TO LIVE SITE
+                ⚡ PUBLISH HERO CONFIG TO LIVE SITE
               </button>
             </div>
           </form>
@@ -599,7 +599,7 @@ async function loadSettingsTab() {
 
         <!-- 2. ANNOUNCEMENT BAR & GUARANTEES -->
         <div class="admin-card-setting" style="margin-top: 1.5rem;">
-          <h4 class="setting-card-title">📢 ANNOUNCEMENTS & POLICIES</h4>
+          <h4 class="setting-card-title">📢 ANNOUNCEMENTS & GUARANTEES</h4>
           <form id="announcements-form" class="admin-form-grid">
             <div class="form-group">
               <label>TICKER HEADLINE</label>
@@ -691,8 +691,8 @@ async function loadOrdersTab() {
     content.innerHTML = `
       <div class="admin-section-header">
         <div>
-          <h3>CUSTOMER ORDERS & DISPATCH</h3>
-          <p style="color:var(--gzn-slate); font-size:0.85rem;">Manage fulfillment status and inspect combat gear orders.</p>
+          <h3>CUSTOMER ORDERS & FULFILLMENT</h3>
+          <p style="color:var(--gzn-slate); font-size:0.85rem;">Manage fulfillment status and inspect title belts & hoodie orders.</p>
         </div>
         <button class="btn-secondary" id="refresh-orders-btn" style="font-size:0.75rem; padding:0.4rem 0.8rem;">
           🔄 REFRESH
@@ -701,7 +701,7 @@ async function loadOrdersTab() {
 
       ${cachedOrders.length === 0 ? `
         <div class="admin-empty-state">
-          🛡️ No customer orders recorded yet. When a fighter checks out, their order is captured immediately.
+          📦 No customer orders recorded yet. When a customer checks out, their order is captured immediately.
         </div>
       ` : `
         <div class="admin-orders-list">
@@ -709,16 +709,16 @@ async function loadOrdersTab() {
             <div class="admin-order-card" data-id="${order.id}">
               <div class="order-card-header">
                 <div>
-                  <span class="mono-tag crimson">[ ORDER #${order.id.substring(0, 8)} ]</span>
-                  <div style="font-weight:700; font-size:1.05rem; margin-top:0.2rem;">${order.customer_name}</div>
+                  <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ ORDER #${order.id.substring(0, 8)} ]</span>
+                  <div style="font-weight:700; font-size:1.05rem; margin-top:0.2rem; color:#0f172a;">${order.customer_name}</div>
                   <div style="font-size:0.8rem; color:var(--gzn-slate);">${order.customer_email} ${order.customer_phone ? ' • ' + order.customer_phone : ''}</div>
                 </div>
                 <div style="text-align:right;">
-                  <div style="font-family:var(--font-mono); font-size:1.3rem; font-weight:700; color:var(--gzn-gold-seal);">
+                  <div style="font-family:var(--font-mono); font-size:1.3rem; font-weight:700; color:#b45309;">
                     $${parseFloat(order.total).toFixed(2)}
                   </div>
                   <div class="order-status-ctrl">
-                    <label style="font-size:0.65rem; color:#888;">STATUS:</label>
+                    <label style="font-size:0.65rem; color:#475569; font-weight:600;">STATUS:</label>
                     <select class="order-status-select" data-id="${order.id}">
                       <option value="PENDING" ${order.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
                       <option value="PROCESSING" ${order.status === 'PROCESSING' ? 'selected' : ''}>PROCESSING</option>
@@ -734,15 +734,15 @@ async function loadOrdersTab() {
               <div class="order-items-breakdown">
                 ${Array.isArray(order.items) ? order.items.map(it => `
                   <div class="order-sub-item">
-                    <span>${it.title || 'Combat Weaponry'} (x${it.quantity}) [${it.size || 'STD'}]</span>
-                    <span style="font-family:var(--font-mono);">$${((parseFloat(it.price) || 0) * (it.quantity || 1)).toFixed(2)}</span>
+                    <span>${it.title || 'GENZ Championship Product'} (x${it.quantity}) [${it.size || 'STD'}]</span>
+                    <span style="font-family:var(--font-mono); font-weight:700;">$${((parseFloat(it.price) || 0) * (it.quantity || 1)).toFixed(2)}</span>
                   </div>
                 `).join('') : '<span style="color:#666;">Items payload</span>'}
               </div>
 
               <div class="order-footer-meta">
-                <span class="mono-tag" style="font-size:0.68rem;">DATE: ${new Date(order.created_at).toLocaleString()}</span>
-                <span class="mono-tag" style="font-size:0.68rem; color:#27c93f;">PAYMENT: ${order.payment_status || 'PAID'}</span>
+                <span class="mono-tag" style="font-size:0.68rem; background:#f8fafc; color:#475569; border:1px solid #e2e8f0;">DATE: ${new Date(order.created_at).toLocaleString()}</span>
+                <span class="mono-tag" style="font-size:0.68rem; background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;">PAYMENT: ${order.payment_status || 'PAID'}</span>
               </div>
             </div>
           `).join('')}
