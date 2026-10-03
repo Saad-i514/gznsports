@@ -73,10 +73,32 @@ export function initExperience() {
   let frame = 0;
   const hero = document.querySelector(".campaign-hero");
   const art = document.querySelector(".hero-art");
+  const motionButton = document.createElement('button');
+  motionButton.className = 'hero-motion-toggle';
+  motionButton.type = 'button';
+  hero.querySelector('.slide-index').replaceWith(motionButton);
+  let paused = false;
+  let visible = true;
+  function updateMotion() {
+    hero.classList.toggle('hero-motion-paused', paused || !visible || document.hidden || reduced.matches);
+    motionButton.textContent = paused ? '▶ PLAY MOTION' : 'Ⅱ PAUSE MOTION';
+    motionButton.setAttribute('aria-pressed', String(paused));
+    motionButton.hidden = reduced.matches;
+    if (reduced.matches) art.style.transform = '';
+  }
+  motionButton.addEventListener('click', () => { paused = !paused; updateMotion(); });
+  const heroObserver = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    updateMotion();
+  });
+  heroObserver.observe(hero);
+  document.addEventListener('visibilitychange', updateMotion);
+  reduced.addEventListener('change', updateMotion);
+  updateMotion();
   function onScroll() {
     if (!menu.hidden)
       menu.style.top = `${document.getElementById("site-header").getBoundingClientRect().bottom}px`;
-    if (frame || reduced.matches || innerWidth < 601) return;
+    if (frame || paused || reduced.matches || innerWidth < 601) return;
     frame = requestAnimationFrame(() => {
       frame = 0;
       const rect = hero.getBoundingClientRect();
@@ -166,6 +188,9 @@ export function initExperience() {
   if (import.meta.hot)
     import.meta.hot.dispose(() => {
       reveal.disconnect();
+      heroObserver.disconnect();
+      document.removeEventListener('visibilitychange', updateMotion);
+      reduced.removeEventListener('change', updateMotion);
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(frame);
     });

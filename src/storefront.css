@@ -2429,3 +2429,49 @@ h2 {
 .hero-art img {
   object-position: 60% center;
 }
+
+/* Campaign choreography: transform-only photo movement, softly travelling light. */
+.hero-art { overflow: hidden; }
+.hero-art::after {
+  content: ''; position: absolute; inset: -40%; pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgb(255 235 202 / 16%) 49%, transparent 62%);
+  mix-blend-mode: screen;
+  animation: campaign-light 12s ease-in-out infinite alternate;
+}
+.hero-art img { animation: campaign-drift 18s ease-in-out infinite alternate; }
+.campaign-copy > .eyebrow { animation: campaign-enter .9s both; }
+.campaign-copy h1 { animation: campaign-enter 1.15s .12s both; }
+.campaign-copy h1 span { display: inline-block; animation: campaign-enter 1.15s .3s both; }
+.campaign-copy .hero-description { animation: campaign-enter 1s .5s both; }
+.campaign-copy .hero-buttons { animation: campaign-enter 1s .65s both; }
+.scroll-cue > span { display: inline-block; animation: campaign-cue 2.8s 1s infinite; }
+.hero-motion-toggle {
+  border: 1px solid rgb(255 255 255 / 35%); color: #f4f1e9;
+  background: rgb(0 0 0 / 30%); padding: 10px 12px; cursor: pointer;
+  font: 10px 'Space Mono', monospace; white-space: nowrap;
+}
+.hero-motion-toggle:hover { background: #f54728; color: #101310; }
+.hero-motion-toggle:focus-visible { outline: 2px solid #f54728; outline-offset: 4px; }
+.hero-motion-paused .hero-art img,
+.hero-motion-paused .hero-art::after,
+.hero-motion-paused .scroll-cue > span { animation-play-state: paused; }
+@keyframes campaign-enter {
+  from { opacity: 0; transform: translateY(32px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes campaign-drift {
+  from { transform: scale(1.04) translateX(-.6%); }
+  to { transform: scale(1.14) translateX(1%); }
+}
+@keyframes campaign-light {
+  from { transform: translateX(-24%); opacity: .25; }
+  to { transform: translateX(24%); opacity: .85; }
+}
+@keyframes campaign-cue {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .campaign-hero *, .campaign-hero *::after { animation: none !important; }
+  .hero-art { transform: none !important; }
+}

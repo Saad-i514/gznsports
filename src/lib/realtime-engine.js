@@ -55,7 +55,7 @@ class RealtimeAutoRefreshEngine {
         console.log("⚡ [AutoRefreshEngine] Socket status:", status);
         if (status === "SUBSCRIBED") {
           this.setStatus("CONNECTED");
-        } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
+        } else if (["CLOSED", "CHANNEL_ERROR", "TIMED_OUT"].includes(status)) {
           this.setStatus("DISCONNECTED");
         }
       });

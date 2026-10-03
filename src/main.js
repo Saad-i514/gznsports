@@ -17,9 +17,15 @@ import { storefront } from "./views/storefront.js";
 import { cartMarkup } from "./views/cart.js";
 import { escapeHTML as e, productCard, displayTitle } from "./ui.js";
 import { initExperience } from "./experience.js";
+import { coalesceRefresh, startRefreshLoop } from "./lib/refresh-loop.js";
+import { startReleaseUpdates } from "./lib/release-updates.js";
 
 let currentCategory = "all";
 let currentSort = "featured";
+const refreshCatalog = coalesceRefresh(() => syncCatalog(true));
+const refreshSettings = coalesceRefresh(syncSettings);
+const refreshStore = () => Promise.all([refreshCatalog(), refreshSettings()]);
+let lastSettings = '';
 document.addEventListener("DOMContentLoaded", () => {
   initializeSamplePreview(SAMPLE_PRODUCTS);
   document.getElementById("app").innerHTML = storefront() + cartMarkup;
@@ -34,12 +40,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   setupEvents();
   window.addEventListener("gnz:data-changed", () => {
-    void syncCatalog(true);
-    void syncSettings();
+    void refreshStore();
   });
   window.addEventListener("storage", () => {
-    void syncCatalog(true);
-    void syncSettings();
+    void refreshStore();
   });
   if (isDraft()) {
     const notice = document.createElement("div");
@@ -51,11 +55,17 @@ document.addEventListener("DOMContentLoaded", () => {
   if (location.hash === "#admin") void openAdminPanel();
   initExperience();
   // The complete local collection renders before optional network work.
-  void syncCatalog();
-  void syncSettings();
+  void refreshStore();
+  const stopRefresh = startRefreshLoop(refreshStore);
+  const stopReleaseUpdates = startReleaseUpdates();
+  if (import.meta.hot) import.meta.hot.dispose(stopReleaseUpdates);
+  if (import.meta.hot) import.meta.hot.dispose(stopRefresh);
   realtimeEngine.init();
-  realtimeEngine.onProductChange(() => void syncCatalog(true));
-  realtimeEngine.onSettingsChange(() => void syncSettings());
+  realtimeEngine.onProductChange(() => void refreshCatalog());
+  realtimeEngine.onSettingsChange(() => void refreshSettings());
+  realtimeEngine.onStatusChange(status => {
+    if (status === 'CONNECTED') void refreshStore();
+  });
 });
 
 function renderProducts() {
@@ -317,6 +327,8 @@ async function syncCatalog(fresh = false) {
 async function syncSettings() {
   try {
     const settings = await adminApi.fetchSiteSettings(true);
+    const signature = JSON.stringify(settings);
+    if (signature === lastSettings) return;
     if (settings.page_content?._direction === CURRENT_DIRECTION)
       applyContent(settings.page_content);
     const hero = settings.hero_config;
@@ -362,6 +374,7 @@ async function syncSettings() {
       );
       updateCartUI();
     }
+    lastSettings = signature;
   } catch {
     /* Campaign defaults remain available. */
   }

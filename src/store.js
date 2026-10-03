@@ -238,10 +238,12 @@ class Store {
 
   setProducts(newProducts) {
     if (!Array.isArray(newProducts)) return;
+    const next = newProducts.filter(isCurrentProduct).map(currentProduct);
+    if (JSON.stringify(next) === JSON.stringify(PRODUCTS)) return;
     PRODUCTS.splice(
       0,
       PRODUCTS.length,
-      ...newProducts.filter(isCurrentProduct).map(currentProduct),
+      ...next,
     );
     this.cart = this.cart.filter((item) =>
       PRODUCTS.some((product) => product.id === item.id),
