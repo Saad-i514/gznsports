@@ -2415,3 +2415,17 @@ h2 {
     padding: 10px 12px;
   }
 }
+/* Real stock photography replaces the illustrated category artwork. */
+.collection-card > img {
+  object-fit: cover;
+  object-position: center;
+}
+.collection-card[data-category="tracksuits"] > img {
+  object-position: 50% 45%;
+}
+.collection-card[data-category="others"] > img {
+  object-position: 50% 55%;
+}
+.hero-art img {
+  object-position: 60% center;
+}

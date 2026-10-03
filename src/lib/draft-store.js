@@ -1,3 +1,4 @@
+import { migrateDraftPhotos } from "./photo-migration.js";
 const KEY = "gnz_fashion_draft_v1";
 const MODE = "gnz_fashion_draft_enabled";
 export const supportsDraft = () =>
@@ -115,4 +116,8 @@ export function createDraftApi(
 export function initializeSamplePreview(products) {
   if (supportsDraft() && !localStorage.getItem(KEY))
     enableDraft(structuredClone(products), {});
+  else if (supportsDraft() && localStorage.getItem(KEY)) {
+    const saved = JSON.parse(localStorage.getItem(KEY));
+    localStorage.setItem(KEY, JSON.stringify(migrateDraftPhotos(saved)));
+  }
 }

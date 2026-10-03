@@ -1,6 +1,6 @@
 # Sample catalog and replacement guide
 
-GNZSPORTS now covers Hoodies, Tracksuits, T-shirts, Fashion, Bags, and Others. The sample workspace includes two products per category (12 total). Names, prices, inventory, dimensions and material claims are fictional. Illustrations are original placeholders; the existing hoodie photos remain editorial imagery.
+GNZSPORTS now covers Hoodies, Tracksuits, T-shirts, Fashion, Bags, and Others. The sample workspace includes two products per category (12 total). Names, prices, inventory, dimensions and material claims are fictional. Images are real stock photographs used as category references, not original GNZSPORTS product photography. See photo-credits.md for sources.
 
 ## Replace a product
 
@@ -33,3 +33,4 @@ Sample prices and measurements are invented for layout testing, not quotations f
 ## Validation
 
 11 automated tests pass, covering six-category consistency, valid sample products and assets, retired-product exclusion, product validation, local CRUD, order selection, cart persistence, discounts and safe markup. The production build passes. A fresh browser visual check was blocked by the browser tool’s URL security policy during this update; the new layout has not been visually verified in that run.
+

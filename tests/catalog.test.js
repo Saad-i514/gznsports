@@ -6,7 +6,7 @@ import { validateProduct } from "../src/lib/commerce-validation.js";
 import { storefront } from "../src/views/storefront.js";
 import { readFileSync } from "node:fs";
 
-test("all six collections have two editable valid sample listings and local illustrations", () => {
+test("all six collections have two editable valid sample listings and local photographs", () => {
   assert.deepEqual(
     CATEGORIES.map((c) => c.id),
     ["hoodies", "tracksuits", "tshirts", "fashion", "bags", "others"],
@@ -19,10 +19,12 @@ test("all six collections have two editable valid sample listings and local illu
       assert.equal(isCurrentProduct(p), true);
       assert.ok(p.specs.some((s) => s.label === "Color"));
       assert.ok(p.specs.some((s) => s.label === "SKU"));
-      assert.match(
-        readFileSync(new URL("../public" + p.image, import.meta.url), "utf8"),
-        /<svg/,
+      const bytes = readFileSync(
+        new URL("../public" + p.image, import.meta.url),
       );
+      assert.equal(bytes[0], 0xff);
+      assert.equal(bytes[1], 0xd8);
+      assert.ok(bytes.length > 10000);
     }
   }
 });
