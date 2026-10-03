@@ -31,7 +31,17 @@ export function storefront() {
   </nav>
   <main id="main-content">
     <section class="campaign-hero" aria-labelledby="hero-title">
-      <div class="hero-art" aria-hidden="true"><img src="/images/photos/hoodies.jpg" alt="" width="1376" height="768" fetchpriority="high" /></div>
+      <div class="hero-art hero-gallery" aria-hidden="true">
+        <div class="gallery-halo"></div><div class="gallery-floor"></div>
+        <div class="gallery-camera"><div class="gallery-orbit">
+          <div class="gallery-ring ring-one"></div><div class="gallery-ring ring-two"></div>
+          <figure class="gallery-panel panel-back"><img src="/images/photos/tracksuits.jpg" alt="" width="800" height="1000"><figcaption>02 / IN MOTION</figcaption></figure>
+          <figure class="gallery-panel panel-side"><img src="/images/photos/bags.jpg" alt="" width="800" height="1000"><figcaption>03 / EVERYWHERE</figcaption></figure>
+          <figure class="gallery-panel panel-front"><img src="/images/photos/hoodies.jpg" alt="" width="1376" height="768" fetchpriority="high"><figcaption><span>GNZSPORTS</span><span>01 / EVERYDAY LAYERS</span></figcaption></figure>
+          <span class="gallery-coordinate coordinate-top">THE EVERYDAY EDIT / 2026</span>
+          <span class="gallery-coordinate coordinate-bottom">DESIGNED TO MOVE WITH YOU</span>
+        </div></div>
+      </div>
       <div class="hero-vignette"></div><div class="hero-grain"></div>
       <div class="hero-topline"><span><i class="live-dot"></i> THE EVERYDAY COLLECTION</span><span>EST. MMXXVI / VOL. 01</span></div>
       <div class="campaign-copy"><p class="eyebrow">FOR THE ONES WHO PUT IN THE WORK.</p><h1 id="hero-title">YOUR DAY.<br><span>YOUR WAY.</span></h1><p class="hero-description">Hoodies, tracksuits, tees and more.<br>Everyday pieces. Unmistakably you.</p><div class="hero-buttons"><a class="action-button" href="#armory" data-category="all">Explore the collection ${arrow}</a><a class="text-link light" href="#craft">Discover the craft <span>↓</span></a></div></div>

@@ -79,12 +79,25 @@ export function initExperience() {
   hero.querySelector('.slide-index').replaceWith(motionButton);
   let paused = false;
   let visible = true;
+  const camera = hero.querySelector('.gallery-camera');
+  const pointGallery = (event) => {
+    if (!camera || paused || reduced.matches || event.pointerType !== 'mouse') return;
+    const bounds = hero.getBoundingClientRect();
+    camera.style.setProperty('--gallery-x', `${-5 + (event.clientY - bounds.top) / bounds.height * 10}deg`);
+    camera.style.setProperty('--gallery-y', `${-20 + (event.clientX - bounds.left) / bounds.width * 30}deg`);
+  };
+  const resetGallery = () => {
+    camera?.style.removeProperty('--gallery-x');
+    camera?.style.removeProperty('--gallery-y');
+  };
+  hero.addEventListener('pointermove', pointGallery);
+  hero.addEventListener('pointerleave', resetGallery);
   function updateMotion() {
     hero.classList.toggle('hero-motion-paused', paused || !visible || document.hidden || reduced.matches);
     motionButton.textContent = paused ? '▶ PLAY MOTION' : 'Ⅱ PAUSE MOTION';
     motionButton.setAttribute('aria-pressed', String(paused));
     motionButton.hidden = reduced.matches;
-    if (reduced.matches) art.style.transform = '';
+    if (reduced.matches) { art.style.transform = ''; resetGallery(); }
   }
   motionButton.addEventListener('click', () => { paused = !paused; updateMotion(); });
   const heroObserver = new IntersectionObserver(([entry]) => {
@@ -189,6 +202,8 @@ export function initExperience() {
     import.meta.hot.dispose(() => {
       reveal.disconnect();
       heroObserver.disconnect();
+      hero.removeEventListener('pointermove', pointGallery);
+      hero.removeEventListener('pointerleave', resetGallery);
       document.removeEventListener('visibilitychange', updateMotion);
       reduced.removeEventListener('change', updateMotion);
       window.removeEventListener("scroll", onScroll);

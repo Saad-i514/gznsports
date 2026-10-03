@@ -4,7 +4,7 @@ import { escapeHTML } from "./ui.js";
 export const contentFields = [
   ["contact_email", "Contact email", "#contact-email", "email"],
   ["contact_phone", "Contact phone", "#contact-phone", "phone"],
-  ["hero_image", "Hero photograph", ".hero-art img", "image"],
+  ["hero_image", "Hero photograph", ".panel-front img", "image"],
   [
     "tracksuits_image",
     "Tracksuit collection image",

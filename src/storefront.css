@@ -2475,3 +2475,42 @@ h2 {
   .campaign-hero *, .campaign-hero *::after { animation: none !important; }
   .hero-art { transform: none !important; }
 }
+
+/* Spatial fashion gallery: genuine CSS perspective with separated depth planes. */
+.hero-art.hero-gallery { inset: 0 0 0 36%; perspective: 1300px; overflow: visible; background: radial-gradient(ellipse at 58% 46%, #403a31 0%, #181c19 45%, #0c0e0c 75%); }
+.hero-gallery::after { display: none; }
+.hero-gallery + .hero-vignette { background: linear-gradient(90deg,#0c0e0c 0%,#0c0e0cdd 25%,transparent 53%),linear-gradient(0deg,#0c0e0c 0%,transparent 20%,transparent 85%,#0c0e0c88); }
+.gallery-camera { position: absolute; inset: 14% 12% 17%; transform-style: preserve-3d; transform: rotateX(var(--gallery-x, -5deg)) rotateY(var(--gallery-y, -12deg)); transition: transform 1.2s cubic-bezier(.2,.7,.2,1); }
+.gallery-orbit { position: absolute; inset: 0; transform-style: preserve-3d; animation: gallery-float 10s ease-in-out infinite alternate; }
+.gallery-panel { position: absolute; margin: 0; width: 54%; height: 83%; top: 8%; left: 23%; border: 1px solid #d2c9b96b; border-radius: 9px; background: #242923; box-shadow: 0 30px 65px #0009, inset 0 0 0 4px #ffffff0a; backface-visibility: hidden; overflow: hidden; }
+.hero-gallery .gallery-panel img { animation: none; object-position: 60% center; filter: saturate(.75); }
+.gallery-panel::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(120deg,#ffffff30,transparent 35%,#00000010 65%,#ffffff15); }
+.gallery-panel figcaption { position: absolute; bottom: 0; left: 0; right: 0; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(transparent,#101410ed); padding: 45px 20px 20px; color: #f4f1e9; font: 9px 'Space Mono',monospace; letter-spacing: .1em; }
+.panel-front { transform: translateZ(100px) rotateZ(-5deg); }
+.panel-front figcaption span:first-child { font: 600 clamp(20px,3vw,46px) 'Barlow Condensed',sans-serif; letter-spacing: -.02em; }
+.panel-back { transform: translateX(-69%) translateY(-5%) translateZ(-130px) rotateY(32deg) rotateZ(-12deg); filter: brightness(.72); }
+.panel-side { transform: translateX(73%) translateY(5%) translateZ(-95px) rotateY(-35deg) rotateZ(12deg); filter: brightness(.78); }
+.gallery-ring { position: absolute; width: 110%; height: 110%; left: -5%; top: -5%; border: 1px solid #d7b58a55; border-radius: 50%; transform-style: preserve-3d; }
+.ring-one { transform: translateZ(-160px) rotateY(25deg) rotateX(18deg); }
+.ring-two { border-style: dashed; border-color: #f547283d; transform: translateZ(-190px) rotateY(-30deg) rotateX(30deg) scale(1.13); }
+.gallery-halo { position: absolute; width: 70%; height: 70%; left: 20%; top: 15%; border-radius: 50%; background: radial-gradient(ellipse,#bd75402e,transparent 68%); animation: gallery-glow 7s ease-in-out infinite alternate; }
+.gallery-floor { position: absolute; bottom: 7%; left: 12%; width: 80%; height: 16%; background: radial-gradient(ellipse,#000b,transparent 68%); transform: rotate(-5deg); }
+.gallery-coordinate { position: absolute; font: 9px 'Space Mono',monospace; letter-spacing: .15em; color: #ded0b9; transform: translateZ(130px); white-space: nowrap; }
+.coordinate-top { right: 10%; top: -5%; }
+.coordinate-bottom { left: 20%; bottom: -5%; }
+.hero-motion-paused .gallery-orbit,.hero-motion-paused .gallery-halo { animation-play-state: paused; }
+@keyframes gallery-float { from { transform: translateY(12px) rotateY(-9deg) rotateZ(-2deg); } to { transform: translateY(-14px) rotateY(12deg) rotateZ(2deg); } }
+@keyframes gallery-glow { from { opacity: .4; transform: scale(.9); } to { opacity: 1; transform: scale(1.15); } }
+@media (max-width: 900px) {
+  .hero-art.hero-gallery { inset: 0 -15% 0 25%; opacity: .75; }
+  .gallery-camera { inset: 22% 14% 20%; }
+}
+@media (max-width: 600px) {
+  .campaign-hero { height: auto; max-height: none; min-height: 930px; justify-content: flex-start; padding-top: 76px; }
+  .hero-art.hero-gallery { inset: 450px -3% 75px -3%; opacity: 1; }
+  .gallery-camera { inset: 8% 19% 10%; }
+  .hero-gallery + .hero-vignette { background: linear-gradient(0deg,#0c0e0c 0%,transparent 13%,transparent 47%,#0c0e0c 57%); }
+  .gallery-coordinate { font-size: 7px; }
+  .hero-bottom { margin-top: auto; }
+}
+@media (prefers-reduced-motion: reduce) { .gallery-camera { transition: none; } }
