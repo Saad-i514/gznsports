@@ -1,71 +1,69 @@
 // GZNSPORTS // REAL-TIME AUTO-REFRESH ENGINE
-import { supabase } from './supabase.js';
-import { cacheMemory } from './graphql-client.js';
+import { supabase } from "./supabase.js";
+import { cacheMemory } from "./graphql-client.js";
 
 class RealtimeAutoRefreshEngine {
   constructor() {
     this.channel = null;
-    this.status = 'DISCONNECTED'; // 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED'
+    this.status = "DISCONNECTED"; // 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED'
     this.listeners = {
       product: new Set(),
       settings: new Set(),
       order: new Set(),
-      status: new Set()
+      status: new Set(),
     };
   }
 
   init() {
     if (this.channel) return;
 
-    this.setStatus('CONNECTING');
+    this.setStatus("CONNECTING");
 
     this.channel = supabase
-      .channel('gzn-realtime-engine')
+      .channel("gzn-realtime-engine")
       // 1. Listen for Product table changes (INSERT, UPDATE, DELETE)
       .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'products' },
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
         (payload) => {
-          console.log('⚡ [AutoRefreshEngine] Realtime Product Event:', payload.eventType, payload.new || payload.old);
+          console.log(
+            "⚡ [AutoRefreshEngine] Realtime Product Event:",
+            payload.eventType,
+            payload.new || payload.old,
+          );
           // Invalidate GraphQL cache memory for products
-          cacheMemory.invalidateByTag('products');
+          cacheMemory.invalidateByTag("products");
           // Notify listeners
-          this.emit('product', payload);
-        }
+          this.emit("product", payload);
+        },
       )
       // 2. Listen for Site Settings changes
       .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'site_settings' },
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_settings" },
         (payload) => {
-          console.log('⚡ [AutoRefreshEngine] Realtime Site Settings Event:', payload.eventType, payload.new);
-          cacheMemory.invalidateByTag('settings');
-          this.emit('settings', payload);
-        }
-      )
-      // 3. Listen for Orders changes
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
-        (payload) => {
-          console.log('⚡ [AutoRefreshEngine] Realtime Order Event:', payload.eventType, payload.new);
-          cacheMemory.invalidateByTag('orders');
-          this.emit('order', payload);
-        }
+          console.log(
+            "⚡ [AutoRefreshEngine] Realtime Site Settings Event:",
+            payload.eventType,
+            payload.new,
+          );
+          cacheMemory.invalidateByTag("settings");
+          this.emit("settings", payload);
+        },
       )
       .subscribe((status) => {
-        console.log('⚡ [AutoRefreshEngine] Socket status:', status);
-        if (status === 'SUBSCRIBED') {
-          this.setStatus('CONNECTED');
-        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-          this.setStatus('DISCONNECTED');
+        console.log("⚡ [AutoRefreshEngine] Socket status:", status);
+        if (status === "SUBSCRIBED") {
+          this.setStatus("CONNECTED");
+        } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
+          this.setStatus("DISCONNECTED");
         }
       });
   }
 
   setStatus(status) {
     this.status = status;
-    this.emit('status', status);
+    this.emit("status", status);
   }
 
   getStatus() {
@@ -110,9 +108,14 @@ class RealtimeAutoRefreshEngine {
     if (this.channel) {
       supabase.removeChannel(this.channel);
       this.channel = null;
-      this.setStatus('DISCONNECTED');
+      this.setStatus("DISCONNECTED");
     }
   }
 }
 
 export const realtimeEngine = new RealtimeAutoRefreshEngine();
+
+// Release the subscribed channel before Vite replaces this module.
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => realtimeEngine.destroy());
+}

@@ -1,8 +1,8 @@
 // GZNSPORTS // BROWSER GRAPHQL ENGINE & CACHE MEMORY SYSTEM
-import { SUPABASE_CONFIG } from './supabase.js';
+import { SUPABASE_CONFIG } from "./supabase.js";
 
 class GraphQLCacheMemory {
-  constructor(storageKey = 'gzn_graphql_cache') {
+  constructor(storageKey = "gzn_graphql_cache") {
     this.storageKey = storageKey;
     this.memoryCache = new Map();
     this.defaultTTL = 5 * 60 * 1000; // 5 minutes default TTL
@@ -22,7 +22,7 @@ class GraphQLCacheMemory {
         });
       }
     } catch (e) {
-      console.warn('[CacheMemory] Failed to load localStorage cache:', e);
+      console.warn("[CacheMemory] Failed to load localStorage cache:", e);
     }
   }
 
@@ -37,7 +37,7 @@ class GraphQLCacheMemory {
       });
       localStorage.setItem(this.storageKey, JSON.stringify(obj));
     } catch (e) {
-      console.warn('[CacheMemory] Failed to persist cache:', e);
+      console.warn("[CacheMemory] Failed to persist cache:", e);
     }
   }
 
@@ -60,7 +60,7 @@ class GraphQLCacheMemory {
       data: record.data,
       isExpired,
       cachedAt: record.cachedAt,
-      tags: record.tags || []
+      tags: record.tags || [],
     };
   }
 
@@ -69,7 +69,7 @@ class GraphQLCacheMemory {
       data,
       cachedAt: Date.now(),
       expiresAt: Date.now() + ttl,
-      tags
+      tags,
     };
     this.memoryCache.set(key, record);
     this.savePersistentCache();
@@ -93,7 +93,7 @@ class GraphQLCacheMemory {
     try {
       localStorage.removeItem(this.storageKey);
     } catch {}
-    console.log('[CacheMemory] Cleared all cache memory');
+    console.log("[CacheMemory] Cleared all cache memory");
   }
 }
 
@@ -106,8 +106,8 @@ export async function executeGraphQL(query, variables = {}, options = {}) {
   const {
     useCache = true,
     ttl = 60000,
-    tags = ['products'],
-    onRevalidated = null
+    tags = ["products"],
+    onRevalidated = null,
   } = options;
 
   const key = cacheMemory.hashKey(query, variables);
@@ -122,14 +122,21 @@ export async function executeGraphQL(query, variables = {}, options = {}) {
       }
 
       // If expired, return stale data immediately and revalidate in background (SWR pattern)
-      fetchFromNetwork(query, variables).then(freshData => {
-        if (freshData) {
-          cacheMemory.set(key, freshData, { ttl, tags });
-          if (typeof onRevalidated === 'function') {
-            onRevalidated(freshData);
+      fetchFromNetwork(query, variables)
+        .then((freshData) => {
+          if (freshData) {
+            cacheMemory.set(key, freshData, { ttl, tags });
+            if (typeof onRevalidated === "function") {
+              onRevalidated(freshData);
+            }
           }
-        }
-      });
+        })
+        .catch((error) =>
+          console.warn(
+            "[CacheMemory] Background refresh failed:",
+            error.message,
+          ),
+        );
       return cached.data;
     }
   }
@@ -145,13 +152,13 @@ export async function executeGraphQL(query, variables = {}, options = {}) {
 async function fetchFromNetwork(query, variables = {}) {
   const url = `${SUPABASE_CONFIG.url}/graphql/v1`;
   const response = await fetch(url, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_CONFIG.publishableKey,
-      'Authorization': `Bearer ${SUPABASE_CONFIG.publishableKey}`
+      "Content-Type": "application/json",
+      apikey: SUPABASE_CONFIG.publishableKey,
+      Authorization: `Bearer ${SUPABASE_CONFIG.publishableKey}`,
     },
-    body: JSON.stringify({ query, variables })
+    body: JSON.stringify({ query, variables }),
   });
 
   if (!response.ok) {
@@ -160,8 +167,10 @@ async function fetchFromNetwork(query, variables = {}) {
 
   const result = await response.json();
   if (result.errors && result.errors.length > 0) {
-    console.error('[GraphQL Network Error]:', result.errors);
-    throw new Error(result.errors[0].message || 'GraphQL Query Execution Error');
+    console.error("[GraphQL Network Error]:", result.errors);
+    throw new Error(
+      result.errors[0].message || "GraphQL Query Execution Error",
+    );
   }
 
   return result.data;
@@ -235,5 +244,5 @@ export const GQL_QUERIES = {
         }
       }
     }
-  `
+  `,
 };

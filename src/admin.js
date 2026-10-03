@@ -1,11 +1,22 @@
+import { contentEditor, contentFields, validImage } from "./site-content.js";
+import { isAdminUser } from "./lib/admin-access.js";
+import { auth, supabase } from "./lib/supabase.js";
+import {
+  supportsDraft,
+  isDraft,
+  enableDraft,
+  exitDraft,
+} from "./lib/draft-store.js";
+import { PRODUCTS } from "./store.js";
 // GZNSPORTS // MASTER ADMINISTRATIVE COMMAND CONSOLE
-import { adminApi } from './lib/admin-api.js';
-import { realtimeEngine } from './lib/realtime-engine.js';
-import { auth } from './lib/supabase.js';
-import { playMetallicClick, playPunchImpact } from './audio.js';
+import { adminApi } from "./lib/admin-api.js";
+import { realtimeEngine } from "./lib/realtime-engine.js";
+import { escapeHTML } from "./ui.js";
+import { playMetallicClick, playPunchImpact } from "./audio.js";
 
 let isAdminOpen = false;
-let currentTab = 'overview';
+let privateOrdersChannel = null;
+let currentTab = "overview";
 let cachedProducts = [];
 let cachedOrders = [];
 let cachedSettings = {};
@@ -17,48 +28,98 @@ export function initAdminPanel() {
 }
 
 function renderAdminContainer() {
-  let container = document.getElementById('gzn-admin-overlay');
+  let container = document.getElementById("gzn-admin-overlay");
   if (!container) {
-    container = document.createElement('div');
-    container.id = 'gzn-admin-overlay';
-    container.className = 'admin-overlay';
+    container = document.createElement("div");
+    container.id = "gzn-admin-overlay";
+    container.className = "admin-overlay";
     document.body.appendChild(container);
   }
 }
 
-export function openAdminPanel() {
+export async function openAdminPanel() {
   isAdminOpen = true;
   playMetallicClick();
-  const overlay = document.getElementById('gzn-admin-overlay');
+  const overlay = document.getElementById("gzn-admin-overlay");
   if (overlay) {
-    overlay.classList.add('open');
-    renderAdminUI();
+    overlay.classList.add("open");
+    if (isDraft()) return renderAdminUI();
+    overlay.innerHTML =
+      '<div class="admin-modal"><p>Checking administrator access…</p></div>';
+    try {
+      if (isAdminUser(await auth.getUser())) return renderAdminUI();
+    } catch {}
+    renderAdminGate();
   }
+}
+
+function renderAdminGate() {
+  const overlay = document.getElementById("gzn-admin-overlay");
+  overlay.innerHTML = `<div class="admin-modal admin-login"><button class="admin-close-btn" id="admin-gate-close" aria-label="Close admin sign in">✕</button><p class="eyebrow">GNZSPORTS / STORE MANAGEMENT</p><h2>YOUR STORE. YOUR CONTROL.</h2><p>Sign in with your administrator account to manage live products, website content and orders.</p><form id="admin-login-form" class="admin-form-grid"><div class="form-group full-width"><label for="admin-email">Email</label><input id="admin-email" value="gulraizbutt297@gmail.com" type="email" autocomplete="username" required /></div><div class="form-group full-width"><label for="admin-password">Password</label><input id="admin-password" type="password" autocomplete="current-password" required /></div><p id="admin-gate-feedback" role="status"></p><button class="btn-primary" type="submit">Sign in to live admin</button></form>${supportsDraft() ? '<hr><h3>Try the editor locally</h3><p>Changes persist in this browser only. No live products, settings or orders are modified.</p><button id="start-draft" class="btn-secondary">Open local draft editor</button>' : ""}</div>`;
+  document.getElementById("admin-gate-close").onclick = closeAdminPanel;
+  document.getElementById("admin-login-form").onsubmit = async (event) => {
+    event.preventDefault();
+    const button = event.currentTarget.querySelector("button");
+    button.disabled = true;
+    try {
+      const { user } = await auth.signIn(
+        document.getElementById("admin-email").value.trim(),
+        document.getElementById("admin-password").value,
+      );
+      if (!isAdminUser(user))
+        throw new Error(
+          "This account has no administrator role. Ask the project owner to grant admin access.",
+        );
+      renderAdminUI();
+    } catch (error) {
+      document.getElementById("admin-gate-feedback").textContent =
+        error.message;
+    } finally {
+      button.disabled = false;
+    }
+  };
+  document
+    .getElementById("start-draft")
+    ?.addEventListener("click", async (event) => {
+      event.currentTarget.disabled = true;
+      try {
+        let settings = {};
+        try {
+          settings = await adminApi.fetchSiteSettings(true);
+        } catch {}
+        enableDraft(structuredClone(PRODUCTS), settings);
+        location.hash = "admin";
+        location.reload();
+      } catch (error) {
+        document.getElementById("admin-gate-feedback").textContent =
+          error.message;
+        event.target.disabled = false;
+      }
+    });
 }
 
 export function closeAdminPanel() {
   isAdminOpen = false;
+  if (privateOrdersChannel) {
+    void supabase.removeChannel(privateOrdersChannel);
+    privateOrdersChannel = null;
+  }
   playMetallicClick();
-  const overlay = document.getElementById('gzn-admin-overlay');
+  const overlay = document.getElementById("gzn-admin-overlay");
   if (overlay) {
-    overlay.classList.remove('open');
+    overlay.classList.remove("open");
   }
 }
 
 function attachAdminTriggers() {
-  // Listen for escape key
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isAdminOpen) {
-      closeAdminPanel();
-    }
-  });
+  window.addEventListener("gnz:close-admin", closeAdminPanel);
 }
 
 function subscribeToRealtime() {
   realtimeEngine.init();
 
   realtimeEngine.onStatusChange((status) => {
-    const pulseEl = document.getElementById('admin-realtime-status');
+    const pulseEl = document.getElementById("admin-realtime-status");
     if (pulseEl) {
       pulseEl.className = `admin-status-badge ${status.toLowerCase()}`;
       pulseEl.innerHTML = `<span class="pulse-dot"></span> REALTIME: ${status}`;
@@ -66,29 +127,42 @@ function subscribeToRealtime() {
   });
 
   realtimeEngine.onProductChange(() => {
-    if (isAdminOpen && currentTab === 'products') {
+    if (isAdminOpen && currentTab === "products") {
       loadProductsTab();
     }
   });
 
   realtimeEngine.onSettingsChange(() => {
-    if (isAdminOpen && currentTab === 'settings') {
+    if (isAdminOpen && currentTab === "settings") {
       loadSettingsTab();
     }
   });
 
   realtimeEngine.onOrderChange(() => {
-    if (isAdminOpen && (currentTab === 'orders' || currentTab === 'overview')) {
-      loadOverviewTab();
-      if (currentTab === 'orders') loadOrdersTab();
+    if (isAdminOpen && (currentTab === "orders" || currentTab === "overview")) {
+      if (currentTab === "orders") loadOrdersTab();
+      else loadOverviewTab();
     }
   });
 }
 
 async function renderAdminUI() {
-  const overlay = document.getElementById('gzn-admin-overlay');
+  const overlay = document.getElementById("gzn-admin-overlay");
   if (!overlay) return;
 
+  if (!isDraft() && !privateOrdersChannel) {
+    privateOrdersChannel = supabase
+      .channel("gnz-admin-orders")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders" },
+        () => {
+          if (isAdminOpen && currentTab === "orders") void loadOrdersTab();
+          if (isAdminOpen && currentTab === "overview") void loadOverviewTab();
+        },
+      )
+      .subscribe();
+  }
   const status = realtimeEngine.getStatus();
 
   overlay.innerHTML = `
@@ -97,7 +171,7 @@ async function renderAdminUI() {
       <div class="admin-header">
         <div class="admin-header-title">
           <div class="admin-brand">
-            <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ GENZ SPORTS STORE EXECUTIVE ]</span>
+            <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ GNZSPORTS STORE EXECUTIVE ]</span>
             <h2>EXECUTIVE STORE MANAGER</h2>
           </div>
           <div id="admin-realtime-status" class="admin-status-badge ${status.toLowerCase()}">
@@ -107,18 +181,19 @@ async function renderAdminUI() {
         <button class="admin-close-btn" id="admin-close-btn" title="Close Store Manager">✕</button>
       </div>
 
+      <div class="admin-mode-bar"><span>${isDraft() ? "LOCAL DRAFT · Saved in this browser only" : "LIVE STORE · Changes publish to your website"}</span><button id="admin-exit-mode" class="btn-secondary">${isDraft() ? "Exit local draft" : "Sign out"}</button></div>
       <!-- NAVIGATION TABS -->
       <div class="admin-nav-tabs">
-        <button class="admin-tab-btn ${currentTab === 'overview' ? 'active' : ''}" data-tab="overview">
+        <button class="admin-tab-btn ${currentTab === "overview" ? "active" : ""}" data-tab="overview">
           📊 STORE OVERVIEW
         </button>
-        <button class="admin-tab-btn ${currentTab === 'products' ? 'active' : ''}" data-tab="products">
+        <button class="admin-tab-btn ${currentTab === "products" ? "active" : ""}" data-tab="products">
           🏆 TITLE BELTS & HOODIES
         </button>
-        <button class="admin-tab-btn ${currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
+        <button class="admin-tab-btn ${currentTab === "settings" ? "active" : ""}" data-tab="settings">
           ⚙️ STOREFRONT & HERO EDITOR
         </button>
-        <button class="admin-tab-btn ${currentTab === 'orders' ? 'active' : ''}" data-tab="orders">
+        <button class="admin-tab-btn ${currentTab === "orders" ? "active" : ""}" data-tab="orders">
           📦 CUSTOMER ORDERS
         </button>
       </div>
@@ -133,18 +208,31 @@ async function renderAdminUI() {
     </div>
   `;
 
+  document.getElementById("admin-exit-mode").onclick = async () => {
+    if (isDraft()) return exitDraft();
+    try {
+      await auth.signOut();
+      closeAdminPanel();
+    } catch (error) {
+      alert(error.message);
+    }
+  };
   // Attach Header Events
-  document.getElementById('admin-close-btn')?.addEventListener('click', closeAdminPanel);
-  overlay.addEventListener('click', (e) => {
+  document
+    .getElementById("admin-close-btn")
+    ?.addEventListener("click", closeAdminPanel);
+  overlay.addEventListener("click", (e) => {
     if (e.target === overlay) closeAdminPanel();
   });
 
   // Tab switching
-  overlay.querySelectorAll('.admin-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      overlay.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentTab = btn.getAttribute('data-tab');
+  overlay.querySelectorAll(".admin-tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      overlay
+        .querySelectorAll(".admin-tab-btn")
+        .forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentTab = btn.getAttribute("data-tab");
       playMetallicClick();
       loadTabContent();
     });
@@ -154,17 +242,17 @@ async function renderAdminUI() {
 }
 
 function loadTabContent() {
-  if (currentTab === 'overview') loadOverviewTab();
-  else if (currentTab === 'products') loadProductsTab();
-  else if (currentTab === 'settings') loadSettingsTab();
-  else if (currentTab === 'orders') loadOrdersTab();
+  if (currentTab === "overview") loadOverviewTab();
+  else if (currentTab === "products") loadProductsTab();
+  else if (currentTab === "settings") loadSettingsTab();
+  else if (currentTab === "orders") loadOrdersTab();
 }
 
 // -------------------------------------------------------------
 // TAB 1: TELEMETRY & OVERVIEW
 // -------------------------------------------------------------
 async function loadOverviewTab() {
-  const content = document.getElementById('admin-tab-content');
+  const content = document.getElementById("admin-tab-content");
   if (!content) return;
 
   try {
@@ -177,7 +265,7 @@ async function loadOverviewTab() {
             <span class="metric-icon">💰</span>
           </div>
           <div class="metric-big-number">$${metrics.totalRevenue.toFixed(2)}</div>
-          <span class="metric-sub">Processed through checkout</span>
+          <span class="metric-sub">Paid, non-cancelled orders</span>
         </div>
 
         <div class="metric-box">
@@ -186,7 +274,7 @@ async function loadOverviewTab() {
             <span class="metric-icon">📦</span>
           </div>
           <div class="metric-big-number">${metrics.totalOrders}</div>
-          <span class="metric-sub">Verified customer purchases</span>
+          <span class="metric-sub">Order requests received</span>
         </div>
 
         <div class="metric-box">
@@ -195,7 +283,7 @@ async function loadOverviewTab() {
             <span class="metric-icon">🏆</span>
           </div>
           <div class="metric-big-number">${metrics.totalProducts}</div>
-          <span class="metric-sub">Live products in database</span>
+          <span class="metric-sub">Products in current workspace</span>
         </div>
 
         <div class="metric-box">
@@ -203,7 +291,7 @@ async function loadOverviewTab() {
             <span class="mono-tag" style="background:#fff7ed; color:#c2410c; border:1px solid #ffedd5;">LOW STOCK ALERT</span>
             <span class="metric-icon">⚠️</span>
           </div>
-          <div class="metric-big-number" style="color: ${metrics.lowStockCount > 0 ? '#ef4444' : '#0f172a'};">
+          <div class="metric-big-number" style="color: ${metrics.lowStockCount > 0 ? "#ef4444" : "#0f172a"};">
             ${metrics.lowStockCount}
           </div>
           <span class="metric-sub">Items below 30 units threshold</span>
@@ -218,9 +306,12 @@ async function loadOverviewTab() {
           </button>
         </div>
 
-        ${metrics.recentOrders.length === 0 ? `
-          <div class="admin-empty-state">No orders registered in the system yet. Customer purchases will appear here live.</div>
-        ` : `
+        ${
+          metrics.recentOrders.length === 0
+            ? `
+          <div class="admin-empty-state">No orders registered in the system yet. Order requests appear here.</div>
+        `
+            : `
           <table class="admin-table">
             <thead>
               <tr>
@@ -232,27 +323,34 @@ async function loadOverviewTab() {
               </tr>
             </thead>
             <tbody>
-              ${metrics.recentOrders.map(o => `
+              ${metrics.recentOrders
+                .map(
+                  (o) => `
                 <tr>
                   <td class="mono-tag">${o.id.substring(0, 8)}...</td>
-                  <td><strong>${o.customer_name}</strong><br><span style="font-size:0.75rem; color:#888;">${o.customer_email}</span></td>
+                  <td><strong>${escapeHTML(o.customer_name)}</strong><br><span style="font-size:0.75rem; color:#888;">${escapeHTML(o.customer_email)}</span></td>
                   <td style="font-family:var(--font-mono); font-weight:700;">$${parseFloat(o.total).toFixed(2)}</td>
-                  <td><span class="status-pill status-${(o.status || 'pending').toLowerCase()}">${o.status}</span></td>
+                  <td><span class="status-pill status-${(o.status || "pending").toLowerCase()}">${o.status}</span></td>
                   <td class="mono-tag">${new Date(o.created_at).toLocaleDateString()}</td>
                 </tr>
-              `).join('')}
+              `,
+                )
+                .join("")}
             </tbody>
           </table>
-        `}
+        `
+        }
       </div>
     `;
 
-    document.getElementById('refresh-overview-btn')?.addEventListener('click', () => {
-      playMetallicClick();
-      loadOverviewTab();
-    });
+    document
+      .getElementById("refresh-overview-btn")
+      ?.addEventListener("click", () => {
+        playMetallicClick();
+        loadOverviewTab();
+      });
   } catch (err) {
-    content.innerHTML = `<div class="admin-error">Failed to load telemetry: ${err.message}</div>`;
+    content.innerHTML = `<div class="admin-error">Failed to load telemetry: ${escapeHTML(err.message)}</div>`;
   }
 }
 
@@ -260,7 +358,7 @@ async function loadOverviewTab() {
 // TAB 2: PRODUCT ARMORY (CRUD)
 // -------------------------------------------------------------
 async function loadProductsTab() {
-  const content = document.getElementById('admin-tab-content');
+  const content = document.getElementById("admin-tab-content");
   if (!content) return;
 
   try {
@@ -270,7 +368,7 @@ async function loadProductsTab() {
       <div class="admin-section-header">
         <div>
           <h3>TITLE BELT & HOODIE CATALOG</h3>
-          <p style="color:var(--gzn-slate); font-size:0.85rem;">Create, edit pricing, manage stock levels, and publish products to live storefront.</p>
+          <p style="color:var(--gzn-slate); font-size:0.85rem;">Create, edit pricing, manage stock levels, and save products to the current workspace.</p>
         </div>
         <button class="btn-primary" id="open-add-product-btn" style="padding:0.6rem 1.2rem; font-size:0.8rem;">
           + ADD NEW PRODUCT
@@ -291,15 +389,17 @@ async function loadProductsTab() {
             </tr>
           </thead>
           <tbody>
-            ${cachedProducts.map(p => `
-              <tr data-id="${p.id}">
+            ${cachedProducts
+              .map(
+                (p) => `
+              <tr data-id="${escapeHTML(p.id)}">
                 <td>
-                  <img src="${p.image}" alt="${p.title}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; border:1px solid #e2e8f0;" />
+                  <img src="${escapeHTML(p.image)}" alt="${escapeHTML(p.title)}" style="width:48px; height:48px; object-fit:cover; border-radius:6px; border:1px solid #e2e8f0;" />
                 </td>
                 <td>
-                  <strong>${p.title}</strong>
+                  <strong>${escapeHTML(p.title)}</strong>
                   <div style="font-size:0.75rem; color:var(--gzn-slate); max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                    ${p.description || ''}
+                    ${escapeHTML(p.description || "")}
                   </div>
                 </td>
                 <td><span class="mono-tag" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;">${p.category.toUpperCase()}</span></td>
@@ -308,20 +408,22 @@ async function loadProductsTab() {
                 </td>
                 <td>
                   <div class="stock-counter-wrap">
-                    <button class="stock-btn stock-down" data-id="${p.id}">-</button>
-                    <span class="stock-val mono-tag ${p.stock_quantity < 30 ? 'low' : ''}">${p.stock_quantity || 0}</span>
-                    <button class="stock-btn stock-up" data-id="${p.id}">+</button>
+                    <button class="stock-btn stock-down" data-id="${escapeHTML(p.id)}">-</button>
+                    <span class="stock-val mono-tag ${p.stock_quantity < 30 ? "low" : ""}">${p.stock_quantity || 0}</span>
+                    <button class="stock-btn stock-up" data-id="${escapeHTML(p.id)}">+</button>
                   </div>
                 </td>
-                <td><span class="card-tag-badge" style="position:static; font-size:0.65rem;">${p.tag || 'STANDARD'}</span></td>
+                <td><span class="card-tag-badge" style="position:static; font-size:0.65rem;">${escapeHTML(p.tag || "STANDARD")}</span></td>
                 <td>
                   <div style="display:flex; gap:0.4rem;">
-                    <button class="admin-icon-btn edit-product-trigger" data-id="${p.id}" title="Edit Product">✏️</button>
-                    <button class="admin-icon-btn delete-product-trigger" data-id="${p.id}" title="Delete Product" style="color:#ef4444;">🗑️</button>
+                    <button class="admin-icon-btn edit-product-trigger" data-id="${escapeHTML(p.id)}" title="Edit Product">✏️</button>
+                    <button class="admin-icon-btn delete-product-trigger" data-id="${escapeHTML(p.id)}" title="Delete Product" style="color:#ef4444;">🗑️</button>
                   </div>
                 </td>
               </tr>
-            `).join('')}
+            `,
+              )
+              .join("")}
           </tbody>
         </table>
       </div>
@@ -367,7 +469,7 @@ async function loadProductsTab() {
 
             <div class="form-group full-width">
               <label>IMAGE URL / PATH</label>
-              <input type="text" id="edit-product-image" placeholder="/images/belts/world-heavyweight-belt.jpg or URL" required />
+              <input type="text" id="edit-product-image" placeholder="/images/belts/world-heavyweight-belt.webp or URL" required />
             </div>
 
             <div class="form-group full-width">
@@ -380,82 +482,120 @@ async function loadProductsTab() {
               <textarea id="edit-product-desc" rows="3" placeholder="Engineered for champions..."></textarea>
             </div>
 
+            <div class="form-group full-width"><label for="edit-product-specs">SPECIFICATIONS (one Label: Value per line)</label><textarea id="edit-product-specs" rows="4" placeholder="Material: Brass and leather"></textarea></div>
+            <div class="form-group"><label for="edit-product-featured">FEATURED PRODUCT</label><input id="edit-product-featured" type="checkbox" /></div>
             <div class="form-actions full-width">
               <button type="button" class="btn-secondary" id="cancel-product-edit">CANCEL</button>
-              <button type="submit" class="btn-primary" id="save-product-submit">SAVE & PUBLISH TO SUPABASE</button>
+              <button type="submit" class="btn-primary" id="save-product-submit">SAVE & PUBLISH TO STORE</button>
             </div>
           </form>
         </div>
       </div>
     `;
 
+    content.querySelectorAll(".form-group").forEach((group) => {
+      const input = group.querySelector("input,select,textarea");
+      const label = group.querySelector("label");
+      if (input && label) label.htmlFor = input.id;
+    });
     attachProductEvents();
   } catch (err) {
-    content.innerHTML = `<div class="admin-error">Failed to load product armory: ${err.message}</div>`;
+    content.innerHTML = `<div class="admin-error">Failed to load product armory: ${escapeHTML(err.message)}</div>`;
   }
 }
 
 function attachProductEvents() {
-  const editorModal = document.getElementById('product-editor-modal');
-  const form = document.getElementById('product-editor-form');
+  const editorModal = document.getElementById("product-editor-modal");
+  const form = document.getElementById("product-editor-form");
 
   // Open Add Product
-  document.getElementById('open-add-product-btn')?.addEventListener('click', () => {
-    form.reset();
-    document.getElementById('edit-product-id').value = '';
-    document.getElementById('product-editor-title').textContent = 'ADD NEW PRODUCT SPECIFICATION';
-    editorModal.classList.add('open');
-    playMetallicClick();
-  });
+  document
+    .getElementById("open-add-product-btn")
+    ?.addEventListener("click", () => {
+      form.reset();
+      document.getElementById("edit-product-id").value = "";
+      document.getElementById("product-editor-title").textContent =
+        "ADD NEW PRODUCT SPECIFICATION";
+      editorModal.classList.add("open");
+      playMetallicClick();
+    });
 
   // Close Editor
-  document.getElementById('close-product-editor')?.addEventListener('click', () => {
-    editorModal.classList.remove('open');
-  });
-  document.getElementById('cancel-product-edit')?.addEventListener('click', () => {
-    editorModal.classList.remove('open');
-  });
+  document
+    .getElementById("close-product-editor")
+    ?.addEventListener("click", () => {
+      editorModal.classList.remove("open");
+    });
+  document
+    .getElementById("cancel-product-edit")
+    ?.addEventListener("click", () => {
+      editorModal.classList.remove("open");
+    });
 
   // Edit Product Trigger
-  document.querySelectorAll('.edit-product-trigger').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      const prod = cachedProducts.find(p => p.id === id);
+  document.querySelectorAll(".edit-product-trigger").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-id");
+      const prod = cachedProducts.find((p) => p.id === id);
       if (!prod) return;
 
-      document.getElementById('edit-product-id').value = prod.id;
-      document.getElementById('edit-product-title').value = prod.title;
-      document.getElementById('edit-product-category').value = prod.category;
-      document.getElementById('edit-product-price').value = prod.price;
-      document.getElementById('edit-product-tag').value = prod.tag || '';
-      document.getElementById('edit-product-stock').value = prod.stock_quantity || 50;
-      document.getElementById('edit-product-image').value = prod.image;
-      document.getElementById('edit-product-sizes').value = Array.isArray(prod.sizes) ? prod.sizes.join(', ') : prod.sizes;
-      document.getElementById('edit-product-desc').value = prod.description || '';
+      document.getElementById("edit-product-id").value = prod.id;
+      document.getElementById("edit-product-title").value = prod.title;
+      document.getElementById("edit-product-category").value = prod.category;
+      document.getElementById("edit-product-price").value = prod.price;
+      document.getElementById("edit-product-tag").value = prod.tag || "";
+      document.getElementById("edit-product-stock").value =
+        prod.stock_quantity ?? 50;
+      document.getElementById("edit-product-image").value = prod.image;
+      document.getElementById("edit-product-sizes").value = Array.isArray(
+        prod.sizes,
+      )
+        ? prod.sizes.join(", ")
+        : prod.sizes;
+      document.getElementById("edit-product-desc").value =
+        prod.description || "";
 
-      document.getElementById('product-editor-title').textContent = `EDIT PRODUCT: ${prod.title}`;
-      editorModal.classList.add('open');
+      document.getElementById("edit-product-specs").value = (prod.specs || [])
+        .map((s) => `${s.label}: ${s.value}`)
+        .join("\n");
+      document.getElementById("edit-product-featured").checked =
+        !!prod.is_featured;
+      document.getElementById("product-editor-title").textContent =
+        `EDIT PRODUCT: ${prod.title}`;
+      editorModal.classList.add("open");
       playMetallicClick();
     });
   });
 
   // Save Form
-  form?.addEventListener('submit', async (e) => {
+  form?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const id = document.getElementById('edit-product-id').value;
+    const id = document.getElementById("edit-product-id").value;
     const payload = {
-      title: document.getElementById('edit-product-title').value,
-      category: document.getElementById('edit-product-category').value,
-      price: document.getElementById('edit-product-price').value,
-      tag: document.getElementById('edit-product-tag').value,
-      stock_quantity: document.getElementById('edit-product-stock').value,
-      image: document.getElementById('edit-product-image').value,
-      sizes: document.getElementById('edit-product-sizes').value,
-      description: document.getElementById('edit-product-desc').value
+      title: document.getElementById("edit-product-title").value,
+      category: document.getElementById("edit-product-category").value,
+      price: document.getElementById("edit-product-price").value,
+      tag: document.getElementById("edit-product-tag").value,
+      stock_quantity: document.getElementById("edit-product-stock").value,
+      image: document.getElementById("edit-product-image").value,
+      sizes: document.getElementById("edit-product-sizes").value,
+      description: document.getElementById("edit-product-desc").value,
+      specs: document
+        .getElementById("edit-product-specs")
+        .value.split("\n")
+        .filter((line) => line.trim())
+        .map((line) => {
+          const index = line.indexOf(":");
+          return {
+            label: index < 0 ? line.trim() : line.slice(0, index).trim(),
+            value: index < 0 ? "" : line.slice(index + 1).trim(),
+          };
+        }),
+      is_featured: document.getElementById("edit-product-featured").checked,
     };
 
-    const submitBtn = document.getElementById('save-product-submit');
-    submitBtn.textContent = 'SAVING TO SUPABASE...';
+    const submitBtn = document.getElementById("save-product-submit");
+    submitBtn.textContent = "SAVING TO STORE...";
     submitBtn.disabled = true;
 
     try {
@@ -465,55 +605,72 @@ function attachProductEvents() {
         await adminApi.createProduct(payload);
       }
       playPunchImpact();
-      editorModal.classList.remove('open');
+      editorModal.classList.remove("open");
       loadProductsTab();
     } catch (err) {
-      alert(`Save failed: ${err.message}`);
+      alert(`Save failed: ${escapeHTML(err.message)}`);
     } finally {
-      submitBtn.textContent = 'SAVE & PUBLISH TO SUPABASE';
+      submitBtn.textContent = "SAVE & PUBLISH TO STORE";
       submitBtn.disabled = false;
     }
   });
 
   // Delete Product Trigger
-  document.querySelectorAll('.delete-product-trigger').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = btn.getAttribute('data-id');
-      const prod = cachedProducts.find(p => p.id === id);
-      if (!confirm(`Are you sure you want to decommission and delete "${prod?.title || id}"?`)) return;
+  document.querySelectorAll(".delete-product-trigger").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-id");
+      const prod = cachedProducts.find((p) => p.id === id);
+      if (
+        !confirm(
+          `Are you sure you want to decommission and delete "${prod?.title || id}"?`,
+        )
+      )
+        return;
 
       try {
         await adminApi.deleteProduct(id);
         playPunchImpact();
         loadProductsTab();
       } catch (err) {
-        alert(`Delete failed: ${err.message}`);
+        alert(`Delete failed: ${escapeHTML(err.message)}`);
       }
     });
   });
 
   // Quick Stock Adjust Buttons
-  document.querySelectorAll('.stock-up').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = btn.getAttribute('data-id');
-      const prod = cachedProducts.find(p => p.id === id);
+  document.querySelectorAll(".stock-up").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-id");
+      const prod = cachedProducts.find((p) => p.id === id);
       if (!prod) return;
       const newStock = (prod.stock_quantity || 0) + 5;
-      await adminApi.updateProduct(id, { stock_quantity: newStock });
-      playMetallicClick();
-      loadProductsTab();
+      btn.disabled = true;
+      try {
+        await adminApi.updateProduct(id, { stock_quantity: newStock });
+        playMetallicClick();
+        await loadProductsTab();
+      } catch (error) {
+        alert(error.message);
+        btn.disabled = false;
+      }
     });
   });
 
-  document.querySelectorAll('.stock-down').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = btn.getAttribute('data-id');
-      const prod = cachedProducts.find(p => p.id === id);
+  document.querySelectorAll(".stock-down").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-id");
+      const prod = cachedProducts.find((p) => p.id === id);
       if (!prod) return;
       const newStock = Math.max(0, (prod.stock_quantity || 0) - 5);
-      await adminApi.updateProduct(id, { stock_quantity: newStock });
-      playMetallicClick();
-      loadProductsTab();
+      btn.disabled = true;
+      try {
+        await adminApi.updateProduct(id, { stock_quantity: newStock });
+        playMetallicClick();
+        await loadProductsTab();
+      } catch (error) {
+        alert(error.message);
+        btn.disabled = false;
+      }
     });
   });
 }
@@ -522,71 +679,94 @@ function attachProductEvents() {
 // TAB 3: SITE & HERO CUSTOMIZER
 // -------------------------------------------------------------
 async function loadSettingsTab() {
-  const content = document.getElementById('admin-tab-content');
+  const content = document.getElementById("admin-tab-content");
   if (!content) return;
 
   try {
     cachedSettings = await adminApi.fetchSiteSettings(true);
-    const hero = cachedSettings.hero_config || {};
-    const announcements = cachedSettings.announcements || {};
-    const manifesto = cachedSettings.manifesto || {};
+    const savedHero = cachedSettings.hero_config || {};
+    const heroValues =
+      savedHero.visual_direction === "earned"
+        ? savedHero
+        : {
+            headline_top: "EARNED.",
+            headline_bottom: "NEVER GIVEN.",
+            subhead:
+              "Championship gold. Heavyweight essentials. Made for a mindset that never clocks out.",
+            badge_primary: "THE CHAMPIONSHIP COLLECTION",
+            cta_primary_text: "Explore the collection",
+            cta_secondary_text: "Discover the craft",
+            badge_secondary: "24K GOLD FINISH × 450GSM HEAVYWEIGHT COTTON",
+          };
+    const hero = Object.fromEntries(
+      Object.entries(heroValues).map(([key, value]) => [
+        key,
+        escapeHTML(value),
+      ]),
+    );
+    const savedAnnouncements = cachedSettings.announcements || {};
+    const announcementValues =
+      savedAnnouncements.visual_direction === "earned"
+        ? savedAnnouncements
+        : {
+            banner_text: "BUILT FOR THE MOMENT. MADE FOR THE EVERYDAY.",
+            shipping_text: "WORLDWIDE SHIPPING",
+            shipping_threshold: savedAnnouncements.shipping_threshold || 100,
+          };
+    const announcements = Object.fromEntries(
+      Object.entries(announcementValues).map(([key, value]) => [
+        key,
+        escapeHTML(value),
+      ]),
+    );
 
     content.innerHTML = `
       <div class="admin-section-header">
         <div>
           <h3>STOREFRONT & HERO SHOWCASE EDITOR</h3>
-          <p style="color:var(--gzn-slate); font-size:0.85rem;">Modify hero headlines, promotional banners, and guarantees. Changes apply live to public storefront.</p>
+          <p style="color:var(--gzn-slate); font-size:0.85rem;">Modify hero headlines, promotional banners, and guarantees. Changes apply to the current workspace.</p>
         </div>
       </div>
 
       <div class="admin-settings-container">
+        <div class="admin-card-setting"><h4 class="setting-card-title">PAGE CONTENT & PHOTOGRAPHY</h4><p>Edit headings, story, help text, policies and images.</p>${contentEditor(cachedSettings.page_content)}</div>
         <!-- 1. HERO CONFIG -->
         <div class="admin-card-setting">
           <h4 class="setting-card-title">🏆 HERO SHOWCASE STUDIO CONFIGURATION</h4>
           <form id="hero-settings-form" class="admin-form-grid">
             <div class="form-group">
-              <label>PRIMARY ACCENT BADGE</label>
-              <input type="text" id="set-hero-badge-1" value="${hero.badge_primary || ''}" />
+              <label>CAMPAIGN LABEL</label>
+              <input type="text" id="set-hero-badge-1" value="${hero.badge_primary || ""}" />
             </div>
 
             <div class="form-group">
-              <label>SECONDARY SPEC BADGE</label>
-              <input type="text" id="set-hero-badge-2" value="${hero.badge_secondary || ''}" />
+              <label>HERO FOOTNOTE</label>
+              <input type="text" id="set-hero-badge-2" value="${hero.badge_secondary || ""}" />
             </div>
 
             <div class="form-group">
               <label>HEADLINE TOP (SOLID)</label>
-              <input type="text" id="set-hero-title-top" value="${hero.headline_top || ''}" />
+              <input type="text" id="set-hero-title-top" value="${hero.headline_top || ""}" />
             </div>
 
             <div class="form-group">
               <label>HEADLINE BOTTOM (ACCENT)</label>
-              <input type="text" id="set-hero-title-bottom" value="${hero.headline_bottom || ''}" />
+              <input type="text" id="set-hero-title-bottom" value="${hero.headline_bottom || ""}" />
             </div>
 
             <div class="form-group full-width">
               <label>HERO SUBHEAD COPY</label>
-              <textarea id="set-hero-subhead" rows="2">${hero.subhead || ''}</textarea>
+              <textarea id="set-hero-subhead" rows="2">${hero.subhead || ""}</textarea>
             </div>
 
             <div class="form-group">
               <label>PRIMARY CTA BUTTON</label>
-              <input type="text" id="set-hero-cta-1" value="${hero.cta_primary_text || ''}" />
+              <input type="text" id="set-hero-cta-1" value="${hero.cta_primary_text || ""}" />
             </div>
 
             <div class="form-group">
               <label>SECONDARY CRAFTSMANSHIP TRIGGER</label>
-              <input type="text" id="set-hero-cta-2" value="${hero.cta_secondary_text || ''}" />
-            </div>
-
-            <div class="form-group">
-              <label>SHOWCASE PIN 01 (TOP LEFT)</label>
-              <input type="text" id="set-hero-pin-1" value="${hero.pin_top_text || ''}" />
-            </div>
-
-            <div class="form-group">
-              <label>SHOWCASE PIN 02 (BOTTOM RIGHT)</label>
-              <input type="text" id="set-hero-pin-2" value="${hero.pin_bottom_text || ''}" />
+              <input type="text" id="set-hero-cta-2" value="${hero.cta_secondary_text || ""}" />
             </div>
 
             <div class="form-actions full-width">
@@ -599,24 +779,19 @@ async function loadSettingsTab() {
 
         <!-- 2. ANNOUNCEMENT BAR & GUARANTEES -->
         <div class="admin-card-setting" style="margin-top: 1.5rem;">
-          <h4 class="setting-card-title">📢 ANNOUNCEMENTS & GUARANTEES</h4>
+          <h4 class="setting-card-title">📢 ANNOUNCEMENT BAR</h4>
           <form id="announcements-form" class="admin-form-grid">
             <div class="form-group">
               <label>TICKER HEADLINE</label>
-              <input type="text" id="set-ann-ticker" value="${announcements.banner_text || ''}" />
+              <input type="text" id="set-ann-ticker" value="${announcements.banner_text || ""}" />
             </div>
 
             <div class="form-group">
               <label>FREE SHIPPING TEXT</label>
-              <input type="text" id="set-ann-shipping" value="${announcements.shipping_text || ''}" />
+              <input type="text" id="set-ann-shipping" value="${announcements.shipping_text || ""}" />
             </div>
 
-            <div class="form-group">
-              <label>STRIKE WARRANTY TEXT</label>
-              <input type="text" id="set-ann-warranty" value="${announcements.warranty_text || ''}" />
-            </div>
-
-            <div class="form-group">
+<div class="form-group">
               <label>FREE SHIPPING THRESHOLD ($)</label>
               <input type="number" id="set-ann-threshold" value="${announcements.shipping_threshold || 150}" />
             </div>
@@ -631,50 +806,88 @@ async function loadSettingsTab() {
       </div>
     `;
 
-    // Save Hero Form
-    document.getElementById('hero-settings-form')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const updatedHero = {
-        badge_primary: document.getElementById('set-hero-badge-1').value,
-        badge_secondary: document.getElementById('set-hero-badge-2').value,
-        headline_top: document.getElementById('set-hero-title-top').value,
-        headline_bottom: document.getElementById('set-hero-title-bottom').value,
-        subhead: document.getElementById('set-hero-subhead').value,
-        cta_primary_text: document.getElementById('set-hero-cta-1').value,
-        cta_secondary_text: document.getElementById('set-hero-cta-2').value,
-        pin_top_text: document.getElementById('set-hero-pin-1').value,
-        pin_bottom_text: document.getElementById('set-hero-pin-2').value
-      };
-
-      try {
-        await adminApi.saveSiteSetting('hero_config', updatedHero);
-        playPunchImpact();
-        alert('✓ Hero configuration saved to Supabase and broadcast to live storefront!');
-      } catch (err) {
-        alert(`Failed to save: ${err.message}`);
-      }
+    content.querySelectorAll(".form-group").forEach((group) => {
+      const input = group.querySelector("input,textarea,select");
+      const label = group.querySelector("label");
+      if (input && label) label.htmlFor = input.id;
     });
+    document.getElementById("page-content-form").onsubmit = async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      const feedback = document.getElementById("content-feedback");
+      try {
+        const values = Object.fromEntries(new FormData(form));
+        for (const [key, label, , type] of contentFields)
+          if (type === "image" && !validImage(values[key]))
+            throw new Error(label + ": enter a /images/ path or HTTPS URL.");
+        await adminApi.saveSiteSetting("page_content", values);
+        feedback.textContent = isDraft()
+          ? "Draft saved. Close the editor to see your changes."
+          : "Page content published.";
+      } catch (error) {
+        feedback.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    };
+    // Save Hero Form
+    document
+      .getElementById("hero-settings-form")
+      ?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const updatedHero = {
+          visual_direction: "earned",
+          badge_primary: document.getElementById("set-hero-badge-1").value,
+          badge_secondary: document.getElementById("set-hero-badge-2").value,
+          headline_top: document.getElementById("set-hero-title-top").value,
+          headline_bottom: document.getElementById("set-hero-title-bottom")
+            .value,
+          subhead: document.getElementById("set-hero-subhead").value,
+          cta_primary_text: document.getElementById("set-hero-cta-1").value,
+          cta_secondary_text: document.getElementById("set-hero-cta-2").value,
+        };
+
+        try {
+          await adminApi.saveSiteSetting("hero_config", updatedHero);
+          playPunchImpact();
+          alert(
+            isDraft() ? "Draft hero saved in this browser." : "Hero published.",
+          );
+        } catch (err) {
+          alert(`Failed to save: ${escapeHTML(err.message)}`);
+        }
+      });
 
     // Save Announcements Form
-    document.getElementById('announcements-form')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const updatedAnn = {
-        banner_text: document.getElementById('set-ann-ticker').value,
-        shipping_text: document.getElementById('set-ann-shipping').value,
-        warranty_text: document.getElementById('set-ann-warranty').value,
-        shipping_threshold: parseFloat(document.getElementById('set-ann-threshold').value) || 150
-      };
+    document
+      .getElementById("announcements-form")
+      ?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const updatedAnn = {
+          visual_direction: "earned",
+          banner_text: document.getElementById("set-ann-ticker").value,
+          shipping_text: document.getElementById("set-ann-shipping").value,
+          shipping_threshold:
+            parseFloat(document.getElementById("set-ann-threshold").value) ||
+            150,
+        };
 
-      try {
-        await adminApi.saveSiteSetting('announcements', updatedAnn);
-        playPunchImpact();
-        alert('✓ Announcements saved to Supabase and broadcast live!');
-      } catch (err) {
-        alert(`Failed to save: ${err.message}`);
-      }
-    });
+        try {
+          await adminApi.saveSiteSetting("announcements", updatedAnn);
+          playPunchImpact();
+          alert(
+            isDraft()
+              ? "Draft announcements saved in this browser."
+              : "Announcements published.",
+          );
+        } catch (err) {
+          alert(`Failed to save: ${escapeHTML(err.message)}`);
+        }
+      });
   } catch (err) {
-    content.innerHTML = `<div class="admin-error">Failed to load site settings: ${err.message}</div>`;
+    content.innerHTML = `<div class="admin-error">Failed to load site settings: ${escapeHTML(err.message)}</div>`;
   }
 }
 
@@ -682,7 +895,7 @@ async function loadSettingsTab() {
 // TAB 4: DISPATCH & ORDERS
 // -------------------------------------------------------------
 async function loadOrdersTab() {
-  const content = document.getElementById('admin-tab-content');
+  const content = document.getElementById("admin-tab-content");
   if (!content) return;
 
   try {
@@ -699,19 +912,24 @@ async function loadOrdersTab() {
         </button>
       </div>
 
-      ${cachedOrders.length === 0 ? `
+      ${
+        cachedOrders.length === 0
+          ? `
         <div class="admin-empty-state">
           📦 No customer orders recorded yet. When a customer checks out, their order is captured immediately.
         </div>
-      ` : `
+      `
+          : `
         <div class="admin-orders-list">
-          ${cachedOrders.map(order => `
+          ${cachedOrders
+            .map(
+              (order) => `
             <div class="admin-order-card" data-id="${order.id}">
               <div class="order-card-header">
                 <div>
                   <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ ORDER #${order.id.substring(0, 8)} ]</span>
-                  <div style="font-weight:700; font-size:1.05rem; margin-top:0.2rem; color:#0f172a;">${order.customer_name}</div>
-                  <div style="font-size:0.8rem; color:var(--gzn-slate);">${order.customer_email} ${order.customer_phone ? ' • ' + order.customer_phone : ''}</div>
+                  <div style="font-weight:700; font-size:1.05rem; margin-top:0.2rem; color:#0f172a;">${escapeHTML(order.customer_name)}</div>
+                  <div style="font-size:0.8rem; color:var(--gzn-slate);">${escapeHTML(order.customer_email)} ${order.customer_phone ? " • " + escapeHTML(order.customer_phone) : ""}</div>
                 </div>
                 <div style="text-align:right;">
                   <div style="font-family:var(--font-mono); font-size:1.3rem; font-weight:700; color:#b45309;">
@@ -720,55 +938,75 @@ async function loadOrdersTab() {
                   <div class="order-status-ctrl">
                     <label style="font-size:0.65rem; color:#475569; font-weight:600;">STATUS:</label>
                     <select class="order-status-select" data-id="${order.id}">
-                      <option value="PENDING" ${order.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
-                      <option value="PROCESSING" ${order.status === 'PROCESSING' ? 'selected' : ''}>PROCESSING</option>
-                      <option value="DISPATCHED" ${order.status === 'DISPATCHED' ? 'selected' : ''}>DISPATCHED</option>
-                      <option value="DELIVERED" ${order.status === 'DELIVERED' ? 'selected' : ''}>DELIVERED</option>
-                      <option value="CANCELLED" ${order.status === 'CANCELLED' ? 'selected' : ''}>CANCELLED</option>
+                      <option value="PENDING" ${order.status === "PENDING" ? "selected" : ""}>PENDING</option>
+                      <option value="PROCESSING" ${order.status === "PROCESSING" ? "selected" : ""}>PROCESSING</option>
+                      <option value="DISPATCHED" ${order.status === "DISPATCHED" ? "selected" : ""}>DISPATCHED</option>
+                      <option value="DELIVERED" ${order.status === "DELIVERED" ? "selected" : ""}>DELIVERED</option>
+                      <option value="CANCELLED" ${order.status === "CANCELLED" ? "selected" : ""}>CANCELLED</option>
                     </select>
                   </div>
                 </div>
               </div>
 
+              <p class="order-address"><strong>Shipping address:</strong> ${escapeHTML(typeof order.shipping_address === "object" ? order.shipping_address?.address || JSON.stringify(order.shipping_address) : order.shipping_address || "Not provided")}</p>
               <!-- ITEMS LIST -->
               <div class="order-items-breakdown">
-                ${Array.isArray(order.items) ? order.items.map(it => `
+                ${
+                  Array.isArray(order.items)
+                    ? order.items
+                        .map(
+                          (it) => `
                   <div class="order-sub-item">
-                    <span>${it.title || 'GENZ Championship Product'} (x${it.quantity}) [${it.size || 'STD'}]</span>
+                    <span>${escapeHTML(it.title || "GENZ Championship Product")} (x${it.quantity}) [${escapeHTML(it.size || "STD")}]</span>
                     <span style="font-family:var(--font-mono); font-weight:700;">$${((parseFloat(it.price) || 0) * (it.quantity || 1)).toFixed(2)}</span>
                   </div>
-                `).join('') : '<span style="color:#666;">Items payload</span>'}
+                `,
+                        )
+                        .join("")
+                    : '<span style="color:#666;">Items payload</span>'
+                }
               </div>
 
               <div class="order-footer-meta">
                 <span class="mono-tag" style="font-size:0.68rem; background:#f8fafc; color:#475569; border:1px solid #e2e8f0;">DATE: ${new Date(order.created_at).toLocaleString()}</span>
-                <span class="mono-tag" style="font-size:0.68rem; background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;">PAYMENT: ${order.payment_status || 'PAID'}</span>
+                <span class="mono-tag" style="font-size:0.68rem; background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;">PAYMENT: ${escapeHTML(order.payment_status || "UNPAID")}</span>
               </div>
             </div>
-          `).join('')}
+          `,
+            )
+            .join("")}
         </div>
-      `}
+      `
+      }
     `;
 
-    document.getElementById('refresh-orders-btn')?.addEventListener('click', () => {
-      playMetallicClick();
-      loadOrdersTab();
-    });
+    document
+      .getElementById("refresh-orders-btn")
+      ?.addEventListener("click", () => {
+        playMetallicClick();
+        loadOrdersTab();
+      });
 
     // Order status changes
-    content.querySelectorAll('.order-status-select').forEach(sel => {
-      sel.addEventListener('change', async (e) => {
-        const orderId = e.target.getAttribute('data-id');
+    content.querySelectorAll(".order-status-select").forEach((sel) => {
+      sel.addEventListener("change", async (e) => {
+        const orderId = e.target.getAttribute("data-id");
         const newStatus = e.target.value;
+        e.target.disabled = true;
         try {
           await adminApi.updateOrderStatus(orderId, newStatus);
           playMetallicClick();
         } catch (err) {
+          e.target.value =
+            cachedOrders.find((order) => order.id === orderId)?.status ||
+            "PENDING";
           alert(`Failed to update status: ${err.message}`);
+        } finally {
+          e.target.disabled = false;
         }
       });
     });
   } catch (err) {
-    content.innerHTML = `<div class="admin-error">Failed to load orders: ${err.message}</div>`;
+    content.innerHTML = `<div class="admin-error">Failed to load orders: ${escapeHTML(err.message)}</div>`;
   }
 }

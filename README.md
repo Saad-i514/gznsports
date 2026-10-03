@@ -1,46 +1,32 @@
-# GZNSPORTS // Armor of Impact & Championship Weaponry
+# GNZSPORTS — Earned. Never Given.
 
-An elite combat weaponry and sports luxury web application featuring hardware-accelerated 3D WebGL interactions, tactical audio haptics, and the **WWE Undisputed Championship Title Belt**.
+A responsive storefront for championship belts and premium hoodies, built with modular JavaScript, Vite, Three.js, and the existing Supabase integration.
 
-## ✨ Features
+## Local development
 
-- **3D Interactive Championship Belt Engine**:
-  - Built with Three.js with ACESFilmic tonemapping and studio arena lighting.
-  - Photorealistic 24K dual-plated gold textures, hand-set cubic zirconia diamond crystals, and full-grain saddle leather.
-  - **3 Presentation & Animation Modes**:
-    1. **Showcase 360°**: Smooth floating breathing physics, automatic slow orbit, and dynamic glint spotlights sweeping across the gold plates.
-    2. **Waist Wrap Profile**: Curved 3D cylindrical wrap matching the authentic champion waistline.
-    3. **Flat Exhibition Display**: Laid-out trophy presentation with adaptive framing that never clips viewport borders.
-    4. **Deconstructed Exploded Matrix**: Smooth 5-tier separation of the leather substrate, gold plates, jewel frame, and globe side medallions.
-  - Interactive mouse and touch drag orbit controls with velocity damping and pitch clamping.
-
-- **Tactical Design System**:
-  - Obsidian × Kinetic Crimson brutalist combat luxury aesthetic.
-  - Hardware-accelerated dual-layer cursor with hover state reticle and lerping aura.
-  - Web Audio API synthesized haptic feedback (concussive punch sub-bass and crisp metallic mechanical clicks).
-  - Sliding tactical bag / cart drawer with real-time free dispatch progress bar.
-  - Biomechanical Anatomy Lab specification breakdown and interactive 3D layer deconstruction.
-
-## 🚀 Tech Stack
-
-- **Three.js** (WebGL 3D Engine)
-- **Vanilla JavaScript** (Modular ES6 architecture)
-- **Vite** (Next-generation dev server & bundler)
-- **Web Audio API** (Procedural sound synthesis)
-
-## 📦 Getting Started
-
-```bash
-# Install dependencies
+```sh
 npm install
-
-# Start development server
 npm run dev
-
-# Build for production
+npm test
 npm run build
+npm run preview
 ```
 
-## 🛡️ License
+Configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (or `VITE_SUPABASE_PUBLISHABLE_KEY`) for your Supabase project. The existing client retains its project fallback. Never put private database credentials in browser environment variables.
 
-Private repository © 2026 GZNSPORTS. All Rights Reserved.
+## Experience
+
+- Editorial campaign, collection navigation, searchable/filterable catalog, product options, persistent bag, discounts, and unpaid order review.
+- Lazy-loaded interactive 3D belt material study with keyboard controls and a static image fallback.
+- Responsive navigation, focus-managed dialogs, reduced-motion support, and optimized WebP photography.
+- Existing account, catalog synchronization, and store-management integrations.
+
+See [creative direction](docs/creative-direction.md) for the visual system, UX, camera, materials, motion, and implementation architecture. See [validation](docs/validation.md) for completed checks.
+
+## Before launch
+
+This is a locally verified frontend, not a payment-ready production backend. Harden the existing public Supabase policies, rotate credentials present in migration scripts/history, and implement server-authoritative price/stock validation and verified payment webhooks before accepting public transactions. Confirm product claims and operational policies. No live database migration or payment integration was performed.
+
+## Store management update
+
+The craft section now defaults to the World Heavyweight belt photograph; the conceptual GNZ 3D belt is no longer loaded. Tabs/arrows select photographic details. The admin panel includes content and image editing, local drafts and gated live access. See [admin guide](docs/admin-guide.md) for owner setup and database migration requirements.
