@@ -9,23 +9,23 @@ globalThis.localStorage = {
 const { store, PRODUCTS } = await import("../src/store.js");
 const { escapeHTML, productCard, imagePath } = await import("../src/ui.js");
 
-test("quoted belt editions survive cart persistence and quantity changes", () => {
+test("apparel sizes survive cart persistence and quantity changes", () => {
   store.clearCart();
-  const product = PRODUCTS.find((p) => p.id === "genz-undisputed-belt");
+  const product = PRODUCTS.find((p) => p.id === "sample-hoodies-1");
   store.addToCart(product.id, product.sizes[0]);
   store.updateQuantity(product.id, product.sizes[0], 1);
   assert.equal(store.getCartCount(), 2);
-  assert.equal(store.loadCart()[0].size, 'OFFICIAL REPLICA (52")');
+  assert.equal(store.loadCart()[0].size, "S");
   store.removeFromCart(product.id, product.sizes[0]);
   assert.equal(store.getCartCount(), 0);
 });
 test("discounts never make the total negative and clear with the order", () => {
   store.clearCart();
-  store.addToCart("genz-belt-wall-mount");
+  store.addToCart("sample-others-12");
   store.applyPromoCode("GENZVIP");
   assert.equal(store.getCartTotal(), 0);
   store.applyPromoCode("CHAMPION10");
-  assert.equal(store.getCartTotal(), 40.5);
+  assert.equal(store.getCartTotal(), 16.2);
   store.clearCart();
   assert.equal(store.discountCode, null);
   assert.equal(store.getCartDiscount(), 0);
@@ -39,7 +39,7 @@ test("corrupt persisted carts and invalid quantities do not enter calculations",
   );
   assert.deepEqual(store.loadCart(), []);
   store.clearCart();
-  store.addToCart("genz-undisputed-belt", null, -1);
+  store.addToCart("sample-hoodies-1", null, -1);
   assert.equal(store.getCartCount(), 0);
 });
 test("card attributes escape quotes and untrusted markup", () => {
@@ -48,7 +48,7 @@ test("card attributes escape quotes and untrusted markup", () => {
     (n) => `$${n}`,
   );
   assert.ok(html.includes("&lt;img onerror=&quot;bad()&quot;&gt;"));
-  assert.ok(html.includes("OFFICIAL REPLICA (52&quot;)"));
+  assert.ok(html.includes('value="S"'));
   assert.equal(escapeHTML("A&B's"), "A&amp;B&#39;s");
 });
 test("known local JPEG paths use optimized images; remote paths remain intact", () => {

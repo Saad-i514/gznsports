@@ -6,9 +6,9 @@ export const contentFields = [
   ["contact_phone", "Contact phone", "#contact-phone", "phone"],
   ["hero_image", "Hero photograph", ".hero-art img", "image"],
   [
-    "belts_image",
-    "Belt collection photograph",
-    '.collection-card[data-category="belts"] img',
+    "tracksuits_image",
+    "Tracksuit collection image",
+    '.collection-card[data-category="tracksuits"] img',
     "image",
   ],
   [
@@ -17,7 +17,15 @@ export const contentFields = [
     '.collection-card[data-category="hoodies"] img',
     "image",
   ],
-  ["craft_image", "Belt detail photograph", ".studio-fallback", "image"],
+  ...["tshirts", "fashion", "bags", "others"].map((id) => [
+    id + "_image",
+    id === "tshirts"
+      ? "T-shirt collection image"
+      : id.charAt(0).toUpperCase() + id.slice(1) + " collection image",
+    `.collection-card[data-category="${id}"] img`,
+    "image",
+  ]),
+  ["craft_image", "Garment detail photograph", ".studio-fallback", "image"],
   [
     "editorial_image",
     "Hoodie editorial photograph",
@@ -36,7 +44,11 @@ export const contentFields = [
   ["cta_title", "Final call to action heading", ".final-cta h2"],
   ["footer_copy", "Footer introduction", ".footer-main > p"],
   ["hoodie_fit", "FAQ: hoodie fit", "#faq-modal .faq-item:nth-child(1) .faq-a"],
-  ["belt_size", "FAQ: belt sizing", "#faq-modal .faq-item:nth-child(2) .faq-a"],
+  [
+    "size_guide",
+    "FAQ: sizes and measurements",
+    "#faq-modal .faq-item:nth-child(2) .faq-a",
+  ],
   [
     "care",
     "FAQ: care instructions",

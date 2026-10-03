@@ -14,19 +14,19 @@ test("draft CRUD persists without changing source catalog and supports content a
   };
   const api = createDraftApi(storage);
   const product = await api.createProduct({
-    title: "Test belt",
+    title: "Test tee",
     price: 99,
     stock_quantity: 4,
     sizes: "M, L",
     image: "/images/test.webp",
-    category: "belts",
+    category: "tshirts",
   });
   await api.updateProduct(product.id, {
-    title: "Updated belt",
+    title: "Updated tee",
     price: 109,
     stock_quantity: 0,
   });
-  assert.equal((await api.fetchProducts())[0].title, "Updated belt");
+  assert.equal((await api.fetchProducts())[0].title, "Updated tee");
   assert.equal((await api.fetchProducts())[0].stock_quantity, 0);
   await api.saveSiteSetting("page_content", { story_title: "A new chapter" });
   assert.equal(
@@ -57,12 +57,12 @@ test("product validation rejects invalid money, stock, sizes and unsafe image pr
     assert.throws(() => validateProduct(patch));
   assert.doesNotThrow(() =>
     validateProduct({
-      title: "Belt",
+      title: "Tee",
       price: 0,
       stock_quantity: 0,
       sizes: '52"',
       image: "/images/belt.webp",
-      category: "belts",
+      category: "tshirts",
     }),
   );
 });
@@ -70,7 +70,7 @@ test("order selection uses current prices and checks aggregated stock across edi
   const products = [
     {
       id: "p",
-      title: "Belt",
+      title: "Tee",
       price: 100,
       stock_quantity: 2,
       sizes: ["M", "L"],

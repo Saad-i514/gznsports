@@ -43,6 +43,7 @@ BEGIN
     IF qty < 1 THEN RAISE EXCEPTION 'Invalid quantity.'; END IF;
     SELECT * INTO product FROM public.products WHERE id=item->>'id';
     IF NOT FOUND THEN RAISE EXCEPTION 'A product is no longer available.'; END IF;
+    IF product.category NOT IN ('hoodies','tracksuits','tshirts','fashion','bags','others') OR (product.id || ' ' || product.title) ~* 'belt' THEN RAISE EXCEPTION 'This product is no longer offered.'; END IF;
     IF NOT (product.sizes ? (item->>'size')) THEN RAISE EXCEPTION 'Choose an available size for %.', product.title; END IF;
     SELECT sum((v->>'quantity')::integer) INTO count_requested FROM jsonb_array_elements(payload->'items') v WHERE v->>'id'=product.id;
     IF count_requested>coalesce(product.stock_quantity,0) OR count_requested>99 THEN RAISE EXCEPTION 'Insufficient stock for %.',product.title; END IF;

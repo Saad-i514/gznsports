@@ -1,3 +1,4 @@
+import { isCurrentProduct, currentProduct, categoryName } from "../catalog.js";
 import { validateProduct, orderStatuses } from "./commerce-validation.js";
 import { requireAdmin } from "./admin-access.js";
 import { createDraftApi, isDraft } from "./draft-store.js";
@@ -43,45 +44,49 @@ const liveApi = {
       prods = data || [];
     }
 
-    return prods.map((p) => {
-      let sizes = p.sizes;
-      if (typeof sizes === "string") {
-        try {
-          sizes = JSON.parse(sizes);
-        } catch {
-          sizes = sizes
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
+    return prods
+      .filter(isCurrentProduct)
+      .map(currentProduct)
+      .map((p) => {
+        let sizes = p.sizes;
+        if (typeof sizes === "string") {
+          try {
+            sizes = JSON.parse(sizes);
+          } catch {
+            sizes = sizes
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean);
+          }
         }
-      }
-      if (!Array.isArray(sizes) || sizes.length === 0) {
-        sizes = ["STANDARD"];
-      }
-
-      let specs = p.specs;
-      if (typeof specs === "string") {
-        try {
-          specs = JSON.parse(specs);
-        } catch {
-          specs = [];
+        if (!Array.isArray(sizes) || sizes.length === 0) {
+          sizes = ["STANDARD"];
         }
-      }
-      if (!Array.isArray(specs)) specs = [];
 
-      return {
-        ...p,
-        image: imagePath(p.image),
-        price: parseFloat(p.price) || 0,
-        sizes,
-        defaultSize: p.default_size || p.defaultSize || sizes[0] || "STANDARD",
-        categoryName:
-          p.category_name ||
-          p.categoryName ||
-          (p.category ? p.category.toUpperCase() : "WEAPONRY"),
-        specs,
-      };
-    });
+        let specs = p.specs;
+        if (typeof specs === "string") {
+          try {
+            specs = JSON.parse(specs);
+          } catch {
+            specs = [];
+          }
+        }
+        if (!Array.isArray(specs)) specs = [];
+
+        return {
+          ...p,
+          image: imagePath(p.image),
+          price: parseFloat(p.price) || 0,
+          sizes,
+          defaultSize:
+            p.default_size || p.defaultSize || sizes[0] || "STANDARD",
+          categoryName:
+            p.category_name ||
+            p.categoryName ||
+            (p.category ? p.category.toUpperCase() : "OTHERS"),
+          specs,
+        };
+      });
   },
 
   async createProduct(product) {
@@ -94,14 +99,9 @@ const liveApi = {
     const newProduct = {
       id: product.id || `gzn-${Date.now()}`,
       title: product.title,
-      category: product.category || "belts",
+      category: product.category || "hoodies",
       category_name:
-        product.category_name ||
-        {
-          belts: "CHAMPIONSHIP BELTS",
-          hoodies: "HEAVYWEIGHT ESSENTIALS",
-          accessories: "ACCESSORIES",
-        }[product.category || "belts"],
+        product.category_name || categoryName(product.category || "hoodies"),
       price: parseFloat(product.price) || 0,
       tag: product.tag || "NEW SPECIFICATION",
       rating: parseFloat(product.rating) || 5.0,
@@ -115,7 +115,7 @@ const liveApi = {
               .filter(Boolean)
           : ["STANDARD"],
       default_size: product.default_size || parsedSizes[0] || "STANDARD",
-      image: product.image || "/images/gear-macro.jpg",
+      image: product.image || "/images/hoodies/genz-heavyweight-hoodie.webp",
       description: product.description || "",
       specs: Array.isArray(product.specs) ? product.specs : [],
       stock_quantity: Number.isFinite(parseInt(product.stock_quantity, 10))
@@ -139,12 +139,7 @@ const liveApi = {
   async updateProduct(id, updates) {
     const formatted = { ...updates, updated_at: new Date().toISOString() };
     if (formatted.category && !formatted.category_name)
-      formatted.category_name =
-        {
-          belts: "CHAMPIONSHIP BELTS",
-          hoodies: "HEAVYWEIGHT ESSENTIALS",
-          accessories: "ACCESSORIES",
-        }[formatted.category] || formatted.category.toUpperCase();
+      formatted.category_name = categoryName(formatted.category);
     if (formatted.price !== undefined)
       formatted.price = parseFloat(formatted.price);
     if (formatted.stock_quantity !== undefined)

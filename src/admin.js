@@ -1,3 +1,4 @@
+import { CATEGORIES, CURRENT_DIRECTION } from "./catalog.js";
 import { contentEditor, contentFields, validImage } from "./site-content.js";
 import { isAdminUser } from "./lib/admin-access.js";
 import { auth, supabase } from "./lib/supabase.js";
@@ -188,7 +189,7 @@ async function renderAdminUI() {
           📊 STORE OVERVIEW
         </button>
         <button class="admin-tab-btn ${currentTab === "products" ? "active" : ""}" data-tab="products">
-          🏆 TITLE BELTS & HOODIES
+          🏆 PRODUCTS & COLLECTIONS
         </button>
         <button class="admin-tab-btn ${currentTab === "settings" ? "active" : ""}" data-tab="settings">
           ⚙️ STOREFRONT & HERO EDITOR
@@ -367,7 +368,7 @@ async function loadProductsTab() {
     content.innerHTML = `
       <div class="admin-section-header">
         <div>
-          <h3>TITLE BELT & HOODIE CATALOG</h3>
+          <h3>PRODUCT CATALOG</h3>
           <p style="color:var(--gzn-slate); font-size:0.85rem;">Create, edit pricing, manage stock levels, and save products to the current workspace.</p>
         </div>
         <button class="btn-primary" id="open-add-product-btn" style="padding:0.6rem 1.2rem; font-size:0.8rem;">
@@ -440,15 +441,13 @@ async function loadProductsTab() {
             
             <div class="form-group full-width">
               <label>PRODUCT TITLE</label>
-              <input type="text" id="edit-product-title" placeholder="e.g. WWE Undisputed Championship Title Belt" required />
+              <input type="text" id="edit-product-title" placeholder="e.g. GNZSPORTS Core Cotton Tee" required />
             </div>
 
             <div class="form-group">
               <label>CATEGORY</label>
               <select id="edit-product-category">
-                <option value="belts">🏆 WRESTLING TITLE BELTS</option>
-                <option value="hoodies">🧥 450GSM HOODIES</option>
-                <option value="accessories">🛡️ ACCESSORIES & MOUNTS</option>
+                ${CATEGORIES.map((c) => `<option value="${c.id}">${c.name}</option>`).join("")}
               </select>
             </div>
 
@@ -459,7 +458,7 @@ async function loadProductsTab() {
 
             <div class="form-group">
               <label>BADGE TAG</label>
-              <input type="text" id="edit-product-tag" placeholder="FLAGSHIP 24K DUAL-PLATED" />
+              <input type="text" id="edit-product-tag" placeholder="EVERYDAY ESSENTIAL" />
             </div>
 
             <div class="form-group">
@@ -469,12 +468,12 @@ async function loadProductsTab() {
 
             <div class="form-group full-width">
               <label>IMAGE URL / PATH</label>
-              <input type="text" id="edit-product-image" placeholder="/images/belts/world-heavyweight-belt.webp or URL" required />
+              <input type="text" id="edit-product-image" placeholder="/images/samples/tshirts.svg or URL" required />
             </div>
 
             <div class="form-group full-width">
               <label>SIZES (COMMA SEPARATED)</label>
-              <input type="text" id="edit-product-sizes" placeholder="S, M, L, XL, 2XL or 52-54 INCH ADULT REPLICA" />
+              <input type="text" id="edit-product-sizes" placeholder="S, M, L, XL, 2XL or One size" />
             </div>
 
             <div class="form-group full-width">
@@ -482,7 +481,7 @@ async function loadProductsTab() {
               <textarea id="edit-product-desc" rows="3" placeholder="Engineered for champions..."></textarea>
             </div>
 
-            <div class="form-group full-width"><label for="edit-product-specs">SPECIFICATIONS (one Label: Value per line)</label><textarea id="edit-product-specs" rows="4" placeholder="Material: Brass and leather"></textarea></div>
+            <div class="form-group full-width"><label for="edit-product-specs">SPECIFICATIONS (one Label: Value per line)</label><textarea id="edit-product-specs" rows="4" placeholder="Color: Black&#10;Material: Cotton jersey&#10;Fit: Regular&#10;Care: Machine wash cold"></textarea></div>
             <div class="form-group"><label for="edit-product-featured">FEATURED PRODUCT</label><input id="edit-product-featured" type="checkbox" /></div>
             <div class="form-actions full-width">
               <button type="button" class="btn-secondary" id="cancel-product-edit">CANCEL</button>
@@ -686,17 +685,18 @@ async function loadSettingsTab() {
     cachedSettings = await adminApi.fetchSiteSettings(true);
     const savedHero = cachedSettings.hero_config || {};
     const heroValues =
-      savedHero.visual_direction === "earned"
+      savedHero.visual_direction === CURRENT_DIRECTION
         ? savedHero
         : {
-            headline_top: "EARNED.",
-            headline_bottom: "NEVER GIVEN.",
+            headline_top: "YOUR DAY.",
+            headline_bottom: "YOUR WAY.",
             subhead:
-              "Championship gold. Heavyweight essentials. Made for a mindset that never clocks out.",
-            badge_primary: "THE CHAMPIONSHIP COLLECTION",
+              "Hoodies, tracksuits, tees and more. Everyday pieces. Unmistakably you.",
+            badge_primary: "THE EVERYDAY COLLECTION",
             cta_primary_text: "Explore the collection",
             cta_secondary_text: "Discover the craft",
-            badge_secondary: "24K GOLD FINISH × 450GSM HEAVYWEIGHT COTTON",
+            badge_secondary:
+              "HOODIES / TRACKSUITS / T-SHIRTS / FASHION / BAGS / OTHERS",
           };
     const hero = Object.fromEntries(
       Object.entries(heroValues).map(([key, value]) => [
@@ -706,7 +706,7 @@ async function loadSettingsTab() {
     );
     const savedAnnouncements = cachedSettings.announcements || {};
     const announcementValues =
-      savedAnnouncements.visual_direction === "earned"
+      savedAnnouncements.visual_direction === CURRENT_DIRECTION
         ? savedAnnouncements
         : {
             banner_text: "BUILT FOR THE MOMENT. MADE FOR THE EVERYDAY.",
@@ -729,7 +729,7 @@ async function loadSettingsTab() {
       </div>
 
       <div class="admin-settings-container">
-        <div class="admin-card-setting"><h4 class="setting-card-title">PAGE CONTENT & PHOTOGRAPHY</h4><p>Edit headings, story, help text, policies and images.</p>${contentEditor(cachedSettings.page_content)}</div>
+        <div class="admin-card-setting"><h4 class="setting-card-title">PAGE CONTENT & PHOTOGRAPHY</h4><p>Edit headings, story, help text, policies and images.</p>${contentEditor(cachedSettings.page_content?._direction === CURRENT_DIRECTION ? cachedSettings.page_content : {})}</div>
         <!-- 1. HERO CONFIG -->
         <div class="admin-card-setting">
           <h4 class="setting-card-title">🏆 HERO SHOWCASE STUDIO CONFIGURATION</h4>
@@ -818,7 +818,10 @@ async function loadSettingsTab() {
       button.disabled = true;
       const feedback = document.getElementById("content-feedback");
       try {
-        const values = Object.fromEntries(new FormData(form));
+        const values = {
+          ...Object.fromEntries(new FormData(form)),
+          _direction: CURRENT_DIRECTION,
+        };
         for (const [key, label, , type] of contentFields)
           if (type === "image" && !validImage(values[key]))
             throw new Error(label + ": enter a /images/ path or HTTPS URL.");
@@ -838,7 +841,7 @@ async function loadSettingsTab() {
       ?.addEventListener("submit", async (e) => {
         e.preventDefault();
         const updatedHero = {
-          visual_direction: "earned",
+          visual_direction: CURRENT_DIRECTION,
           badge_primary: document.getElementById("set-hero-badge-1").value,
           badge_secondary: document.getElementById("set-hero-badge-2").value,
           headline_top: document.getElementById("set-hero-title-top").value,
@@ -866,7 +869,7 @@ async function loadSettingsTab() {
       ?.addEventListener("submit", async (e) => {
         e.preventDefault();
         const updatedAnn = {
-          visual_direction: "earned",
+          visual_direction: CURRENT_DIRECTION,
           banner_text: document.getElementById("set-ann-ticker").value,
           shipping_text: document.getElementById("set-ann-shipping").value,
           shipping_threshold:
@@ -905,7 +908,7 @@ async function loadOrdersTab() {
       <div class="admin-section-header">
         <div>
           <h3>CUSTOMER ORDERS & FULFILLMENT</h3>
-          <p style="color:var(--gzn-slate); font-size:0.85rem;">Manage fulfillment status and inspect title belts & hoodie orders.</p>
+          <p style="color:var(--gzn-slate); font-size:0.85rem;">Manage fulfillment status and inspect clothing and accessory orders.</p>
         </div>
         <button class="btn-secondary" id="refresh-orders-btn" style="font-size:0.75rem; padding:0.4rem 0.8rem;">
           🔄 REFRESH
@@ -957,7 +960,7 @@ async function loadOrdersTab() {
                         .map(
                           (it) => `
                   <div class="order-sub-item">
-                    <span>${escapeHTML(it.title || "GENZ Championship Product")} (x${it.quantity}) [${escapeHTML(it.size || "STD")}]</span>
+                    <span>${escapeHTML(it.title || "GNZSPORTS Product")} (x${it.quantity}) [${escapeHTML(it.size || "STD")}]</span>
                     <span style="font-family:var(--font-mono); font-weight:700;">$${((parseFloat(it.price) || 0) * (it.quantity || 1)).toFixed(2)}</span>
                   </div>
                 `,

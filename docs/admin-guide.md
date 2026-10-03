@@ -31,3 +31,7 @@ This is an order-request workflow, not a card-payment checkout. A payment provid
 ## Verification
 
 Eight automated tests pass. Browser verification covered admin access gating, local product creation with specifications, content saving, checkout into local orders, fulfillment status persistence, and the photographic belt controls. Production build passes. Live mutations, real sign-in and database policies were not exercised; no owner password or privileged project credential is configured in this workspace.
+
+## Current clothing direction
+
+The newest request replaces the belt collection with **Hoodies, Tracksuits, T-shirts, Fashion, Bags, and Others**. The first localhost visit opens a fresh sample workspace with 12 editable products. See [sample product guide](sample-products.md). Previous belt-draft data is retained separately and is not loaded into this workspace. The old belt and GNZ 3D visuals are no longer displayed. Live owner activation requirements above still apply.

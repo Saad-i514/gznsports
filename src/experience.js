@@ -1,15 +1,15 @@
 const materials = {
-  gold: [
-    "DEPTH YOU CAN FEEL.",
-    "Deep-relief brass plates with a warm gold finish. Sculpted surfaces create a different reflection from every angle.",
+  fabric: [
+    "TEXTURE WITH PRESENCE.",
+    "Explore the surface and texture of our everyday layers. Check each product for its specific fabric composition.",
   ],
-  leather: [
-    "THE FOUNDATION OF A LEGACY.",
-    "A substantial leather foundation supports the metalwork. Explore the strap and stitching in the photographic detail.",
+  fit: [
+    "ROOM TO BE YOURSELF.",
+    "From relaxed layers to coordinated sets. Choose your size using the fit information on each product.",
   ],
   detail: [
-    "SMALL DETAILS. LASTING PRESENCE.",
-    "Raised edges, inset medallions, and carefully placed hardware. Move closer to discover the construction behind the finish.",
+    "THE FINISHING TOUCH.",
+    "Look closer at the seams, pockets and closures. Small details bring the whole piece together.",
   ],
 };
 
@@ -107,8 +107,8 @@ export function initExperience() {
   const stage = document.getElementById("material-studio");
   const photo = stage.querySelector(".studio-fallback");
   const views = {
-    gold: [1, "50% 50%"],
-    leather: [1.5, "0% 70%"],
+    fabric: [1, "50% 50%"],
+    fit: [1.5, "0% 70%"],
     detail: [1.8, "65% 35%"],
   };
   function showMaterial(name) {

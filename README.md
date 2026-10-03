@@ -1,32 +1,18 @@
-# GNZSPORTS — Earned. Never Given.
+# GNZSPORTS — Your Day. Your Way.
 
-A responsive storefront for championship belts and premium hoodies, built with modular JavaScript, Vite, Three.js, and the existing Supabase integration.
-
-## Local development
+A responsive clothing and accessories storefront with six collections: **Hoodies, Tracksuits, T-shirts, Fashion, Bags, and Others**.
 
 ```sh
 npm install
 npm run dev
 npm test
 npm run build
-npm run preview
 ```
 
-Configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (or `VITE_SUPABASE_PUBLISHABLE_KEY`) for your Supabase project. The existing client retains its project fallback. Never put private database credentials in browser environment variables.
+The first localhost visit starts an editable sample workspace with 12 fictional listings. A sample-store banner distinguishes it from live publishing. Use **Store manager → Products & collections** to replace products and **Storefront & hero editor** to change page copy and images. Samples and test orders persist in this browser only. Exiting the local draft restores the live data connection.
 
-## Experience
+See [sample product guide](docs/sample-products.md) for the fields and sources used, and [admin guide](docs/admin-guide.md) for live owner activation.
 
-- Editorial campaign, collection navigation, searchable/filterable catalog, product options, persistent bag, discounts, and unpaid order review.
-- Lazy-loaded interactive 3D belt material study with keyboard controls and a static image fallback.
-- Responsive navigation, focus-managed dialogs, reduced-motion support, and optimized WebP photography.
-- Existing account, catalog synchronization, and store-management integrations.
+The retired belt collection is excluded from the storefront, search, local carts, and management catalog. Existing remote records and historical orders were not deleted. Legacy campaign settings cannot override this clothing direction.
 
-See [creative direction](docs/creative-direction.md) for the visual system, UX, camera, materials, motion, and implementation architecture. See [validation](docs/validation.md) for completed checks.
-
-## Before launch
-
-This is a locally verified frontend, not a payment-ready production backend. Harden the existing public Supabase policies, rotate credentials present in migration scripts/history, and implement server-authoritative price/stock validation and verified payment webhooks before accepting public transactions. Confirm product claims and operational policies. No live database migration or payment integration was performed.
-
-## Store management update
-
-The craft section now defaults to the World Heavyweight belt photograph; the conceptual GNZ 3D belt is no longer loaded. Tabs/arrows select photographic details. The admin panel includes content and image editing, local drafts and gated live access. See [admin guide](docs/admin-guide.md) for owner setup and database migration requirements.
+Live admin and order requests require the reviewed Supabase migrations and confirmed owner account. Card payments, transactional email and deployment are not configured. Never place private database credentials in browser environment variables.

@@ -1,5 +1,5 @@
-const KEY = "gnz_admin_draft_v1";
-const MODE = "gnz_admin_draft_enabled";
+const KEY = "gnz_fashion_draft_v1";
+const MODE = "gnz_fashion_draft_enabled";
 export const supportsDraft = () =>
   ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
 export const isDraft = () =>
@@ -110,4 +110,9 @@ export function createDraftApi(
       };
     },
   };
+}
+
+export function initializeSamplePreview(products) {
+  if (supportsDraft() && !localStorage.getItem(KEY))
+    enableDraft(structuredClone(products), {});
 }

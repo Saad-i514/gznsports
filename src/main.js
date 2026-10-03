@@ -1,3 +1,6 @@
+import { CURRENT_DIRECTION, isApparel } from "./catalog.js";
+import { SAMPLE_PRODUCTS } from "./sample-products.js";
+import { initializeSamplePreview } from "./lib/draft-store.js";
 import { validateSelection } from "./lib/commerce-validation.js";
 import { applyContent } from "./site-content.js";
 import { isDraft } from "./lib/draft-store.js";
@@ -18,6 +21,7 @@ import { initExperience } from "./experience.js";
 let currentCategory = "all";
 let currentSort = "featured";
 document.addEventListener("DOMContentLoaded", () => {
+  initializeSamplePreview(SAMPLE_PRODUCTS);
   document.getElementById("app").innerHTML = storefront() + cartMarkup;
   initModals();
   initAdminPanel();
@@ -41,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const notice = document.createElement("div");
     notice.className = "draft-notice";
     notice.textContent =
-      "LOCAL DRAFT — Changes and test orders stay in this browser.";
+      "SAMPLE STORE — Editable preview. Products and test orders stay in this browser.";
     document.body.prepend(notice);
   }
   if (location.hash === "#admin") void openAdminPanel();
@@ -227,7 +231,7 @@ function openQuickView(id) {
   if (!p) return;
   const modal = document.getElementById("quick-view-modal");
   document.getElementById("quick-view-content").innerHTML =
-    `<button class="modal-close-btn" id="modal-close-trigger" aria-label="Close product details">✕</button><div class="quick-view-grid"><img class="quick-view-image" src="${e(p.image)}" alt="${e(p.title)}" /><div><p class="eyebrow">${e(p.category)} / GNZSPORTS</p><h2>${e(displayTitle(p))}</h2><p class="quick-price">${store.formatPrice(p.price)}</p><p class="quick-description">${e(p.description)}</p><dl class="quick-specs">${(p.specs || []).map((s) => `<div><dt>${e(s.label)}</dt><dd>${e(s.value)}</dd></div>`).join("")}</dl><label class="quick-size" for="quick-size">Choose your ${p.category === "hoodies" ? "size" : "edition"}</label><select id="quick-size">${p.sizes.map((s) => `<option ${s === p.defaultSize ? "selected" : ""} value="${e(s)}">${e(s)}</option>`).join("")}</select><button class="action-button dark-button" id="modal-add-btn" ${p.stock_quantity === 0 ? "disabled" : ""}>${p.stock_quantity === 0 ? "Sold out" : "Add to bag"} <span>+</span></button></div></div>`;
+    `<button class="modal-close-btn" id="modal-close-trigger" aria-label="Close product details">✕</button><div class="quick-view-grid"><img class="quick-view-image" src="${e(p.image)}" alt="${e(p.title)}" /><div><p class="eyebrow">${e(p.category)} / GNZSPORTS</p><h2>${e(displayTitle(p))}</h2><p class="quick-price">${store.formatPrice(p.price)}</p><p class="quick-description">${e(p.description)}</p><dl class="quick-specs">${(p.specs || []).map((s) => `<div><dt>${e(s.label)}</dt><dd>${e(s.value)}</dd></div>`).join("")}</dl><label class="quick-size" for="quick-size">Choose your ${isApparel(p.category) ? "size" : "option"}</label><select id="quick-size">${p.sizes.map((s) => `<option ${s === p.defaultSize ? "selected" : ""} value="${e(s)}">${e(s)}</option>`).join("")}</select><button class="action-button dark-button" id="modal-add-btn" ${p.stock_quantity === 0 ? "disabled" : ""}>${p.stock_quantity === 0 ? "Sold out" : "Add to bag"} <span>+</span></button></div></div>`;
   modal.classList.add("open");
   document.getElementById("modal-close-trigger").onclick = () =>
     modal.classList.remove("open");
@@ -313,17 +317,18 @@ async function syncCatalog(fresh = false) {
 async function syncSettings() {
   try {
     const settings = await adminApi.fetchSiteSettings(true);
-    applyContent(settings.page_content);
+    if (settings.page_content?._direction === CURRENT_DIRECTION)
+      applyContent(settings.page_content);
     const hero = settings.hero_config;
     // Legacy campaign copy remains stored until the editor publishes this direction.
-    if (hero?.visual_direction === "earned") {
+    if (hero?.visual_direction === CURRENT_DIRECTION) {
       const title = document.getElementById("hero-title");
       title.replaceChildren(
-        document.createTextNode(hero.headline_top || "EARNED."),
+        document.createTextNode(hero.headline_top || "YOUR DAY."),
         document.createElement("br"),
       );
       const bottom = document.createElement("span");
-      bottom.textContent = hero.headline_bottom || "NEVER GIVEN.";
+      bottom.textContent = hero.headline_bottom || "YOUR WAY.";
       title.append(bottom);
       if (hero.subhead)
         document.querySelector(".hero-description").textContent = hero.subhead;
@@ -342,7 +347,7 @@ async function syncSettings() {
         document.querySelector(".hero-caption").textContent =
           hero.badge_secondary;
     }
-    if (settings.announcements?.visual_direction === "earned") {
+    if (settings.announcements?.visual_direction === CURRENT_DIRECTION) {
       const announcement = settings.announcements;
       if (announcement.banner_text)
         document.querySelector(".announcement > span:first-child").textContent =

@@ -1,3 +1,4 @@
+import { isCurrentCategory } from "../catalog.js";
 import { validImage } from "../site-content.js";
 export function validateProduct(patch) {
   if ("title" in patch && (!patch.title.trim() || patch.title.length > 200))
@@ -16,10 +17,7 @@ export function validateProduct(patch) {
       patch.stock_quantity === "")
   )
     throw new Error("Stock must be a whole number, zero or greater.");
-  if (
-    "category" in patch &&
-    !["belts", "hoodies", "accessories"].includes(patch.category)
-  )
+  if ("category" in patch && !isCurrentCategory(patch.category))
     throw new Error("Choose a valid collection.");
   if ("image" in patch && !validImage(patch.image))
     throw new Error("Use a local /images/ path or HTTPS image URL.");
