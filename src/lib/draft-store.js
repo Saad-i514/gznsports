@@ -1,4 +1,5 @@
 import { migrateDraftPhotos } from "./photo-migration.js";
+import { prepareOrder, transitionDraftOrder } from "./order-rules.js";
 const KEY = "gnz_fashion_draft_v1";
 const MODE = "gnz_fashion_draft_enabled";
 export const supportsDraft = () =>
@@ -82,8 +83,17 @@ export function createDraftApi(
       }),
     createOrder: async (payload) =>
       change((data) => {
+        const existing =
+          payload.request_key &&
+          data.orders.find((o) => o.request_key === payload.request_key);
+        if (existing) {
+          if (existing.request_payload !== JSON.stringify(payload))
+            throw new Error("Request changed. Start a new order review.");
+          return existing;
+        }
         const row = {
-          ...payload,
+          ...prepareOrder(payload, data.products),
+          request_payload: JSON.stringify(payload),
           id: crypto.randomUUID(),
           created_at: new Date().toISOString(),
         };
@@ -94,7 +104,7 @@ export function createDraftApi(
       change((data) => {
         const row = data.orders.find((o) => o.id === id);
         if (!row) throw new Error("Order no longer exists.");
-        row.status = status;
+        transitionDraftOrder(row, status, data.products);
         return row;
       }),
     getDashboardMetrics: async () => {

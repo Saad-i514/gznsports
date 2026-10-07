@@ -1,34 +1,56 @@
 // GZNSPORTS // SUPABASE CLIENT & AUTH CORE
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export const SUPABASE_CONFIG = {
-  url: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || 'https://xoizeqnphqtjjyodcfwk.supabase.co',
-  publishableKey: (typeof import.meta !== 'undefined' && (import.meta.env?.VITE_SUPABASE_ANON_KEY || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY)) || 'sb_publishable_IijJ_4VjjFEgHOOb2PGDzQ_iwHMV5iO'
+  url:
+    (typeof import.meta !== "undefined" &&
+      import.meta.env?.VITE_SUPABASE_URL) ||
+    "https://xoizeqnphqtjjyodcfwk.supabase.co",
+  publishableKey:
+    (typeof import.meta !== "undefined" &&
+      (import.meta.env?.VITE_SUPABASE_ANON_KEY ||
+        import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY)) ||
+    "sb_publishable_IijJ_4VjjFEgHOOb2PGDzQ_iwHMV5iO",
 };
 
 // Initialize client with Realtime websocket options
-export const supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.publishableKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
+export const supabase = createClient(
+  SUPABASE_CONFIG.url,
+  SUPABASE_CONFIG.publishableKey,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
+    },
   },
-  realtime: {
-    params: {
-      eventsPerSecond: 10
-    }
-  }
-});
+);
 
 // Authentication helpers
 export const auth = {
+  async resetPassword(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${location.origin}${location.pathname}`,
+    });
+    if (error) throw error;
+  },
+  async updatePassword(password) {
+    if (password.length < 12) throw new Error("Use at least 12 characters.");
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+  },
   async signUp(email, password, metadata = {}) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: metadata
-      }
+        data: metadata,
+      },
     });
     if (error) throw error;
     return data;
@@ -37,7 +59,7 @@ export const auth = {
   async signIn(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
     });
     if (error) throw error;
     return data;
@@ -62,5 +84,5 @@ export const auth = {
 
   onAuthStateChange(callback) {
     return supabase.auth.onAuthStateChange(callback);
-  }
+  },
 };

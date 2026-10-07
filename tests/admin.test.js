@@ -33,9 +33,13 @@ test("draft CRUD persists without changing source catalog and supports content a
     (await api.fetchSiteSettings()).page_content.story_title,
     "A new chapter",
   );
+  await api.updateProduct(product.id, { stock_quantity: 4 });
   const order = await api.createOrder({
-    items: [],
-    total: 99,
+    customer_name: "Test Buyer",
+    customer_email: "buyer@example.com",
+    shipping_address: { address: "Test address" },
+    items: [{ id: product.id, size: "M", quantity: 1 }],
+    total: 109,
     payment_status: "UNPAID",
     status: "PENDING",
   });

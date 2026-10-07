@@ -14,6 +14,8 @@ import { adminApi } from "./lib/admin-api.js";
 import { realtimeEngine } from "./lib/realtime-engine.js";
 import { escapeHTML } from "./ui.js";
 import { playMetallicClick, playPunchImpact } from "./audio.js";
+import { openPasswordRecovery } from "./password-recovery.js";
+import { nextOrderStatuses } from "./lib/order-rules.js";
 
 let isAdminOpen = false;
 let privateOrdersChannel = null;
@@ -26,6 +28,15 @@ export function initAdminPanel() {
   renderAdminContainer();
   attachAdminTriggers();
   subscribeToRealtime();
+  auth.onAuthStateChange((_event, session) => {
+    if (isAdminOpen && !isDraft() && !isAdminUser(session?.user)) {
+      if (privateOrdersChannel) {
+        void supabase.removeChannel(privateOrdersChannel);
+        privateOrdersChannel = null;
+      }
+      renderAdminGate();
+    }
+  });
 }
 
 function renderAdminContainer() {
@@ -58,6 +69,15 @@ function renderAdminGate() {
   const overlay = document.getElementById("gzn-admin-overlay");
   overlay.innerHTML = `<div class="admin-modal admin-login"><button class="admin-close-btn" id="admin-gate-close" aria-label="Close admin sign in">✕</button><p class="eyebrow">GNZSPORTS / STORE MANAGEMENT</p><h2>YOUR STORE. YOUR CONTROL.</h2><p>Sign in with your administrator account to manage live products, website content and orders.</p><form id="admin-login-form" class="admin-form-grid"><div class="form-group full-width"><label for="admin-email">Email</label><input id="admin-email" value="gulraizbutt297@gmail.com" type="email" autocomplete="username" required /></div><div class="form-group full-width"><label for="admin-password">Password</label><input id="admin-password" type="password" autocomplete="current-password" required /></div><p id="admin-gate-feedback" role="status"></p><button class="btn-primary" type="submit">Sign in to live admin</button></form>${supportsDraft() ? '<hr><h3>Try the editor locally</h3><p>Changes persist in this browser only. No live products, settings or orders are modified.</p><button id="start-draft" class="btn-secondary">Open local draft editor</button>' : ""}</div>`;
   document.getElementById("admin-gate-close").onclick = closeAdminPanel;
+  const reset = document.createElement("button");
+  reset.type = "button";
+  reset.className = "btn-secondary";
+  reset.textContent = "Forgot password?";
+  reset.onclick = () => {
+    closeAdminPanel();
+    openPasswordRecovery(false, document.getElementById("admin-email").value);
+  };
+  document.getElementById("admin-login-form").append(reset);
   document.getElementById("admin-login-form").onsubmit = async (event) => {
     event.preventDefault();
     const button = event.currentTarget.querySelector("button");
@@ -117,6 +137,16 @@ function attachAdminTriggers() {
 }
 
 function subscribeToRealtime() {
+  // Realtime must never replace an editor containing unsaved input.
+  const editing = () =>
+    !!document.querySelector("#product-editor-modal.open") ||
+    !!document.querySelector('#gzn-admin-overlay form[data-dirty="true"]');
+  document
+    .getElementById("gzn-admin-overlay")
+    .addEventListener("input", (event) => {
+      const form = event.target.closest("form");
+      if (form) form.dataset.dirty = "true";
+    });
   realtimeEngine.init();
 
   realtimeEngine.onStatusChange((status) => {
@@ -128,13 +158,13 @@ function subscribeToRealtime() {
   });
 
   realtimeEngine.onProductChange(() => {
-    if (isAdminOpen && currentTab === "products") {
+    if (isAdminOpen && currentTab === "products" && !editing()) {
       loadProductsTab();
     }
   });
 
   realtimeEngine.onSettingsChange(() => {
-    if (isAdminOpen && currentTab === "settings") {
+    if (isAdminOpen && currentTab === "settings" && !editing()) {
       loadSettingsTab();
     }
   });
@@ -469,6 +499,9 @@ async function loadProductsTab() {
             <div class="form-group full-width">
               <label>IMAGE URL / PATH</label>
               <input type="text" id="edit-product-image" placeholder="/images/samples/tshirts.svg or URL" required />
+              <label for="edit-product-upload">UPLOAD PHOTO (LIVE MODE, MAX 5 MB)</label>
+              <input type="file" id="edit-product-upload" accept="image/jpeg,image/png,image/webp" ${isDraft() ? "disabled" : ""} />
+              <small id="upload-feedback" role="status">${isDraft() ? "Use an image URL or local path in draft mode." : "Uploaded photos are publicly visible."}</small>
             </div>
 
             <div class="form-group full-width">
@@ -506,6 +539,24 @@ async function loadProductsTab() {
 function attachProductEvents() {
   const editorModal = document.getElementById("product-editor-modal");
   const form = document.getElementById("product-editor-form");
+  document.getElementById("edit-product-upload").onchange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const button = document.getElementById("save-product-submit");
+    const feedback = document.getElementById("upload-feedback");
+    button.disabled = true;
+    feedback.textContent = "Uploading…";
+    try {
+      document.getElementById("edit-product-image").value =
+        await adminApi.uploadProductImage(file);
+      feedback.textContent = "Photo uploaded. Save the product to publish it.";
+    } catch (error) {
+      feedback.textContent = error.message;
+    } finally {
+      button.disabled = false;
+      event.target.value = "";
+    }
+  };
 
   // Open Add Product
   document
@@ -992,6 +1043,11 @@ async function loadOrdersTab() {
 
     // Order status changes
     content.querySelectorAll(".order-status-select").forEach((sel) => {
+      const status = cachedOrders.find((o) => o.id === sel.dataset.id)?.status;
+      for (const option of sel.options)
+        option.disabled =
+          option.value !== status &&
+          !nextOrderStatuses[status]?.includes(option.value);
       sel.addEventListener("change", async (e) => {
         const orderId = e.target.getAttribute("data-id");
         const newStatus = e.target.value;
@@ -999,6 +1055,7 @@ async function loadOrdersTab() {
         try {
           await adminApi.updateOrderStatus(orderId, newStatus);
           playMetallicClick();
+          await loadOrdersTab();
         } catch (err) {
           e.target.value =
             cachedOrders.find((order) => order.id === orderId)?.status ||

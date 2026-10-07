@@ -15,4 +15,4 @@ See [sample product guide](docs/sample-products.md) for the fields and sources u
 
 The retired belt collection is excluded from the storefront, search, local carts, and management catalog. Existing remote records and historical orders were not deleted. Legacy campaign settings cannot override this clothing direction.
 
-Live admin and order requests require the reviewed Supabase migrations and confirmed owner account. Card payments, transactional email and deployment are not configured. Never place private database credentials in browser environment variables.
+Live admin and order requests require the Supabase migrations and owner activation described in the admin guide. Run `npm run backend:migrate`, `npm run backend:check`, then `npm run backend:owner` with private local configuration. The legacy connection currently fails certificate verification; no live activation has been performed. Card payments, order email and deployment remain unconfigured. Never place private credentials in browser environment variables.

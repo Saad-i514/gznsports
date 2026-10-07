@@ -7,9 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "backend:check": "node scripts/backend-setup.js check",
+    "backend:migrate": "node scripts/backend-setup.js migrate",
+    "backend:owner": "node scripts/backend-setup.js owner"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "prettier": "^3.9.9",
     "vite": "^8.3.0"
   },

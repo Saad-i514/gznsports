@@ -1,12 +1,20 @@
 import { isCurrentCategory } from "../catalog.js";
 import { validImage } from "../site-content.js";
 export function validateProduct(patch) {
-  if ("title" in patch && (!patch.title.trim() || patch.title.length > 200))
+  if (
+    "title" in patch &&
+    (typeof patch.title !== "string" ||
+      !patch.title.trim() ||
+      patch.title.length > 200)
+  )
     throw new Error("Enter a product title (up to 200 characters).");
   if (
     "price" in patch &&
     (!Number.isFinite(Number(patch.price)) ||
       Number(patch.price) < 0 ||
+      Math.abs(
+        Number(patch.price) * 100 - Math.round(Number(patch.price) * 100),
+      ) > 0.000001 ||
       patch.price === "")
   )
     throw new Error("Price must be zero or greater.");

@@ -1,37 +1,40 @@
-# Store management
+# GNZSPORTS backend and admin access
 
-Open the footer's **Store manager** button or visit `/#admin`.
+Admin entry: the footer's **Store manager** button or `/#admin`.
+Owner email: **gulraizbutt297@gmail.com**. Contact phone: **+92 331 6841666**.
 
-## Local draft editor
+## Current activation status
 
-On localhost, choose **Open local draft editor**. Products, content, and test orders persist in this browser's local storage. The yellow banner identifies this mode. Changes never publish to Supabase. **Exit local draft** restores the live catalog; your local draft remains available for later work. The verification workspace contains a clearly named test product and a test order.
+Backend source and local PostgreSQL integration tests are implemented. No live migrations or owner provisioning were run in this update: the existing database connection failed TLS certificate verification, including with the Windows trust store. A service-role key is not configured. There is no verified admin password to provide.
 
-You can add/edit/delete products; change titles, prices, stock, sizes, badges, specifications, featured status and image URLs; edit campaign copy, page text, photography, contacts, FAQs and policies; inspect order items and shipping addresses; and update fulfillment status. Refresh buttons reload the selected workspace. Saved content refreshes the storefront immediately.
+The legacy database credential was moved out of three source scripts into ignored `.env.backend`. Since it previously existed in source, rotate it in Supabase and update the local file. Do not commit that file or put private keys into `VITE_` variables.
 
-Images accept `/images/...` paths or HTTPS URLs. Place local files inside `public/images`. Uploading to a media storage provider is not configured.
+## Activate the live backend
 
-## Activate live management
+1. Configure `.env.backend` using `.env.backend.example`. Supply a current database connection string and the trusted CA certificate from Supabase database settings through `SUPABASE_CA_FILE` if needed. Certificate verification stays enabled.
+2. Run `npm run backend:migrate`. This applies `setup_database.sql`, `secure-store.sql`, and `media-storage.sql`, retaining existing catalog records. It replaces policies on the store tables. Run first in staging if the database serves other applications.
+3. Run `npm run backend:check` to check table/function availability and anonymous order-table privacy.
+4. Configure `SUPABASE_SERVICE_ROLE_KEY` and a locally chosen `GNZ_ADMIN_PASSWORD` of at least 12 characters. Run `npm run backend:owner`. It creates the owner if absent or grants admin to an existing confirmed account. Existing passwords are never changed. Remove the initial password from the environment file afterward.
+5. Alternatively, run the three SQL files in the Supabase SQL editor, register and confirm the owner through the website, then run `authorize-owner.sql`. Sign out and back in.
+6. Set Supabase Auth Site URL and allowed redirect URLs to your website origin and local development URL. **Forgot password?** sends a recovery link; the website handles recovery sessions and the new password form. Delivery depends on the project's Auth email configuration.
+7. On localhost, use **Exit local draft** before signing into live administration. Draft access never requires a password and never publishes changes.
 
-The intended owner is **gulraizbutt297@gmail.com**. The published contact phone is **+92 331 6841666**.
+## Implemented integrations
 
-1. Register the owner through **Your account → Create an account**, or create the account in the project's Supabase Auth dashboard. Confirm the email. Set your password yourself; do not put it in source files or send it in chat.
-2. Review and run `scripts/secure-store.sql` in the Supabase SQL editor. It replaces permissive policies on the three store tables, restricts management to the administrator role, and adds the server-authoritative unpaid order-request function. It does not modify product records or grant a user access.
-3. Review and run `scripts/authorize-owner.sql` to authorize the confirmed owner account. This only updates the specified user's app metadata. Sign out and back in to refresh the session.
-4. Open Store manager and sign in. The live-mode banner distinguishes publishing from local drafts.
-5. Validate anonymous/admin access in a staging database before production deployment. Neither SQL file has been executed against the live project during this task.
+- Six-category product CRUD, specifications, sizes, stock, featured products, and paginated catalog reads.
+- JPEG/PNG/WebP uploads up to 5 MB in live admin mode, using the public `product-images` bucket with admin-only writes.
+- Page copy, hero photo, contact details, FAQ, policy and announcement editing.
+- Account registration, sign-in/out and password recovery.
+- Unpaid order requests with server-calculated USD prices, supported discounts, valid sizes, aggregate stock checks, retry keys and a five-requests-per-email hourly limit.
+- Fulfillment: PENDING to PROCESSING to DISPATCHED to DELIVERED; cancellation allowed before dispatch. PROCESSING deducts inventory transactionally; cancellation restores it once. Insufficient stock leaves the order pending. Direct order-table writes are revoked.
+- Admin-only orders and metrics; no public order-table reads. Realtime/polling storefront refresh remains enabled. Incoming realtime events do not replace dirty admin forms.
 
-The role check uses server-controlled `app_metadata`, not editable profile metadata. Browser checks are only an interface gate; database enforcement requires the migration. See [Supabase RLS guidance](https://supabase.com/docs/guides/database/postgres/row-level-security).
+## Limits and remaining deployment verification
 
-## Orders and payments
+Checkout submits **order requests**, not paid purchases. Shipping is confirmed manually. No card payment, automatic shipping rate, refund, or transactional order email integration is configured. Currency conversions are display estimates; accounting is USD. Email request limiting is basic throttling, not full bot protection.
 
-Local draft mode supports end-to-end test orders without external writes. Live requests call `submit_order_request`, which recalculates prices and discounts from the catalog and checks sizes and aggregate stock. Direct public access to the order table is revoked by the migration. Requests remain **PENDING / UNPAID** and do not reserve stock. Availability and shipping must be confirmed before payment.
+Pending requests do not reserve stock. Resolve active orders before deleting their products. Historical non-pending orders created before this migration need manual inventory reconciliation; the new reservation flag does not infer past stock movements.
 
-This is an order-request workflow, not a card-payment checkout. A payment provider, verified webhooks, inventory reservations, abuse protection/rate limiting and transactional email still require production integration. If the database function is missing, the form reports that setup is required and preserves the bag.
+Local tests exercise SQL permissions, pricing, validation, retries, stock transitions, cancellation, and draft parity. Live Auth email delivery, storage uploads, websocket events, and hosted browser flows require verification after activation. No claim of full live deployment is made.
 
-## Verification
-
-Eight automated tests pass. Browser verification covered admin access gating, local product creation with specifications, content saving, checkout into local orders, fulfillment status persistence, and the photographic belt controls. Production build passes. Live mutations, real sign-in and database policies were not exercised; no owner password or privileged project credential is configured in this workspace.
-
-## Current clothing direction
-
-The newest request replaces the belt collection with **Hoodies, Tracksuits, T-shirts, Fashion, Bags, and Others**. The first localhost visit opens a fresh sample workspace with 12 editable products. See [sample product guide](sample-products.md). Previous belt-draft data is retained separately and is not loaded into this workspace. The old belt and GNZ 3D visuals are no longer displayed. Live owner activation requirements above still apply.
+References: [Supabase password recovery](https://supabase.com/docs/reference/javascript/auth-resetpasswordforemail) and [admin provisioning](https://supabase.com/docs/reference/javascript/auth-admin-createuser).

@@ -1,14 +1,16 @@
+import { loadEnvFile } from 'node:process';
+loadEnvFile('.env.backend');
 import fs from 'fs';
 import path from 'path';
 import pg from 'pg';
 
-const connectionString = 'postgresql://postgres.xoizeqnphqtjjyodcfwk:Z32VxAQ9G91tCIIN@aws-0-ap-northeast-2.pooler.supabase.com:5432/postgres';
+const connectionString = process.env.SUPABASE_DB_URL;
 
 async function runMigration() {
   console.log('Connecting to Supabase PostgreSQL Database...');
   const client = new pg.Client({
     connectionString,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: true }
   });
 
   try {

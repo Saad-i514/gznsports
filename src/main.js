@@ -25,9 +25,10 @@ let currentSort = "featured";
 const refreshCatalog = coalesceRefresh(() => syncCatalog(true));
 const refreshSettings = coalesceRefresh(syncSettings);
 const refreshStore = () => Promise.all([refreshCatalog(), refreshSettings()]);
-let lastSettings = '';
+let lastSettings = "";
 document.addEventListener("DOMContentLoaded", () => {
   initializeSamplePreview(SAMPLE_PRODUCTS);
+  if (!isDraft()) PRODUCTS.length = 0;
   document.getElementById("app").innerHTML = storefront() + cartMarkup;
   initModals();
   initAdminPanel();
@@ -63,8 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
   realtimeEngine.init();
   realtimeEngine.onProductChange(() => void refreshCatalog());
   realtimeEngine.onSettingsChange(() => void refreshSettings());
-  realtimeEngine.onStatusChange(status => {
-    if (status === 'CONNECTED') void refreshStore();
+  realtimeEngine.onStatusChange((status) => {
+    if (status === "CONNECTED") void refreshStore();
   });
 });
 
@@ -255,12 +256,19 @@ function openQuickView(id) {
   };
 }
 async function openOrderReview() {
+  const requestKey = crypto.randomUUID();
   if (!store.cart.length) return;
   closeCart();
   const modal = document.getElementById("quick-view-modal");
   document.getElementById("quick-view-content").innerHTML =
     `<button class="modal-close-btn" id="close-order" aria-label="Close order review">✕</button><div class="order-review"><p class="eyebrow">GNZSPORTS / ORDER REQUEST</p><h2>MAKE IT YOURS.</h2><p>${isDraft() ? "LOCAL DRAFT: this creates a test order only in this browser. " : ""}Send your selection to the store for confirmation. No payment is collected. Shipping and availability will be confirmed before payment.</p><p class="quick-price">${store.getCartCount()} pieces · ${store.formatPrice(store.getCartTotal())}</p><form id="order-request-form"><label for="order-name">Full name</label><input id="order-name" name="name" autocomplete="name" required maxlength="120" /><label for="order-email">Email address</label><input id="order-email" name="email" type="email" autocomplete="email" required maxlength="254" /><label for="order-address">Shipping address</label><textarea id="order-address" name="address" autocomplete="street-address" rows="3" required maxlength="1000"></textarea><p id="order-feedback" role="status"></p><button class="action-button dark-button" type="submit">Send order request <span>↗</span></button></form></div>`;
   modal.classList.add("open");
+  document
+    .getElementById("order-email")
+    .insertAdjacentHTML(
+      "afterend",
+      '<label for="order-phone">Phone number (optional)</label><input id="order-phone" name="phone" type="tel" autocomplete="tel" maxlength="50" />',
+    );
   document.getElementById("close-order").onclick = () =>
     modal.classList.remove("open");
   auth
@@ -293,12 +301,14 @@ async function openOrderReview() {
           );
         }
         const order = await adminApi.createOrder({
+          request_key: requestKey,
           customer_name: form.elements.name.value.trim(),
           customer_email: form.elements.email.value.trim(),
+          customer_phone: form.elements.phone.value.trim(),
           items: selection,
           promo_code: store.discountCode,
           subtotal: store.getCartSubtotal(),
-          total: store.getCartTotal(),
+          total: Number(store.getCartTotal().toFixed(2)),
           discount: store.getCartDiscount(),
           status: "PENDING",
           payment_status: "UNPAID",
@@ -321,7 +331,9 @@ async function syncCatalog(fresh = false) {
     const products = await adminApi.fetchProducts(fresh);
     if (Array.isArray(products)) store.setProducts(products);
   } catch {
-    /* The curated local catalog remains usable offline. */
+    if (!PRODUCTS.length)
+      document.getElementById("product-grid-container").innerHTML =
+        '<p class="empty-collection" role="status">The catalog is temporarily unavailable. We’ll retry automatically. You can contact the store using the details below.</p>';
   }
 }
 async function syncSettings() {

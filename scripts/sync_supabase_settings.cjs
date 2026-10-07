@@ -1,11 +1,12 @@
+require('node:process').loadEnvFile('.env.backend');
 const { Client } = require('pg');
 
-const connectionString = 'postgresql://postgres:Z32VxAQ9G91tCIIN@db.xoizeqnphqtjjyodcfwk.supabase.co:5432/postgres';
+const connectionString = process.env.SUPABASE_DB_URL;
 
 async function sync() {
   const client = new Client({
     connectionString,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: true }
   });
 
   await client.connect();

@@ -5,7 +5,22 @@ import { createDraftApi, isDraft } from "./draft-store.js";
 // GZNSPORTS // ADMIN & STORE BACKEND API
 import { supabase } from "./supabase.js";
 import { imagePath } from "../ui.js";
-import { executeGraphQL, GQL_QUERIES, cacheMemory } from "./graphql-client.js";
+import { cacheMemory } from "./graphql-client.js";
+
+async function readAllRows(table, order) {
+  const rows = [];
+  for (let offset = 0; ; offset += 500) {
+    let query = supabase
+      .from(table)
+      .select("*")
+      .order(order, { ascending: false });
+    if (order !== "key") query = query.order("id");
+    const { data, error } = await query.range(offset, offset + 499);
+    if (error) throw error;
+    rows.push(...data);
+    if (data.length < 500) return rows;
+  }
+}
 
 const liveApi = {
   // --- PRODUCTS ---
@@ -14,35 +29,7 @@ const liveApi = {
       cacheMemory.invalidateByTag("products");
     }
 
-    let prods = [];
-    try {
-      const data = await executeGraphQL(
-        GQL_QUERIES.GET_ALL_PRODUCTS,
-        {},
-        {
-          useCache: !forceFresh,
-          ttl: 60000,
-          tags: ["products"],
-        },
-      );
-
-      if (data?.productsCollection?.edges) {
-        prods = data.productsCollection.edges.map((e) => e.node);
-      }
-    } catch (e) {
-      console.warn("[AdminAPI] GraphQL query failed, falling back to REST:", e);
-    }
-
-    if (!prods || prods.length === 0) {
-      // Fallback to Supabase REST
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      prods = data || [];
-    }
+    const prods = await readAllRows("products", "created_at");
 
     return prods
       .filter(isCurrentProduct)
@@ -179,34 +166,7 @@ const liveApi = {
       cacheMemory.invalidateByTag("settings");
     }
 
-    try {
-      const data = await executeGraphQL(
-        GQL_QUERIES.GET_SITE_SETTINGS,
-        {},
-        {
-          useCache: !forceFresh,
-          ttl: 120000,
-          tags: ["settings"],
-        },
-      );
-
-      if (data?.site_settingsCollection?.edges) {
-        const settings = {};
-        data.site_settingsCollection.edges.forEach((e) => {
-          settings[e.node.key] = e.node.value;
-        });
-        return settings;
-      }
-    } catch (e) {
-      console.warn(
-        "[AdminAPI] GraphQL settings query failed, falling back to REST:",
-        e,
-      );
-    }
-
-    const { data, error } = await supabase.from("site_settings").select("*");
-
-    if (error) throw error;
+    const data = await readAllRows("site_settings", "key");
     const settings = {};
     (data || []).forEach((row) => {
       settings[row.key] = row.value;
@@ -232,22 +192,14 @@ const liveApi = {
 
   // --- ORDERS & TRANSACTIONS ---
   async fetchOrders() {
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-    return data || [];
+    return readAllRows("orders", "created_at");
   },
 
   async updateOrderStatus(orderId, status) {
-    const { data, error } = await supabase
-      .from("orders")
-      .update({ status })
-      .eq("id", orderId)
-      .select()
-      .single();
+    const { data, error } = await supabase.rpc("transition_order", {
+      order_id: orderId,
+      next_status: status,
+    });
 
     if (error) throw error;
     cacheMemory.invalidateByTag("orders");
@@ -269,6 +221,25 @@ const liveApi = {
   },
 
   // --- DASHBOARD METRICS ---
+  async uploadProductImage(file) {
+    if (
+      !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
+      file.size > 5 * 1024 * 1024
+    )
+      throw new Error("Choose a JPEG, PNG or WebP image smaller than 5 MB.");
+    const ext = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+    }[file.type];
+    const path = `${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage
+      .from("product-images")
+      .upload(path, file, { contentType: file.type, upsert: false });
+    if (error) throw error;
+    return supabase.storage.from("product-images").getPublicUrl(path).data
+      .publicUrl;
+  },
   async getDashboardMetrics() {
     const [products, orders] = await Promise.all([
       this.fetchProducts(false),
@@ -295,6 +266,7 @@ const liveApi = {
 };
 
 const protectedMethods = new Set([
+  "uploadProductImage",
   "createProduct",
   "updateProduct",
   "deleteProduct",
@@ -320,6 +292,10 @@ export const adminApi = new Proxy(liveApi, {
       if (method === "updateOrderStatus" && !orderStatuses.includes(args[1]))
         throw new Error("Invalid order status.");
       const draft = isDraft();
+      if (draft && method === "uploadProductImage")
+        throw new Error(
+          "Image uploads require live admin mode. Use a local image path in the draft editor.",
+        );
       if (!draft && protectedMethods.has(method)) await requireAdmin();
       const api = draft ? createDraftApi(localStorage) : target;
       const result = await api[method](...args);
