@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "node --test tests/*.test.js",
     "backend:check": "node scripts/backend-setup.js check",
+    "backend:audit": "node scripts/database-audit.js",
     "backend:migrate": "node scripts/backend-setup.js migrate",
     "backend:owner": "node scripts/backend-setup.js owner"
   },

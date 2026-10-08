@@ -236,7 +236,13 @@ const liveApi = {
     const { error } = await supabase.storage
       .from("product-images")
       .upload(path, file, { contentType: file.type, upsert: false });
-    if (error) throw error;
+    if (error) {
+      if (/bucket not found/i.test(error.message))
+        throw new Error('Photo storage is not configured. Create the product-images bucket using scripts/media-storage.sql.');
+      if (/row.level security|unauthorized/i.test(error.message))
+        throw new Error('Photo upload permission is not configured. Run scripts/media-storage.sql in the Supabase SQL editor, then retry.');
+      throw error;
+    }
     return supabase.storage.from("product-images").getPublicUrl(path).data
       .publicUrl;
   },

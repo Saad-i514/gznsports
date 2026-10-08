@@ -2514,3 +2514,16 @@ h2 {
   .hero-bottom { margin-top: auto; }
 }
 @media (prefers-reduced-motion: reduce) { .gallery-camera { transition: none; } }
+
+/* Product editor: consistent native controls and touch-friendly size selection. */
+#admin-size-picker { min-width: 0; }
+#edit-product-sizes { width: 100%; min-height: 46px; cursor: pointer; }
+.admin-size-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.admin-size-chip { min-height: 40px; padding: 8px 14px; border: 1px solid #c7c9c1; border-radius: 5px; background: #e9ece4; color: #1b261e; font: inherit; cursor: pointer; }
+.admin-size-chip:hover { background: #dce3d4; border-color: #617359; }
+.admin-size-chip:focus-visible { outline: 2px solid #c13c21; outline-offset: 3px; }
+#admin-sizes-help { display: block; margin-top: 8px; line-height: 1.5; color: #526050; }
+.admin-form-grid .form-group { min-width: 0; }
+.admin-form-grid input, .admin-form-grid select, .admin-form-grid textarea { box-sizing: border-box; max-width: 100%; }
+.admin-form-grid input[type="file"] { white-space: normal; font-size: 12px; }
+.admin-sub-modal-content { max-width: min(850px, calc(100vw - 24px)); }

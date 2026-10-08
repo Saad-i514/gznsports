@@ -16,6 +16,7 @@ import { escapeHTML } from "./ui.js";
 import { playMetallicClick, playPunchImpact } from "./audio.js";
 import { openPasswordRecovery } from "./password-recovery.js";
 import { nextOrderStatuses } from "./lib/order-rules.js";
+import { initSizePicker } from './admin-sizes.js';
 
 let isAdminOpen = false;
 let privateOrdersChannel = null;
@@ -504,9 +505,11 @@ async function loadProductsTab() {
               <small id="upload-feedback" role="status">${isDraft() ? "Use an image URL or local path in draft mode." : "Uploaded photos are publicly visible."}</small>
             </div>
 
-            <div class="form-group full-width">
-              <label>SIZES (COMMA SEPARATED)</label>
-              <input type="text" id="edit-product-sizes" placeholder="S, M, L, XL, 2XL or One size" />
+            <div class="form-group full-width" id="admin-size-picker">
+              <label for="edit-product-sizes">AVAILABLE SIZES</label>
+              <select id="edit-product-sizes" aria-describedby="admin-sizes-help"></select>
+              <div class="admin-size-chips" aria-label="Selected sizes"></div>
+              <small id="admin-sizes-help" role="status"></small>
             </div>
 
             <div class="form-group full-width">
@@ -539,6 +542,7 @@ async function loadProductsTab() {
 function attachProductEvents() {
   const editorModal = document.getElementById("product-editor-modal");
   const form = document.getElementById("product-editor-form");
+  const sizes = initSizePicker(document.getElementById('admin-size-picker'));
   document.getElementById("edit-product-upload").onchange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -563,6 +567,8 @@ function attachProductEvents() {
     .getElementById("open-add-product-btn")
     ?.addEventListener("click", () => {
       form.reset();
+      sizes.set([]);
+      delete form.dataset.dirty;
       document.getElementById("edit-product-id").value = "";
       document.getElementById("product-editor-title").textContent =
         "ADD NEW PRODUCT SPECIFICATION";
@@ -597,11 +603,8 @@ function attachProductEvents() {
       document.getElementById("edit-product-stock").value =
         prod.stock_quantity ?? 50;
       document.getElementById("edit-product-image").value = prod.image;
-      document.getElementById("edit-product-sizes").value = Array.isArray(
-        prod.sizes,
-      )
-        ? prod.sizes.join(", ")
-        : prod.sizes;
+      sizes.set(prod.sizes);
+      delete form.dataset.dirty;
       document.getElementById("edit-product-desc").value =
         prod.description || "";
 
@@ -628,7 +631,7 @@ function attachProductEvents() {
       tag: document.getElementById("edit-product-tag").value,
       stock_quantity: document.getElementById("edit-product-stock").value,
       image: document.getElementById("edit-product-image").value,
-      sizes: document.getElementById("edit-product-sizes").value,
+      sizes: sizes.get(),
       description: document.getElementById("edit-product-desc").value,
       specs: document
         .getElementById("edit-product-specs")

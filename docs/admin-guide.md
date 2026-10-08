@@ -38,3 +38,17 @@ Pending requests do not reserve stock. Resolve active orders before deleting the
 Local tests exercise SQL permissions, pricing, validation, retries, stock transitions, cancellation, and draft parity. Live Auth email delivery, storage uploads, websocket events, and hosted browser flows require verification after activation. No claim of full live deployment is made.
 
 References: [Supabase password recovery](https://supabase.com/docs/reference/javascript/auth-resetpasswordforemail) and [admin provisioning](https://supabase.com/docs/reference/javascript/auth-admin-createuser).
+
+## Owner activation — 2026-10-08
+
+The owner account gulraizbutt297@gmail.com was created through Supabase Auth. Password sign-in and the admin role were verified using the public browser client. The temporary provisioning password was removed from .env.backend afterward. This supersedes the account-activation status above; database migration and storage verification remain outstanding. Rotate the API secret shared in chat and update the ignored backend configuration.
+
+## Storage activation — 2026-10-08
+
+Applied media-storage.sql to the live database through the Node PostgreSQL CLI with Supabase's CA certificate and strict TLS verification. Saved SUPABASE_CA_FILE in the ignored backend environment configuration. Verified owner upload, public image retrieval, anonymous upload rejection, and test-file cleanup. This resolves the earlier storage/certificate blocker; the other database migrations were not applied as part of this storage repair.
+
+Public CA source: https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt
+
+## Database activation — 2026-10-08
+
+Applied all store migrations and verified the live database and HTTP access rules. This supersedes the earlier unactivated database status. See database-audit.md for results and remaining limits. Use npm run backend:audit for rollback-only live verification.
