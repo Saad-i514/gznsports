@@ -2557,3 +2557,21 @@ h2 {
  .order-items-breakdown { padding: 12px; }
  .order-sub-item { align-items: flex-start; flex-wrap: wrap; gap: 8px; }
 }
+
+/* Admin SVG system: restrained duotone surfaces and consistent optical sizing. */
+.admin-svg-icon { display: inline-block; flex: 0 0 auto; vertical-align: middle; width: 21px; height: 21px; }
+.admin-svg-icon .icon-accent { fill: currentColor; fill-opacity: .12; }
+.admin-tab-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+.admin-tab-btn .admin-svg-icon { color: #6c788c; transition: color .2s, transform .2s; }
+.admin-tab-btn.active .admin-svg-icon { color: #bd5721; }
+.admin-tab-btn:hover .admin-svg-icon { transform: translateY(-2px); }
+.metric-icon { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 13px; background: linear-gradient(145deg,#fffaf1,#f6e7d4); color: #a55a20; border: 1px solid #ebd7bb; box-shadow: 0 3px 8px #50301408; }
+.metric-icon .admin-svg-icon { width: 26px; height: 26px; }
+.metric-box:nth-child(2) .metric-icon { color: #4165a4; background: linear-gradient(145deg,#f3f7ff,#e1eafa); border-color: #cddcf2; }
+.metric-box:nth-child(3) .metric-icon { color: #487561; background: linear-gradient(145deg,#f1faf5,#deeee5); border-color: #c5dfd0; }
+.metric-box:nth-child(4) .metric-icon { color: #be582e; background: linear-gradient(145deg,#fff6ef,#ffe7d5); border-color: #f1d1b9; }
+.admin-section-header button, .setting-card-title { display: flex; align-items: center; gap: 9px; }
+.admin-icon-btn, .admin-close-btn { display: inline-flex; align-items: center; justify-content: center; }
+.admin-icon-btn .admin-svg-icon { width: 19px; height: 19px; }
+.admin-empty-state > .admin-svg-icon { display: block; width: 44px; height: 44px; margin: 0 auto 16px; color: #68788c; }
+@media (prefers-reduced-motion: reduce) { .admin-tab-btn:hover .admin-svg-icon { transform: none; } }

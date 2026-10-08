@@ -1,3 +1,4 @@
+import { adminIcon } from './admin-icons.js';
 import { CATEGORIES, CURRENT_DIRECTION } from "./catalog.js";
 import { contentEditor, contentFields, validImage } from "./site-content.js";
 import { isAdminUser } from "./lib/admin-access.js";
@@ -69,7 +70,7 @@ export async function openAdminPanel() {
 
 function renderAdminGate() {
   const overlay = document.getElementById("gzn-admin-overlay");
-  overlay.innerHTML = `<div class="admin-modal admin-login"><button class="admin-close-btn" id="admin-gate-close" aria-label="Close admin sign in">✕</button><p class="eyebrow">GNZSPORTS / STORE MANAGEMENT</p><h2>YOUR STORE. YOUR CONTROL.</h2><p>Sign in with your administrator account to manage live products, website content and orders.</p><form id="admin-login-form" class="admin-form-grid"><div class="form-group full-width"><label for="admin-email">Email</label><input id="admin-email" value="gulraizbutt297@gmail.com" type="email" autocomplete="username" required /></div><div class="form-group full-width"><label for="admin-password">Password</label><input id="admin-password" type="password" autocomplete="current-password" required /></div><p id="admin-gate-feedback" role="status"></p><button class="btn-primary" type="submit">Sign in to live admin</button></form>${supportsDraft() ? '<hr><h3>Try the editor locally</h3><p>Changes persist in this browser only. No live products, settings or orders are modified.</p><button id="start-draft" class="btn-secondary">Open local draft editor</button>' : ""}</div>`;
+  overlay.innerHTML = `<div class="admin-modal admin-login"><button class="admin-close-btn" id="admin-gate-close" aria-label="Close admin sign in">${adminIcon("close")}</button><p class="eyebrow">GNZSPORTS / STORE MANAGEMENT</p><h2>YOUR STORE. YOUR CONTROL.</h2><p>Sign in with your administrator account to manage live products, website content and orders.</p><form id="admin-login-form" class="admin-form-grid"><div class="form-group full-width"><label for="admin-email">Email</label><input id="admin-email" value="gulraizbutt297@gmail.com" type="email" autocomplete="username" required /></div><div class="form-group full-width"><label for="admin-password">Password</label><input id="admin-password" type="password" autocomplete="current-password" required /></div><p id="admin-gate-feedback" role="status"></p><button class="btn-primary" type="submit">Sign in to live admin</button></form>${supportsDraft() ? '<hr><h3>Try the editor locally</h3><p>Changes persist in this browser only. No live products, settings or orders are modified.</p><button id="start-draft" class="btn-secondary">Open local draft editor</button>' : ""}</div>`;
   document.getElementById("admin-gate-close").onclick = closeAdminPanel;
   const reset = document.createElement("button");
   reset.type = "button";
@@ -211,23 +212,23 @@ async function renderAdminUI() {
             <span class="pulse-dot"></span> REALTIME: ${status}
           </div>
         </div>
-        <button class="admin-close-btn" id="admin-close-btn" title="Close Store Manager">✕</button>
+        <button class="admin-close-btn" id="admin-close-btn" aria-label="Close store manager" title="Close Store Manager">${adminIcon("close")}</button>
       </div>
 
       <div class="admin-mode-bar"><span>${isDraft() ? "LOCAL DRAFT · Saved in this browser only" : "LIVE STORE · Changes publish to your website"}</span><button id="admin-exit-mode" class="btn-secondary">${isDraft() ? "Exit local draft" : "Sign out"}</button></div>
       <!-- NAVIGATION TABS -->
       <div class="admin-nav-tabs">
         <button class="admin-tab-btn ${currentTab === "overview" ? "active" : ""}" data-tab="overview">
-          📊 STORE OVERVIEW
+          ${adminIcon("overview")} STORE OVERVIEW
         </button>
         <button class="admin-tab-btn ${currentTab === "products" ? "active" : ""}" data-tab="products">
-          🏆 PRODUCTS & COLLECTIONS
+          ${adminIcon("catalog")} PRODUCTS & COLLECTIONS
         </button>
         <button class="admin-tab-btn ${currentTab === "settings" ? "active" : ""}" data-tab="settings">
-          ⚙️ STOREFRONT & HERO EDITOR
+          ${adminIcon("settings")} STOREFRONT & HERO EDITOR
         </button>
         <button class="admin-tab-btn ${currentTab === "orders" ? "active" : ""}" data-tab="orders">
-          📦 CUSTOMER ORDERS
+          ${adminIcon("orders")} CUSTOMER ORDERS
         </button>
       </div>
 
@@ -295,7 +296,7 @@ async function loadOverviewTab() {
         <div class="metric-box">
           <div class="metric-top">
             <span class="mono-tag" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a;">TOTAL REVENUE</span>
-            <span class="metric-icon">💰</span>
+            <span class="metric-icon">${adminIcon("revenue")}</span>
           </div>
           <div class="metric-big-number">$${metrics.totalRevenue.toFixed(2)}</div>
           <span class="metric-sub">Paid, non-cancelled orders</span>
@@ -304,7 +305,7 @@ async function loadOverviewTab() {
         <div class="metric-box">
           <div class="metric-top">
             <span class="mono-tag" style="background:#eff6ff; color:#1d4ed8; border:1px solid #dbeafe;">TOTAL ORDERS</span>
-            <span class="metric-icon">📦</span>
+            <span class="metric-icon">${adminIcon("orders")}</span>
           </div>
           <div class="metric-big-number">${metrics.totalOrders}</div>
           <span class="metric-sub">Order requests received</span>
@@ -313,7 +314,7 @@ async function loadOverviewTab() {
         <div class="metric-box">
           <div class="metric-top">
             <span class="mono-tag" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;">CATALOG INVENTORY</span>
-            <span class="metric-icon">🏆</span>
+            <span class="metric-icon">${adminIcon("catalog")}</span>
           </div>
           <div class="metric-big-number">${metrics.totalProducts}</div>
           <span class="metric-sub">Products in current workspace</span>
@@ -322,7 +323,7 @@ async function loadOverviewTab() {
         <div class="metric-box">
           <div class="metric-top">
             <span class="mono-tag" style="background:#fff7ed; color:#c2410c; border:1px solid #ffedd5;">LOW STOCK ALERT</span>
-            <span class="metric-icon">⚠️</span>
+            <span class="metric-icon">${adminIcon("warning")}</span>
           </div>
           <div class="metric-big-number" style="color: ${metrics.lowStockCount > 0 ? "#ef4444" : "#0f172a"};">
             ${metrics.lowStockCount}
@@ -335,7 +336,7 @@ async function loadOverviewTab() {
         <div class="admin-section-header">
           <h3>RECENT CUSTOMER ORDERS</h3>
           <button class="btn-secondary" style="font-size: 0.72rem; padding: 0.4rem 0.8rem;" id="refresh-overview-btn">
-            🔄 REFRESH METRICS
+            ${adminIcon("refresh")} REFRESH METRICS
           </button>
         </div>
 
@@ -449,8 +450,8 @@ async function loadProductsTab() {
                 <td><span class="card-tag-badge" style="position:static; font-size:0.65rem;">${escapeHTML(p.tag || "STANDARD")}</span></td>
                 <td>
                   <div style="display:flex; gap:0.4rem;">
-                    <button class="admin-icon-btn edit-product-trigger" data-id="${escapeHTML(p.id)}" title="Edit Product">✏️</button>
-                    <button class="admin-icon-btn delete-product-trigger" data-id="${escapeHTML(p.id)}" title="Delete Product" style="color:#ef4444;">🗑️</button>
+                    <button class="admin-icon-btn edit-product-trigger" data-id="${escapeHTML(p.id)}" title="Edit Product">${adminIcon("edit")}</button>
+                    <button class="admin-icon-btn delete-product-trigger" data-id="${escapeHTML(p.id)}" title="Delete Product" style="color:#ef4444;">${adminIcon("delete")}</button>
                   </div>
                 </td>
               </tr>
@@ -466,7 +467,7 @@ async function loadProductsTab() {
         <div class="admin-sub-modal-content">
           <div class="admin-sub-header">
             <h4 id="product-editor-title">ADD NEW PRODUCT SPECIFICATION</h4>
-            <button class="admin-close-btn" id="close-product-editor">✕</button>
+            <button class="admin-close-btn" id="close-product-editor" aria-label="Close product editor">${adminIcon("close")}</button>
           </div>
           <form id="product-editor-form" class="admin-form-grid">
             <input type="hidden" id="edit-product-id" />
@@ -787,7 +788,7 @@ async function loadSettingsTab() {
         <div class="admin-card-setting"><h4 class="setting-card-title">PAGE CONTENT & PHOTOGRAPHY</h4><p>Edit headings, story, help text, policies and images.</p>${contentEditor(cachedSettings.page_content?._direction === CURRENT_DIRECTION ? cachedSettings.page_content : {})}</div>
         <!-- 1. HERO CONFIG -->
         <div class="admin-card-setting">
-          <h4 class="setting-card-title">🏆 HERO SHOWCASE STUDIO CONFIGURATION</h4>
+          <h4 class="setting-card-title">${adminIcon("catalog")} HERO SHOWCASE STUDIO CONFIGURATION</h4>
           <form id="hero-settings-form" class="admin-form-grid">
             <div class="form-group">
               <label>CAMPAIGN LABEL</label>
@@ -826,7 +827,7 @@ async function loadSettingsTab() {
 
             <div class="form-actions full-width">
               <button type="submit" class="btn-primary" style="padding:0.6rem 1.4rem;">
-                ⚡ PUBLISH HERO CONFIG TO LIVE SITE
+                ${adminIcon("publish")} PUBLISH HERO CONFIG TO LIVE SITE
               </button>
             </div>
           </form>
@@ -834,7 +835,7 @@ async function loadSettingsTab() {
 
         <!-- 2. ANNOUNCEMENT BAR & GUARANTEES -->
         <div class="admin-card-setting" style="margin-top: 1.5rem;">
-          <h4 class="setting-card-title">📢 ANNOUNCEMENT BAR</h4>
+          <h4 class="setting-card-title">${adminIcon("announcement")} ANNOUNCEMENT BAR</h4>
           <form id="announcements-form" class="admin-form-grid">
             <div class="form-group">
               <label>TICKER HEADLINE</label>
@@ -853,7 +854,7 @@ async function loadSettingsTab() {
 
             <div class="form-actions full-width">
               <button type="submit" class="btn-primary" style="padding:0.6rem 1.4rem;">
-                ⚡ BROADCAST ANNOUNCEMENTS
+                ${adminIcon("publish")} BROADCAST ANNOUNCEMENTS
               </button>
             </div>
           </form>
@@ -966,7 +967,7 @@ async function loadOrdersTab() {
           <p style="color:var(--gzn-slate); font-size:0.85rem;">Manage fulfillment status and inspect clothing and accessory orders.</p>
         </div>
         <button class="btn-secondary" id="refresh-orders-btn" style="font-size:0.75rem; padding:0.4rem 0.8rem;">
-          🔄 REFRESH
+          ${adminIcon("refresh")} REFRESH
         </button>
       </div>
 
@@ -974,7 +975,7 @@ async function loadOrdersTab() {
         cachedOrders.length === 0
           ? `
         <div class="admin-empty-state">
-          📦 No customer orders recorded yet. When a customer checks out, their order is captured immediately.
+          ${adminIcon("orders")} No customer orders recorded yet. When a customer checks out, their order is captured immediately.
         </div>
       `
           : `
