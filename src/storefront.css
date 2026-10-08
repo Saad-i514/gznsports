@@ -2527,3 +2527,33 @@ h2 {
 .admin-form-grid input, .admin-form-grid select, .admin-form-grid textarea { box-sizing: border-box; max-width: 100%; }
 .admin-form-grid input[type="file"] { white-space: normal; font-size: 12px; }
 .admin-sub-modal-content { max-width: min(850px, calc(100vw - 24px)); }
+
+/* Order management: clear customer, address, item and payment hierarchy. */
+.admin-order-card { padding: 24px; }
+.admin-order-card .order-card-header { gap: 24px; margin-bottom: 20px; }
+.order-card-header > div { min-width: 0; overflow-wrap: anywhere; }
+.admin-order-card .mono-tag { display: inline-block; padding: 5px 8px; line-height: 1.4; letter-spacing: .08em; margin-bottom: 8px; }
+.order-summary { text-align: right; flex-shrink: 0; }
+.order-status-ctrl { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.order-status-ctrl label { font: 12px Inter,sans-serif; color: #475569; }
+.order-status-select { min-height: 40px; }
+.admin-order-card .order-address { padding: 16px 0; margin: 0 0 16px; border-top: 1px solid #e2e8f0; white-space: normal; }
+.order-address > strong { display: block; margin-bottom: 6px; color: #64748b; font: 600 12px Inter,sans-serif; }
+.order-address address { font: 14px/1.65 Inter,sans-serif; color: #172033; white-space: pre-line; overflow-wrap: anywhere; }
+.order-sub-item { gap: 20px; padding: 8px 0; }
+.order-item-description { min-width: 0; overflow-wrap: anywhere; }
+.order-item-description strong { display: block; font-size: 14px; font-weight: 600; line-height: 1.5; }
+.order-item-description small { display: block; margin-top: 5px; color: #64748b; font-size: 12px; }
+.order-sub-item > span { flex-shrink: 0; white-space: nowrap; }
+.order-footer-meta { justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.order-date { color: #64748b; font: 12px/1.5 Inter,sans-serif; }
+.order-payment { display: inline-flex; padding: 6px 10px; border-radius: 6px; font: 600 11px/1.4 Inter,sans-serif; }
+.order-payment.is-paid { background: #e6f5ed; color: #16613b; }
+.order-payment.is-unpaid { background: #fff3d6; color: #795619; }
+@media (max-width: 600px) {
+ .admin-order-card { padding: 16px; }
+ .order-summary { text-align: left; width: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+ .order-status-ctrl { margin-top: 0; flex-wrap: wrap; }
+ .order-items-breakdown { padding: 12px; }
+ .order-sub-item { align-items: flex-start; flex-wrap: wrap; gap: 8px; }
+}

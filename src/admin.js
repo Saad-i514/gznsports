@@ -17,6 +17,7 @@ import { playMetallicClick, playPunchImpact } from "./audio.js";
 import { openPasswordRecovery } from "./password-recovery.js";
 import { nextOrderStatuses } from "./lib/order-rules.js";
 import { initSizePicker } from './admin-sizes.js';
+import { formatAddress, formatOrderDate } from './lib/order-format.js';
 
 let isAdminOpen = false;
 let privateOrdersChannel = null;
@@ -988,13 +989,13 @@ async function loadOrdersTab() {
                   <div style="font-weight:700; font-size:1.05rem; margin-top:0.2rem; color:#0f172a;">${escapeHTML(order.customer_name)}</div>
                   <div style="font-size:0.8rem; color:var(--gzn-slate);">${escapeHTML(order.customer_email)} ${order.customer_phone ? " • " + escapeHTML(order.customer_phone) : ""}</div>
                 </div>
-                <div style="text-align:right;">
+                <div class="order-summary">
                   <div style="font-family:var(--font-mono); font-size:1.3rem; font-weight:700; color:#b45309;">
                     $${parseFloat(order.total).toFixed(2)}
                   </div>
                   <div class="order-status-ctrl">
-                    <label style="font-size:0.65rem; color:#475569; font-weight:600;">STATUS:</label>
-                    <select class="order-status-select" data-id="${order.id}">
+                    <label for="status-${order.id}">Fulfillment</label>
+                    <select id="status-${order.id}" class="order-status-select" data-id="${order.id}">
                       <option value="PENDING" ${order.status === "PENDING" ? "selected" : ""}>PENDING</option>
                       <option value="PROCESSING" ${order.status === "PROCESSING" ? "selected" : ""}>PROCESSING</option>
                       <option value="DISPATCHED" ${order.status === "DISPATCHED" ? "selected" : ""}>DISPATCHED</option>
@@ -1005,7 +1006,7 @@ async function loadOrdersTab() {
                 </div>
               </div>
 
-              <p class="order-address"><strong>Shipping address:</strong> ${escapeHTML(typeof order.shipping_address === "object" ? order.shipping_address?.address || JSON.stringify(order.shipping_address) : order.shipping_address || "Not provided")}</p>
+              <div class="order-address"><strong>Shipping address</strong><address>${escapeHTML(formatAddress(order.shipping_address))}</address></div>
               <!-- ITEMS LIST -->
               <div class="order-items-breakdown">
                 ${
@@ -1014,7 +1015,7 @@ async function loadOrdersTab() {
                         .map(
                           (it) => `
                   <div class="order-sub-item">
-                    <span>${escapeHTML(it.title || "GNZSPORTS Product")} (x${it.quantity}) [${escapeHTML(it.size || "STD")}]</span>
+                    <div class="order-item-description"><strong>${escapeHTML(it.title || "GNZSPORTS Product")}</strong><small>Quantity: ${escapeHTML(String(it.quantity || 1))} · Size: ${escapeHTML(it.size || "STD")}</small></div>
                     <span style="font-family:var(--font-mono); font-weight:700;">$${((parseFloat(it.price) || 0) * (it.quantity || 1)).toFixed(2)}</span>
                   </div>
                 `,
@@ -1025,8 +1026,8 @@ async function loadOrdersTab() {
               </div>
 
               <div class="order-footer-meta">
-                <span class="mono-tag" style="font-size:0.68rem; background:#f8fafc; color:#475569; border:1px solid #e2e8f0;">DATE: ${new Date(order.created_at).toLocaleString()}</span>
-                <span class="mono-tag" style="font-size:0.68rem; background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;">PAYMENT: ${escapeHTML(order.payment_status || "UNPAID")}</span>
+                <span class="order-date">Placed ${escapeHTML(formatOrderDate(order.created_at))}</span>
+                <span class="order-payment ${order.payment_status === 'PAID' ? 'is-paid' : 'is-unpaid'}">Payment: ${escapeHTML(order.payment_status || "UNPAID")}</span>
               </div>
             </div>
           `,
