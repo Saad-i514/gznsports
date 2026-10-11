@@ -1,5 +1,6 @@
 import { isCurrentCategory } from "../catalog.js";
 import { validImage } from "../site-content.js";
+import { handlingTime, isHandlingTime } from './handling-time.js';
 export function validateProduct(patch) {
   if (
     "title" in patch &&
@@ -45,6 +46,11 @@ export function validateProduct(patch) {
       patch.specs.some((s) => !s.label || !s.value))
   )
     throw new Error("Each specification needs a label and value.");
+  if (Array.isArray(patch.specs)) {
+    const handling = patch.specs.filter(isHandlingTime);
+    if (handling.length > 1 || (handling.length === 1 && !handlingTime(patch)))
+      throw new Error('Provide one valid handling-time range from 0 to 365 business days.');
+  }
 }
 export const orderStatuses = [
   "PENDING",

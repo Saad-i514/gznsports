@@ -1,3 +1,6 @@
+import { initStoreInfo, setStoreInfo, openStoreInfo } from './store-info.js';
+import { initCustomerOrders, openOrderTracking, confirmationMarkup, bindConfirmation } from './customer-orders.js';
+import { productImages, isProductGallery } from './lib/product-gallery.js';
 import { CURRENT_DIRECTION, isApparel } from "./catalog.js";
 import { SAMPLE_PRODUCTS } from "./sample-products.js";
 import { initializeSamplePreview } from "./lib/draft-store.js";
@@ -19,6 +22,7 @@ import { escapeHTML as e, productCard, displayTitle } from "./ui.js";
 import { initExperience } from "./experience.js";
 import { coalesceRefresh, startRefreshLoop } from "./lib/refresh-loop.js";
 import { startReleaseUpdates } from "./lib/release-updates.js";
+import { stripeCheckoutEnabled, checkoutRequestKey, startStripeCheckout, showCheckoutReturn, restoreCheckoutPromo } from "./lib/stripe-checkout.js";
 
 let currentCategory = "all";
 let currentSort = "featured";
@@ -31,6 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!isDraft()) PRODUCTS.length = 0;
   document.getElementById("app").innerHTML = storefront() + cartMarkup;
   initModals();
+  initStoreInfo();
+  initCustomerOrders();
   initAdminPanel();
   initAuthModal();
   renderProducts();
@@ -40,6 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
     renderProducts();
   });
   setupEvents();
+  if (stripeCheckoutEnabled && !isDraft()) {
+    restoreCheckoutPromo(store);
+    document.querySelector('.checkout-note').textContent = 'Sandbox checkout — test payments only. Charged in USD. No orders will be shipped.';
+    showCheckoutReturn({store, escapeHTML: e, openCart});
+  }
   window.addEventListener("gnz:data-changed", () => {
     void refreshStore();
   });
@@ -56,7 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (location.hash === "#admin") void openAdminPanel();
   initExperience();
   // The complete local collection renders before optional network work.
-  void refreshStore();
+  void refreshStore().then(() => {
+    const page = new URLSearchParams(location.search).get('page');
+    if (page === 'tracking') openOrderTracking();
+    else if (page) openStoreInfo(page);
+  });
   const stopRefresh = startRefreshLoop(refreshStore);
   const stopReleaseUpdates = startReleaseUpdates();
   if (import.meta.hot) import.meta.hot.dispose(stopReleaseUpdates);
@@ -209,15 +224,6 @@ function updateCartUI() {
     : "none";
   document.getElementById("cart-discount-amount").textContent =
     `−${store.formatPrice(discount)}`;
-  const shipping = store.getFreeShippingProgress();
-  document.getElementById("shipping-meter-fill").style.width =
-    `${shipping.percent}%`;
-  document.getElementById("shipping-percent-text").textContent =
-    `${shipping.percent}%`;
-  document.getElementById("shipping-status-text").textContent =
-    shipping.unlocked
-      ? "FREE SHIPPING THRESHOLD REACHED"
-      : `${store.formatPrice(shipping.remaining)} AWAY FROM FREE SHIPPING`;
   document.getElementById("checkout-btn").disabled = store.cart.length === 0;
   document.getElementById("cart-items-container").innerHTML = store.cart.length
     ? store.cart
@@ -244,10 +250,14 @@ function openQuickView(id) {
   if (!p) return;
   const modal = document.getElementById("quick-view-modal");
   document.getElementById("quick-view-content").innerHTML =
-    `<button class="modal-close-btn" id="modal-close-trigger" aria-label="Close product details">✕</button><div class="quick-view-grid"><img class="quick-view-image" src="${e(p.image)}" alt="${e(p.title)}" /><div><p class="eyebrow">${e(p.category)} / GNZSPORTS</p><h2>${e(displayTitle(p))}</h2><p class="quick-price">${store.formatPrice(p.price)}</p><p class="quick-description">${e(p.description)}</p><dl class="quick-specs">${(p.specs || []).map((s) => `<div><dt>${e(s.label)}</dt><dd>${e(s.value)}</dd></div>`).join("")}</dl><label class="quick-size" for="quick-size">Choose your ${isApparel(p.category) ? "size" : "option"}</label><select id="quick-size">${p.sizes.map((s) => `<option ${s === p.defaultSize ? "selected" : ""} value="${e(s)}">${e(s)}</option>`).join("")}</select><label class="product-quantity" for="quick-quantity">Quantity<input id="quick-quantity" type="number" min="1" max="${Math.max(1, Math.min(99, p.stock_quantity ?? 99))}" step="1" value="1" required ${p.stock_quantity === 0 ? "disabled" : ""} /></label><button class="action-button dark-button" id="modal-add-btn" ${p.stock_quantity === 0 ? "disabled" : ""}>${p.stock_quantity === 0 ? "Sold out" : "Add to bag"} <span>+</span></button></div></div>`;
+    `<button class="modal-close-btn" id="modal-close-trigger" aria-label="Close product details">✕</button><div class="quick-view-grid"><div><img class="quick-view-image" id="gallery-main" src="${e(p.image)}" alt="${e(p.title)}" /><div class="product-gallery">${productImages(p).map((url,index)=>`<button type="button" data-gallery-image="${e(url)}" aria-label="View photo ${index+1}" aria-pressed="${index===0}"><img src="${e(url)}" alt="" /></button>`).join('')}</div></div><div><p class="eyebrow">${e(p.category)} / GZNSPORTS</p><h2>${e(displayTitle(p))}</h2><p class="quick-price">${store.formatPrice(p.price)}</p><p class="quick-description">${e(p.description)}</p><dl class="quick-specs">${(p.specs || []).filter(s => !isProductGallery(s)).map((s) => `<div><dt>${e(s.label)}</dt><dd>${e(s.value)}</dd></div>`).join("")}</dl><label class="quick-size" for="quick-size">Choose your ${isApparel(p.category) ? "size" : "option"}</label><select id="quick-size">${p.sizes.map((s) => `<option ${s === p.defaultSize ? "selected" : ""} value="${e(s)}">${e(s)}</option>`).join("")}</select><label class="product-quantity" for="quick-quantity">Quantity<input id="quick-quantity" type="number" min="1" max="${Math.max(1, Math.min(99, p.stock_quantity ?? 99))}" step="1" value="1" required ${p.stock_quantity === 0 ? "disabled" : ""} /></label><button class="action-button dark-button" id="modal-add-btn" ${p.stock_quantity === 0 ? "disabled" : ""}>${p.stock_quantity === 0 ? "Sold out" : "Add to bag"} <span>+</span></button></div></div>`;
   modal.classList.add("open");
   document.getElementById("modal-close-trigger").onclick = () =>
     modal.classList.remove("open");
+  modal.querySelectorAll('[data-gallery-image]').forEach(button => button.onclick = () => {
+    document.getElementById('gallery-main').src = button.dataset.galleryImage;
+    modal.querySelectorAll('[data-gallery-image]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+  });
   document.getElementById("modal-add-btn").onclick = () => {
     if (!document.getElementById("quick-quantity").reportValidity()) return;
     if (
@@ -260,12 +270,19 @@ function openQuickView(id) {
 }
 async function openOrderReview() {
   const requestKey = crypto.randomUUID();
+  const useStripe = stripeCheckoutEnabled && !isDraft();
   if (!store.cart.length) return;
   closeCart();
   const modal = document.getElementById("quick-view-modal");
   document.getElementById("quick-view-content").innerHTML =
-    `<button class="modal-close-btn" id="close-order" aria-label="Close order review">✕</button><div class="order-review"><p class="eyebrow">GNZSPORTS / ORDER REQUEST</p><h2>MAKE IT YOURS.</h2><p>${isDraft() ? "LOCAL DRAFT: this creates a test order only in this browser. " : ""}Send your selection to the store for confirmation. No payment is collected. Shipping and availability will be confirmed before payment.</p><p class="quick-price">${store.getCartCount()} pieces · ${store.formatPrice(store.getCartTotal())}</p><form id="order-request-form"><label for="order-name">Full name</label><input id="order-name" name="name" autocomplete="name" required maxlength="120" /><label for="order-email">Email address</label><input id="order-email" name="email" type="email" autocomplete="email" required maxlength="254" /><label for="order-address">Shipping address</label><textarea id="order-address" name="address" autocomplete="street-address" rows="3" required maxlength="1000"></textarea><p id="order-feedback" role="status"></p><button class="action-button dark-button" type="submit">Send order request <span>↗</span></button></form></div>`;
+    `<button class="modal-close-btn" id="close-order" aria-label="Close order review">✕</button><div class="order-review"><p class="eyebrow">GZNSPORTS / ORDER REQUEST</p><h2>MAKE IT YOURS.</h2><p>${isDraft() ? "LOCAL DRAFT: this creates a test order only in this browser. " : ""}Send your selection to the store for confirmation. No payment is collected. Shipping, taxes and availability will be confirmed before payment.</p><p class="quick-price">${store.getCartCount()} pieces · ${store.formatPrice(store.getCartTotal())}</p><form id="order-request-form"><label for="order-name">Full name</label><input id="order-name" name="name" autocomplete="name" required maxlength="120" /><label for="order-email">Email address</label><input id="order-email" name="email" type="email" autocomplete="email" required maxlength="254" /><label for="order-address">Shipping address</label><textarea id="order-address" name="address" autocomplete="street-address" rows="3" required maxlength="1000"></textarea><p class="checkout-policy-links"><a href="?page=shipping" data-store-page="shipping">Shipping</a> · <a href="?page=returns" data-store-page="returns">Returns</a> · <a href="?page=privacy" data-store-page="privacy">Privacy</a> · <a href="?page=terms" data-store-page="terms">Terms</a></p><p id="order-feedback" role="status"></p><button class="action-button dark-button" type="submit">Send order request <span>↗</span></button></form></div>`;
   modal.classList.add("open");
+  if (useStripe) {
+    document.querySelector('.order-review .eyebrow').textContent = 'GZN SPORTS / SANDBOX CHECKOUT';
+    document.querySelector('.order-review h2 + p').textContent = 'Continue to secure Stripe Checkout for a test payment. No real payment or shipment. Prices are charged in USD; other displayed currencies are estimates. Shipping is free in this sandbox.';
+    document.querySelector('.order-review .quick-price').textContent = `${store.getCartCount()} pieces · USD $${store.getCartTotal().toFixed(2)}`;
+    document.querySelector('#order-request-form button[type="submit"]').textContent = 'Continue to test payment ↗';
+  }
   document
     .getElementById("order-email")
     .insertAdjacentHTML(
@@ -288,10 +305,12 @@ async function openOrderReview() {
       const form = event.currentTarget;
       const button = form.querySelector('button[type="submit"]');
       button.disabled = true;
-      button.textContent = "Sending your request…";
+      button.textContent = useStripe ? "Opening secure checkout…" : "Sending your request…";
       try {
-        const latestProducts = await adminApi.fetchProducts(true);
-        const selection = validateSelection(store.cart, latestProducts);
+        // Stripe retries must reach the server even when this order already
+        // reserved the last units. The server validates every new reservation.
+        const latestProducts = useStripe ? null : await adminApi.fetchProducts(true);
+        const selection = useStripe ? store.cart : validateSelection(store.cart, latestProducts);
         if (
           selection.some(
             (item, index) => item.price !== store.cart[index].price,
@@ -303,7 +322,7 @@ async function openOrderReview() {
             "Prices changed. Close this review and review your updated bag before submitting.",
           );
         }
-        const order = await adminApi.createOrder({
+        const payload = {
           request_key: requestKey,
           customer_name: form.elements.name.value.trim(),
           customer_email: form.elements.email.value.trim(),
@@ -316,15 +335,36 @@ async function openOrderReview() {
           status: "PENDING",
           payment_status: "UNPAID",
           shipping_address: { address: form.elements.address.value.trim() },
-        });
+        };
+        if (useStripe) {
+          const {request_key: ignored, ...fingerprint} = payload;
+          payload.request_key = await checkoutRequestKey(fingerprint);
+          sessionStorage.setItem('gzn_checkout_cart', JSON.stringify(JSON.stringify(store.cart)));
+          sessionStorage.setItem('gzn_checkout_promo', store.discountCode || '');
+          await startStripeCheckout(payload);
+          return;
+        }
+        const order = await adminApi.createOrder(payload);
         store.clearCart();
-        form.innerHTML = `<div class="order-success" role="status"><h3>REQUEST RECEIVED.</h3><p>Reference ${e(String(order.id).slice(0, 8).toUpperCase())}. Your order is pending confirmation. No payment has been taken.</p></div>`;
+        form.innerHTML = confirmationMarkup(order);
+        bindConfirmation(order);
       } catch (error) {
+        if (useStripe && /Prices changed/.test(error.message || '')) {
+          try {
+            const current = await adminApi.fetchProducts(true);
+            store.cart = store.cart.map(item => {
+              const product = current.find(p => p.id === item.id);
+              return product ? {...item, price: product.price} : item;
+            });
+            store.saveCart();
+            error.message = 'Prices changed. Close this review and review your updated bag before submitting.';
+          } catch { /* Keep the original price validation error if the catalog is unavailable. */ }
+        }
         document.getElementById("order-feedback").textContent =
           error.message ||
           "We couldn’t send your request. Your bag has been saved. Please try again.";
         button.disabled = false;
-        button.textContent = "Retry order request ↗";
+        button.textContent = useStripe ? "Retry test checkout ↗" : "Retry order request ↗";
         console.warn("Order request failed:", error.message);
       }
     });
@@ -342,6 +382,7 @@ async function syncCatalog(fresh = false) {
 async function syncSettings() {
   try {
     const settings = await adminApi.fetchSiteSettings(true);
+    setStoreInfo(settings);
     const signature = JSON.stringify(settings);
     if (signature === lastSettings) return;
     if (settings.page_content?._direction === CURRENT_DIRECTION)

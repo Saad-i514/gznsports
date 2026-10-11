@@ -222,7 +222,7 @@ function initDialogAccessibility() {
     "quick-view-modal": "Product details and order review",
     "search-modal": "Search products",
     "lab-modal": "Craftsmanship",
-    "why-genz-modal": "About GNZSPORTS",
+    "why-genz-modal": "About GZNSPORTS",
     "faq-modal": "Sizing and care",
     "legal-modal": "Store information",
     "gzn-auth-modal": "Your account",

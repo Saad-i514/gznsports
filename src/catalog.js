@@ -1,3 +1,4 @@
+import { brandProduct } from './lib/branding.js';
 export const CATEGORIES = [
   {
     id: "hoodies",
@@ -37,10 +38,11 @@ export const isCurrentProduct = (p) =>
   !/\bbelts?\b/i.test(`${p.id} ${p.title} ${p.description || ""}`);
 export const CURRENT_DIRECTION = "everyday-2026";
 export function currentProduct(product) {
+  product = brandProduct(product);
   const names = {
-    "genz-hoodie-heavyweight-450": "GNZSPORTS Apex Heavyweight Hoodie",
-    "genz-hoodie-raw-cut": "GNZSPORTS Raw-Cut Hoodie",
-    "genz-hoodie-zip-championship": "GNZSPORTS Full-Zip Hoodie",
+    "genz-hoodie-heavyweight-450": "GZNSPORTS Apex Heavyweight Hoodie",
+    "genz-hoodie-raw-cut": "GZNSPORTS Raw-Cut Hoodie",
+    "genz-hoodie-zip-championship": "GZNSPORTS Full-Zip Hoodie",
   };
   const legacy =
     names[product.id] && /GENZ|Combat|Championship/i.test(product.title);

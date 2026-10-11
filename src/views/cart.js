@@ -3,21 +3,13 @@ export const cartMarkup = `    <!-- 11. SLIDEOUT CART DRAWER -->
     <aside class="cart-drawer" id="cart-drawer" aria-label="Shopping Bag">
       <div class="cart-drawer-header">
         <div>
-          <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">GNZSPORTS / YOUR SELECTION</span>
+          <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">GZNSPORTS / YOUR SELECTION</span>
           <h3 class="cart-title">YOUR BAG</h3>
         </div>
         <button class="cart-close-btn" id="cart-close-btn" aria-label="Close Cart">✕</button>
       </div>
 
-      <div class="shipping-meter" id="shipping-meter">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span class="mono-tag" id="shipping-status-text">SHIPPING PROGRESS</span>
-          <span class="mono-tag" id="shipping-percent-text" style="color:#b45309; font-weight:700;">0%</span>
-        </div>
-        <div class="meter-track">
-          <div class="meter-fill" id="shipping-meter-fill" style="width: 0%;"></div>
-        </div>
-      </div>
+      <p class="bag-shipping-note">Shipping and taxes require store confirmation. <a href="?page=shipping" data-store-page="shipping">Shipping details</a></p>
 
       <div class="cart-items-scroll" id="cart-items-container">
         <!-- Rendered dynamically -->
@@ -43,7 +35,7 @@ export const cartMarkup = `    <!-- 11. SLIDEOUT CART DRAWER -->
             <span id="cart-discount-amount">-$0.00</span>
           </div>
           <div class="totals-row" style="border-top:1px solid #e2e8f0; padding-top:0.6rem; font-weight:700;">
-            <span style="font-family: var(--font-display); font-size: 1.15rem; color: #0f172a;">TOTAL:</span>
+            <span style="font-family: var(--font-display); font-size: 1.15rem; color: #0f172a;">ITEM TOTAL:</span>
             <span id="cart-total-price" style="font-size:1.35rem; color:#0f172a; font-weight:800;">$0.00</span>
           </div>
         </div>
@@ -53,7 +45,7 @@ export const cartMarkup = `    <!-- 11. SLIDEOUT CART DRAWER -->
           <span>→</span>
         </button>
 
-        <p class="checkout-note">Review your details before placing an order request. No payment is collected here.</p>
+        <p class="checkout-note">Review your details before placing an order request. No payment is collected here. Prices are in USD; other currencies are estimates.</p>
       </div>
     </aside>
 

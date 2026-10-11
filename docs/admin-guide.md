@@ -1,4 +1,11 @@
-# GNZSPORTS backend and admin access
+# GZNSPORTS backend and admin access
+
+When creating or editing a product, set **Handling time (business days)** using
+minimum and maximum days, such as 1 and 3. This is preparation time before dispatch,
+not delivery transit time. Use 0 and 0 for same-business-day dispatch, or leave both
+blank to leave it unspecified. The range is shown on product cards and in product
+details, and can be changed or cleared later. It is saved with the existing product
+specifications, so no database migration is required.
 
 Admin entry: the footer's **Store manager** button or `/#admin`.
 Owner email: **gulraizbutt297@gmail.com**. Contact phone: **+92 331 6841666**.

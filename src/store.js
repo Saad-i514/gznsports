@@ -1,5 +1,6 @@
 import { SAMPLE_PRODUCTS } from "./sample-products.js";
 import { isCurrentProduct, currentProduct } from "./catalog.js";
+import { correctBranding } from './lib/branding.js';
 // GENZ SPORTS E-Commerce Store & Product Catalog
 import { playPunchImpact, playMetallicClick } from "./audio.js";
 
@@ -94,7 +95,7 @@ class Store {
                 Number.isInteger(item.quantity) &&
                 item.quantity > 0,
             )
-            .map((item) => ({ ...item, quantity: Math.min(item.quantity, 99) }))
+            .map((item) => ({ ...item, title: correctBranding(item.title), quantity: Math.min(item.quantity, 99) }))
         : [];
     } catch {
       return [];

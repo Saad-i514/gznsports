@@ -135,7 +135,7 @@ export function createMaterialStudio(container, reduced) {
   const face = shield(1.98, 1.59, 0.025, gold);
   face.position.z = 0.21;
   plateLayer.add(face);
-  // A bespoke, readable GNZ seal, surrounded by fine concentric engraving.
+  // A bespoke, readable GZN seal, surrounded by fine concentric engraving.
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 512;
   const ctx = canvas.getContext("2d");
@@ -158,7 +158,7 @@ export function createMaterialStudio(container, reduced) {
   ctx.fillStyle = "#332912";
   ctx.textAlign = "center";
   ctx.font = "bold italic 120px Arial";
-  ctx.fillText("GNZ", 250, 286);
+  ctx.fillText("GZN", 250, 286);
   ctx.font = "bold 19px Arial";
   ctx.fillText("EARNED. NEVER GIVEN.", 256, 334);
   ctx.font = "17px Arial";

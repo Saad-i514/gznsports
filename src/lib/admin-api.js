@@ -1,4 +1,5 @@
 import { isCurrentProduct, currentProduct, categoryName } from "../catalog.js";
+import { brandProduct, brandSettings, correctBranding } from './branding.js';
 import { validateProduct, orderStatuses } from "./commerce-validation.js";
 import { requireAdmin } from "./admin-access.js";
 import { createDraftApi, isDraft } from "./draft-store.js";
@@ -206,11 +207,33 @@ const liveApi = {
     return data;
   },
 
+  async fetchMyOrders(offset = 0) {
+    const {data,error} = await supabase.rpc('my_store_orders', {page_offset: offset});
+    if(error) throw error;
+    return data;
+  },
+  async trackOrder(id, code) {
+    const {data,error} = await supabase.rpc('track_store_order', {order_id:id,access_code:code});
+    if(error) throw new Error('Order not found. Check the reference and private access code.');
+    return data;
+  },
+  async updateOrderShipment(id, details) {
+    const {data,error} = await supabase.rpc('update_order_shipment', {order_id:id,details});
+    if(error) throw error;
+    return data;
+  },
+
   async createOrder(orderPayload) {
-    const { data, error } = await supabase.rpc("submit_order_request", {
+    let { data, error } = await supabase.rpc("submit_store_order", {
       payload: orderPayload,
     });
     if (error) {
+      if (error.code === "PGRST202") {
+        // Keep existing checkout working during a rolling database migration.
+        const legacy = await supabase.rpc('submit_order_request', {payload: orderPayload});
+        if (!legacy.error) return legacy.data;
+        error = legacy.error;
+      }
       if (error.code === "PGRST202")
         throw new Error(
           "Online order requests are being configured. Please contact the store using the email or phone in the footer. Your bag is saved.",
@@ -279,6 +302,7 @@ const protectedMethods = new Set([
   "saveSiteSetting",
   "fetchOrders",
   "updateOrderStatus",
+  "updateOrderShipment",
   "getDashboardMetrics",
 ]);
 const mutations = new Set([
@@ -287,6 +311,7 @@ const mutations = new Set([
   "deleteProduct",
   "saveSiteSetting",
   "updateOrderStatus",
+  "updateOrderShipment",
   "createOrder",
 ]);
 export const adminApi = new Proxy(liveApi, {
@@ -304,7 +329,12 @@ export const adminApi = new Proxy(liveApi, {
         );
       if (!draft && protectedMethods.has(method)) await requireAdmin();
       const api = draft ? createDraftApi(localStorage) : target;
-      const result = await api[method](...args);
+      let result = await api[method](...args);
+      if (method === 'fetchProducts') result = result.map(brandProduct);
+      if (method === 'fetchSiteSettings') result = brandSettings(result);
+      if (method === 'fetchOrders') result = result.map(order => ({...order,
+        items: (order.items || []).map(item => ({...item, title: correctBranding(item.title)})),
+      }));
       if (mutations.has(method))
         window.dispatchEvent(
           new CustomEvent("gnz:data-changed", { detail: { method } }),

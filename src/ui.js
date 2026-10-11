@@ -1,4 +1,6 @@
 import { categoryName, isApparel } from "./catalog.js";
+import { handlingTimeText } from './lib/handling-time.js';
+import { correctBranding } from './lib/branding.js';
 export const escapeHTML = (value = "") =>
   String(value).replace(
     /[&<>"']/g,
@@ -21,9 +23,9 @@ export function icon(name) {
   return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name] || paths.bag}</svg>`;
 }
 export const wordmark =
-  '<span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 36 38"><path d="M3 4h30L19 17h12L15 35 3 23h10l4 4 5-6H3l15-12H8Z" fill="currentColor"/></svg></span><span>GNZ<span class="wordmark-sports">SPORTS</span></span><sup>®</sup>';
+  '<span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 36 38"><path d="M3 4h30L19 17h12L15 35 3 23h10l4 4 5-6H3l15-12H8Z" fill="currentColor"/></svg></span><span>GZN<span class="wordmark-sports">SPORTS</span></span><sup>®</sup>';
 
-export const displayTitle = (product) => product.title;
+export const displayTitle = (product) => correctBranding(product.title);
 const optimizedImages = new Set([
   "hero-dual-showcase",
   "belts/world-heavyweight-belt",
@@ -44,5 +46,5 @@ export function productCard(product, formatPrice) {
   const sizes = Array.isArray(product.sizes) ? product.sizes : ["STANDARD"];
   return `<article class="gzn-product-card" data-id="${e(product.id)}">
     <div class="card-image-wrap"><button class="product-image-button quick-inspect-trigger" data-id="${e(product.id)}" aria-label="View ${e(product.title)}"><img src="${e(product.image)}" alt="${e(product.title)}" loading="lazy" decoding="async" width="600" height="450" /></button><span class="card-tag-badge">${e(product.tag || categoryName(product.category).toUpperCase())}</span><button class="card-quick-inspect-btn quick-inspect-trigger" data-id="${e(product.id)}" aria-label="Quick view ${e(product.title)}">↗</button></div>
-    <div class="card-info"><p class="product-category">${e(categoryName(product.category))}</p><div class="card-title-row"><h3 class="card-title">${e(displayTitle(product))}</h3><span class="card-price">${formatPrice(product.price)}</span></div><label class="product-size">${isApparel(product.category) ? "Size" : "Option"}<select class="card-size-select" aria-label="Choose size for ${e(displayTitle(product))}">${sizes.map((s) => `<option value="${e(s)}" ${s === product.defaultSize ? "selected" : ""}>${e(s)}</option>`).join("")}</select></label><label class="product-quantity">Quantity<input class="card-quantity-input" type="number" min="1" max="${Math.max(1, Math.min(99, product.stock_quantity ?? 99))}" step="1" value="1" required ${product.stock_quantity === 0 ? "disabled" : ""} aria-label="Quantity for ${e(product.title)}" /></label><button class="card-add-btn add-to-cart-trigger" data-id="${e(product.id)}" ${product.stock_quantity === 0 ? "disabled" : ""}><span>${product.stock_quantity === 0 ? "Sold out" : "Add to bag"}</span><span aria-hidden="true">+</span></button></div></article>`;
+    <div class="card-info"><p class="product-category">${e(categoryName(product.category))}</p><div class="card-title-row"><h3 class="card-title">${e(displayTitle(product))}</h3><span class="card-price">${formatPrice(product.price)}</span></div>${handlingTimeText(product) ? `<p class="product-handling">Dispatch: ${e(handlingTimeText(product))}</p>` : ""}<label class="product-size">${isApparel(product.category) ? "Size" : "Option"}<select class="card-size-select" aria-label="Choose size for ${e(displayTitle(product))}">${sizes.map((s) => `<option value="${e(s)}" ${s === product.defaultSize ? "selected" : ""}>${e(s)}</option>`).join("")}</select></label><label class="product-quantity">Quantity<input class="card-quantity-input" type="number" min="1" max="${Math.max(1, Math.min(99, product.stock_quantity ?? 99))}" step="1" value="1" required ${product.stock_quantity === 0 ? "disabled" : ""} aria-label="Quantity for ${e(product.title)}" /></label><button class="card-add-btn add-to-cart-trigger" data-id="${e(product.id)}" ${product.stock_quantity === 0 ? "disabled" : ""}><span>${product.stock_quantity === 0 ? "Sold out" : "Add to bag"}</span><span aria-hidden="true">+</span></button></div></article>`;
 }

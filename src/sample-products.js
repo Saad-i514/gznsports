@@ -2,7 +2,7 @@
 export const SAMPLE_PRODUCTS = [
   {
     id: "sample-hoodies-1",
-    title: "GNZSPORTS Apex Heavyweight Hoodie",
+    title: "GZNSPORTS Apex Heavyweight Hoodie",
     category: "hoodies",
     categoryName: "HOODIES",
     price: 125,
@@ -11,11 +11,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "S",
     image: "/images/photos/hoodies.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-001",
+        value: "GZN-SAMPLE-001",
       },
       {
         label: "Color",
@@ -39,7 +39,7 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: "sample-hoodies-2",
-    title: "GNZSPORTS Everyday Zip Hoodie",
+    title: "GZNSPORTS Everyday Zip Hoodie",
     category: "hoodies",
     categoryName: "HOODIES",
     price: 95,
@@ -48,11 +48,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "S",
     image: "/images/photos/hoodies.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-002",
+        value: "GZN-SAMPLE-002",
       },
       {
         label: "Color",
@@ -76,7 +76,7 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: "sample-tracksuits-3",
-    title: "GNZSPORTS Motion Track Set",
+    title: "GZNSPORTS Motion Track Set",
     category: "tracksuits",
     categoryName: "TRACKSUITS",
     price: 110,
@@ -85,11 +85,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "S",
     image: "/images/photos/tracksuits.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-003",
+        value: "GZN-SAMPLE-003",
       },
       {
         label: "Color",
@@ -117,7 +117,7 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: "sample-tracksuits-4",
-    title: "GNZSPORTS Off-Duty Fleece Set",
+    title: "GZNSPORTS Off-Duty Fleece Set",
     category: "tracksuits",
     categoryName: "TRACKSUITS",
     price: 120,
@@ -126,11 +126,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "S",
     image: "/images/photos/tracksuits.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-004",
+        value: "GZN-SAMPLE-004",
       },
       {
         label: "Color",
@@ -158,7 +158,7 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: "sample-tshirts-5",
-    title: "GNZSPORTS Core Cotton Tee",
+    title: "GZNSPORTS Core Cotton Tee",
     category: "tshirts",
     categoryName: "TSHIRTS",
     price: 35,
@@ -167,11 +167,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "S",
     image: "/images/photos/tshirts.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-005",
+        value: "GZN-SAMPLE-005",
       },
       {
         label: "Color",
@@ -195,7 +195,7 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: "sample-tshirts-6",
-    title: "GNZSPORTS Oversized Studio Tee",
+    title: "GZNSPORTS Oversized Studio Tee",
     category: "tshirts",
     categoryName: "TSHIRTS",
     price: 45,
@@ -204,11 +204,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "S",
     image: "/images/photos/tshirts.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-006",
+        value: "GZN-SAMPLE-006",
       },
       {
         label: "Color",
@@ -232,7 +232,7 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: "sample-fashion-7",
-    title: "GNZSPORTS Utility Overshirt",
+    title: "GZNSPORTS Utility Overshirt",
     category: "fashion",
     categoryName: "FASHION",
     price: 85,
@@ -241,11 +241,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "S",
     image: "/images/photos/fashion.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-007",
+        value: "GZN-SAMPLE-007",
       },
       {
         label: "Color",
@@ -269,7 +269,7 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: "sample-fashion-8",
-    title: "GNZSPORTS Studio Layer Jacket",
+    title: "GZNSPORTS Studio Layer Jacket",
     category: "fashion",
     categoryName: "FASHION",
     price: 105,
@@ -278,11 +278,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "S",
     image: "/images/photos/fashion.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-008",
+        value: "GZN-SAMPLE-008",
       },
       {
         label: "Color",
@@ -306,7 +306,7 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: "sample-bags-9",
-    title: "GNZSPORTS Everyday Backpack",
+    title: "GZNSPORTS Everyday Backpack",
     category: "bags",
     categoryName: "BAGS",
     price: 65,
@@ -315,11 +315,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "One size",
     image: "/images/photos/bags.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-009",
+        value: "GZN-SAMPLE-009",
       },
       {
         label: "Color",
@@ -347,7 +347,7 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: "sample-bags-10",
-    title: "GNZSPORTS Weekend Duffel",
+    title: "GZNSPORTS Weekend Duffel",
     category: "bags",
     categoryName: "BAGS",
     price: 75,
@@ -356,11 +356,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "One size",
     image: "/images/photos/duffel.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-010",
+        value: "GZN-SAMPLE-010",
       },
       {
         label: "Color",
@@ -388,7 +388,7 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: "sample-others-11",
-    title: "GNZSPORTS Everyday Cap",
+    title: "GZNSPORTS Everyday Cap",
     category: "others",
     categoryName: "OTHERS",
     price: 25,
@@ -397,11 +397,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "Adjustable",
     image: "/images/photos/others.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-011",
+        value: "GZN-SAMPLE-011",
       },
       {
         label: "Color",
@@ -429,7 +429,7 @@ export const SAMPLE_PRODUCTS = [
   },
   {
     id: "sample-others-12",
-    title: "GNZSPORTS Crew Socks Two-Pack",
+    title: "GZNSPORTS Crew Socks Two-Pack",
     category: "others",
     categoryName: "OTHERS",
     price: 18,
@@ -438,11 +438,11 @@ export const SAMPLE_PRODUCTS = [
     defaultSize: "One size",
     image: "/images/photos/socks.jpg",
     description:
-      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GNZSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
+      "Sample listing for preview only. Stock photograph illustrates the category and is not an original GZNSPORTS product photo. Names, pricing, stock, materials and dimensions are placeholder values. Replace this product with your original inventory in Store manager.",
     specs: [
       {
         label: "SKU",
-        value: "GNZ-SAMPLE-012",
+        value: "GZN-SAMPLE-012",
       },
       {
         label: "Color",

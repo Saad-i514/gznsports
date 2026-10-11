@@ -36,6 +36,19 @@ export function createDraftApi(
     fetchProducts: async () => read().products,
     fetchSiteSettings: async () => read().settings,
     fetchOrders: async () => read().orders,
+    fetchMyOrders: async () => { throw new Error('Account order history requires live sign-in. Use the private tracking code for local test orders.'); },
+    trackOrder: async (id, code) => {
+      const order = read().orders.find(o => o.id === id && o.access_token && o.access_token === code);
+      if(!order) throw new Error('Order not found. Check the reference and private access code.');
+      const {customer_name, customer_email, customer_phone, shipping_address, access_token, request_payload, ...summary} = order;
+      return summary;
+    },
+    updateOrderShipment: async (id, details) => change(data => {
+      const row = data.orders.find(o => o.id === id);
+      if(!row || !['PROCESSING','DISPATCHED','DELIVERED'].includes(row.status)) throw new Error('Confirm the order before adding shipment tracking.');
+      row.shipment = details;
+      return row;
+    }),
     createProduct: async (product) =>
       change((data) => {
         const sizes = Array.isArray(product.sizes)
@@ -94,6 +107,7 @@ export function createDraftApi(
         const row = {
           ...prepareOrder(payload, data.products),
           request_payload: JSON.stringify(payload),
+          access_token: crypto.randomUUID(),
           id: crypto.randomUUID(),
           created_at: new Date().toISOString(),
         };

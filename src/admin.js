@@ -1,3 +1,6 @@
+import { attachShipmentForms } from './admin-shipments.js';
+import { loadCommerceTab } from './admin-commerce.js';
+import { isProductGallery, productImages, withProductGallery } from './lib/product-gallery.js';
 import { adminIcon } from './admin-icons.js';
 import { CATEGORIES, CURRENT_DIRECTION } from "./catalog.js";
 import { contentEditor, contentFields, validImage } from "./site-content.js";
@@ -19,6 +22,7 @@ import { openPasswordRecovery } from "./password-recovery.js";
 import { nextOrderStatuses } from "./lib/order-rules.js";
 import { initSizePicker } from './admin-sizes.js';
 import { formatAddress, formatOrderDate } from './lib/order-format.js';
+import { handlingTime, handlingTimeText, isHandlingTime, withHandlingTime } from './lib/handling-time.js';
 
 let isAdminOpen = false;
 let privateOrdersChannel = null;
@@ -70,7 +74,7 @@ export async function openAdminPanel() {
 
 function renderAdminGate() {
   const overlay = document.getElementById("gzn-admin-overlay");
-  overlay.innerHTML = `<div class="admin-modal admin-login"><button class="admin-close-btn" id="admin-gate-close" aria-label="Close admin sign in">${adminIcon("close")}</button><p class="eyebrow">GNZSPORTS / STORE MANAGEMENT</p><h2>YOUR STORE. YOUR CONTROL.</h2><p>Sign in with your administrator account to manage live products, website content and orders.</p><form id="admin-login-form" class="admin-form-grid"><div class="form-group full-width"><label for="admin-email">Email</label><input id="admin-email" value="gulraizbutt297@gmail.com" type="email" autocomplete="username" required /></div><div class="form-group full-width"><label for="admin-password">Password</label><input id="admin-password" type="password" autocomplete="current-password" required /></div><p id="admin-gate-feedback" role="status"></p><button class="btn-primary" type="submit">Sign in to live admin</button></form>${supportsDraft() ? '<hr><h3>Try the editor locally</h3><p>Changes persist in this browser only. No live products, settings or orders are modified.</p><button id="start-draft" class="btn-secondary">Open local draft editor</button>' : ""}</div>`;
+  overlay.innerHTML = `<div class="admin-modal admin-login"><button class="admin-close-btn" id="admin-gate-close" aria-label="Close admin sign in">${adminIcon("close")}</button><p class="eyebrow">GZNSPORTS / STORE MANAGEMENT</p><h2>YOUR STORE. YOUR CONTROL.</h2><p>Sign in with your administrator account to manage live products, website content and orders.</p><form id="admin-login-form" class="admin-form-grid"><div class="form-group full-width"><label for="admin-email">Email</label><input id="admin-email" value="gulraizbutt297@gmail.com" type="email" autocomplete="username" required /></div><div class="form-group full-width"><label for="admin-password">Password</label><input id="admin-password" type="password" autocomplete="current-password" required /></div><p id="admin-gate-feedback" role="status"></p><button class="btn-primary" type="submit">Sign in to live admin</button></form>${supportsDraft() ? '<hr><h3>Try the editor locally</h3><p>Changes persist in this browser only. No live products, settings or orders are modified.</p><button id="start-draft" class="btn-secondary">Open local draft editor</button>' : ""}</div>`;
   document.getElementById("admin-gate-close").onclick = closeAdminPanel;
   const reset = document.createElement("button");
   reset.type = "button";
@@ -205,7 +209,7 @@ async function renderAdminUI() {
       <div class="admin-header">
         <div class="admin-header-title">
           <div class="admin-brand">
-            <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ GNZSPORTS STORE EXECUTIVE ]</span>
+            <span class="mono-tag" style="background:#f1f5f9; color:#b45309; border:1px solid #e2e8f0; font-weight:700;">[ GZNSPORTS STORE EXECUTIVE ]</span>
             <h2>EXECUTIVE STORE MANAGER</h2>
           </div>
           <div id="admin-realtime-status" class="admin-status-badge ${status.toLowerCase()}">
@@ -227,6 +231,7 @@ async function renderAdminUI() {
         <button class="admin-tab-btn ${currentTab === "settings" ? "active" : ""}" data-tab="settings">
           ${adminIcon("settings")} STOREFRONT & HERO EDITOR
         </button>
+        <button class="admin-tab-btn ${currentTab === "commerce" ? "active" : ""}" data-tab="commerce">Store policies & launch</button>
         <button class="admin-tab-btn ${currentTab === "orders" ? "active" : ""}" data-tab="orders">
           ${adminIcon("orders")} CUSTOMER ORDERS
         </button>
@@ -280,6 +285,7 @@ function loadTabContent() {
   else if (currentTab === "products") loadProductsTab();
   else if (currentTab === "settings") loadSettingsTab();
   else if (currentTab === "orders") loadOrdersTab();
+  else if (currentTab === "commerce") loadCommerceTab();
 }
 
 // -------------------------------------------------------------
@@ -432,6 +438,7 @@ async function loadProductsTab() {
                 </td>
                 <td>
                   <strong>${escapeHTML(p.title)}</strong>
+                  ${handlingTimeText(p) ? `<div class="product-handling">Handling: ${escapeHTML(handlingTimeText(p))}</div>` : ''}
                   <div style="font-size:0.75rem; color:var(--gzn-slate); max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                     ${escapeHTML(p.description || "")}
                   </div>
@@ -474,7 +481,7 @@ async function loadProductsTab() {
             
             <div class="form-group full-width">
               <label>PRODUCT TITLE</label>
-              <input type="text" id="edit-product-title" placeholder="e.g. GNZSPORTS Core Cotton Tee" required />
+              <input type="text" id="edit-product-title" placeholder="e.g. GZNSPORTS Core Cotton Tee" required />
             </div>
 
             <div class="form-group">
@@ -506,6 +513,16 @@ async function loadProductsTab() {
               <input type="file" id="edit-product-upload" accept="image/jpeg,image/png,image/webp" ${isDraft() ? "disabled" : ""} />
               <small id="upload-feedback" role="status">${isDraft() ? "Use an image URL or local path in draft mode." : "Uploaded photos are publicly visible."}</small>
             </div>
+
+            <div class="form-group full-width"><label for="edit-product-gallery">ADDITIONAL PHOTOS (up to 8 URLs, one per line)</label><textarea id="edit-product-gallery" rows="3" placeholder="https://…"></textarea></div>
+            <fieldset class="form-group full-width handling-time-fields">
+              <legend>HANDLING TIME (BUSINESS DAYS)</legend>
+              <p id="handling-time-help">Time to prepare this product before dispatch, excluding shipping transit. Leave both blank if not set. Use 0–0 for same-business-day dispatch.</p>
+              <div class="handling-time-inputs">
+                <div><label for="edit-product-handling-min">Minimum days</label><input type="number" id="edit-product-handling-min" min="0" max="365" step="1" placeholder="1" aria-describedby="handling-time-help" /></div>
+                <div><label for="edit-product-handling-max">Maximum days</label><input type="number" id="edit-product-handling-max" min="0" max="365" step="1" placeholder="3" aria-describedby="handling-time-help" /></div>
+              </div>
+            </fieldset>
 
             <div class="form-group full-width" id="admin-size-picker">
               <label for="edit-product-sizes">AVAILABLE SIZES</label>
@@ -611,8 +628,13 @@ function attachProductEvents() {
         prod.description || "";
 
       document.getElementById("edit-product-specs").value = (prod.specs || [])
+        .filter(s => !isHandlingTime(s) && !isProductGallery(s))
         .map((s) => `${s.label}: ${s.value}`)
         .join("\n");
+      document.getElementById('edit-product-gallery').value = productImages(prod).filter(url => url !== prod.image).join('\n');
+      const handling = handlingTime(prod);
+      document.getElementById('edit-product-handling-min').value = handling?.min ?? '';
+      document.getElementById('edit-product-handling-max').value = handling?.max ?? '';
       document.getElementById("edit-product-featured").checked =
         !!prod.is_featured;
       document.getElementById("product-editor-title").textContent =
@@ -654,6 +676,10 @@ function attachProductEvents() {
     submitBtn.disabled = true;
 
     try {
+      payload.specs = withProductGallery(payload.specs, document.getElementById('edit-product-gallery').value);
+      payload.specs = withHandlingTime(payload.specs,
+        document.getElementById('edit-product-handling-min').value,
+        document.getElementById('edit-product-handling-max').value);
       if (id) {
         await adminApi.updateProduct(id, payload);
       } else {
@@ -766,7 +792,7 @@ async function loadSettingsTab() {
         ? savedAnnouncements
         : {
             banner_text: "BUILT FOR THE MOMENT. MADE FOR THE EVERYDAY.",
-            shipping_text: "WORLDWIDE SHIPPING",
+            shipping_text: "SHIPPING DETAILS ON REQUEST",
             shipping_threshold: savedAnnouncements.shipping_threshold || 100,
           };
     const announcements = Object.fromEntries(
@@ -843,12 +869,12 @@ async function loadSettingsTab() {
             </div>
 
             <div class="form-group">
-              <label>FREE SHIPPING TEXT</label>
+              <label>SHIPPING ANNOUNCEMENT</label>
               <input type="text" id="set-ann-shipping" value="${announcements.shipping_text || ""}" />
             </div>
 
 <div class="form-group">
-              <label>FREE SHIPPING THRESHOLD ($)</label>
+              <label>LEGACY SHIPPING THRESHOLD (NOT USED FOR CHECKOUT)</label>
               <input type="number" id="set-ann-threshold" value="${announcements.shipping_threshold || 150}" />
             </div>
 
@@ -1016,7 +1042,7 @@ async function loadOrdersTab() {
                         .map(
                           (it) => `
                   <div class="order-sub-item">
-                    <div class="order-item-description"><strong>${escapeHTML(it.title || "GNZSPORTS Product")}</strong><small>Quantity: ${escapeHTML(String(it.quantity || 1))} · Size: ${escapeHTML(it.size || "STD")}</small></div>
+                    <div class="order-item-description"><strong>${escapeHTML(it.title || "GZNSPORTS Product")}</strong><small>Quantity: ${escapeHTML(String(it.quantity || 1))} · Size: ${escapeHTML(it.size || "STD")}</small></div>
                     <span style="font-family:var(--font-mono); font-weight:700;">$${((parseFloat(it.price) || 0) * (it.quantity || 1)).toFixed(2)}</span>
                   </div>
                 `,
@@ -1046,6 +1072,7 @@ async function loadOrdersTab() {
         loadOrdersTab();
       });
 
+    attachShipmentForms(content, cachedOrders);
     // Order status changes
     content.querySelectorAll(".order-status-select").forEach((sel) => {
       const status = cachedOrders.find((o) => o.id === sel.dataset.id)?.status;

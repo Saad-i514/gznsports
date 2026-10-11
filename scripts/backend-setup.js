@@ -83,6 +83,7 @@ try {
           "setup_database.sql",
           "secure-store.sql",
           "media-storage.sql",
+          "commerce-essentials.sql",
         ])
           await db.query(readFileSync(new URL(file, import.meta.url), "utf8"));
         console.log(

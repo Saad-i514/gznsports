@@ -1,4 +1,4 @@
-# GNZSPORTS — Your Day. Your Way.
+# GZNSPORTS — Your Day. Your Way.
 
 A responsive clothing and accessories storefront with six collections: **Hoodies, Tracksuits, T-shirts, Fashion, Bags, and Others**.
 
@@ -15,4 +15,6 @@ See [sample product guide](docs/sample-products.md) for the fields and sources u
 
 The retired belt collection is excluded from the storefront, search, local carts, and management catalog. Existing remote records and historical orders were not deleted. Legacy campaign settings cannot override this clothing direction.
 
-Live admin and order requests require the Supabase migrations and owner activation described in the admin guide. Run `npm run backend:migrate`, `npm run backend:check`, then `npm run backend:owner` with private local configuration. The legacy connection currently fails certificate verification; no live activation has been performed. Card payments, order email and deployment remain unconfigured. Never place private credentials in browser environment variables.
+Live admin and order requests require the Supabase migrations and owner activation described in the admin guide. Run `npm run backend:migrate`, `npm run backend:check`, then `npm run backend:owner` with private local configuration. Never place private credentials in browser environment variables.
+
+Stripe-hosted sandbox Checkout is implemented behind a disabled feature flag. See [sandbox payments setup and verification](docs/stripe-payments.md) for the separate database, Vercel configuration, webhook and reconciliation requirements. `npm run payments:smoke` verifies real sandbox session creation and expiry against an isolated in-memory database. It does not submit payment or touch production data. Payment deployment, external webhook delivery and order email remain unconfigured.
