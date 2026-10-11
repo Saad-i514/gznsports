@@ -113,7 +113,9 @@ function setupEvents() {
       const size = add
         .closest(".gzn-product-card")
         .querySelector(".card-size-select").value;
-      const result = store.addToCart(add.dataset.id, size);
+      const quantity = add.closest(".gzn-product-card").querySelector(".card-quantity-input");
+      if (!quantity.reportValidity()) return;
+      const result = store.addToCart(add.dataset.id, size, Number(quantity.value));
       if (result === false)
         return showNotificationToast(
           "The requested quantity is not available.",
@@ -242,13 +244,14 @@ function openQuickView(id) {
   if (!p) return;
   const modal = document.getElementById("quick-view-modal");
   document.getElementById("quick-view-content").innerHTML =
-    `<button class="modal-close-btn" id="modal-close-trigger" aria-label="Close product details">✕</button><div class="quick-view-grid"><img class="quick-view-image" src="${e(p.image)}" alt="${e(p.title)}" /><div><p class="eyebrow">${e(p.category)} / GNZSPORTS</p><h2>${e(displayTitle(p))}</h2><p class="quick-price">${store.formatPrice(p.price)}</p><p class="quick-description">${e(p.description)}</p><dl class="quick-specs">${(p.specs || []).map((s) => `<div><dt>${e(s.label)}</dt><dd>${e(s.value)}</dd></div>`).join("")}</dl><label class="quick-size" for="quick-size">Choose your ${isApparel(p.category) ? "size" : "option"}</label><select id="quick-size">${p.sizes.map((s) => `<option ${s === p.defaultSize ? "selected" : ""} value="${e(s)}">${e(s)}</option>`).join("")}</select><button class="action-button dark-button" id="modal-add-btn" ${p.stock_quantity === 0 ? "disabled" : ""}>${p.stock_quantity === 0 ? "Sold out" : "Add to bag"} <span>+</span></button></div></div>`;
+    `<button class="modal-close-btn" id="modal-close-trigger" aria-label="Close product details">✕</button><div class="quick-view-grid"><img class="quick-view-image" src="${e(p.image)}" alt="${e(p.title)}" /><div><p class="eyebrow">${e(p.category)} / GNZSPORTS</p><h2>${e(displayTitle(p))}</h2><p class="quick-price">${store.formatPrice(p.price)}</p><p class="quick-description">${e(p.description)}</p><dl class="quick-specs">${(p.specs || []).map((s) => `<div><dt>${e(s.label)}</dt><dd>${e(s.value)}</dd></div>`).join("")}</dl><label class="quick-size" for="quick-size">Choose your ${isApparel(p.category) ? "size" : "option"}</label><select id="quick-size">${p.sizes.map((s) => `<option ${s === p.defaultSize ? "selected" : ""} value="${e(s)}">${e(s)}</option>`).join("")}</select><label class="product-quantity" for="quick-quantity">Quantity<input id="quick-quantity" type="number" min="1" max="${Math.max(1, Math.min(99, p.stock_quantity ?? 99))}" step="1" value="1" required ${p.stock_quantity === 0 ? "disabled" : ""} /></label><button class="action-button dark-button" id="modal-add-btn" ${p.stock_quantity === 0 ? "disabled" : ""}>${p.stock_quantity === 0 ? "Sold out" : "Add to bag"} <span>+</span></button></div></div>`;
   modal.classList.add("open");
   document.getElementById("modal-close-trigger").onclick = () =>
     modal.classList.remove("open");
   document.getElementById("modal-add-btn").onclick = () => {
+    if (!document.getElementById("quick-quantity").reportValidity()) return;
     if (
-      store.addToCart(id, document.getElementById("quick-size").value) === false
+      store.addToCart(id, document.getElementById("quick-size").value, Number(document.getElementById("quick-quantity").value)) === false
     )
       return showNotificationToast("The requested quantity is not available.");
     modal.classList.remove("open");

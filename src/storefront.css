@@ -633,11 +633,11 @@ h2 {
 .card-image-wrap img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: transform 0.65s var(--ease-editorial);
 }
 .gzn-product-card:hover .card-image-wrap img {
-  transform: scale(1.045);
+  transform: none;
 }
 .card-tag-badge {
   top: 13px;
@@ -1255,7 +1255,33 @@ h2 {
 .quick-view-image {
   width: 100%;
   height: 390px;
-  object-fit: cover;
+  object-fit: contain;
+}
+
+.product-quantity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+  font: 500 12px var(--font-body);
+}
+
+.product-quantity input {
+  box-sizing: border-box;
+  width: 80px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--muted);
+  border-radius: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+}
+
+.product-quantity input:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 .quick-price {
   font: 500 20px var(--font-body);

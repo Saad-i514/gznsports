@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 const data = new Map();
 globalThis.localStorage = {
   getItem: (key) => data.get(key) || null,
@@ -8,6 +9,45 @@ globalThis.localStorage = {
 };
 const { store, PRODUCTS } = await import("../src/store.js");
 const { escapeHTML, productCard, imagePath } = await import("../src/ui.js");
+
+test("selected quantities persist and stock limits apply across sizes", () => {
+  store.clearCart();
+  const product = PRODUCTS.find((p) => p.id === "sample-hoodies-1");
+  assert.equal(store.addToCart(product.id, product.sizes[0], 3), true);
+  assert.equal(store.loadCart()[0].quantity, 3);
+  for (const invalid of [0, -1, 1.5, NaN, Infinity, 100]) {
+    assert.equal(store.addToCart(product.id, product.sizes[0], invalid), false);
+  }
+  const remaining = Math.min(99, product.stock_quantity) - 3;
+  assert.equal(store.addToCart(product.id, product.sizes[1], remaining), true);
+  assert.equal(store.addToCart(product.id, product.sizes[0], 1), false);
+  assert.equal(store.getCartCount(), product.stock_quantity);
+  store.clearCart();
+});
+
+test("product cards expose bounded quantity selection including sold-out stock", () => {
+  for (const stock of [0, 4, 150]) {
+    const html = productCard({ ...PRODUCTS[0], stock_quantity: stock }, String);
+    const input = html.match(/<input class="card-quantity-input"[^>]*>/)?.[0];
+    assert.ok(input);
+    assert.ok(input.includes('min="1"'));
+    assert.ok(input.includes(`max="${Math.max(1, Math.min(99, stock))}"`));
+    assert.ok(input.includes('step="1"'));
+    assert.equal(input.includes("disabled"), stock === 0);
+  }
+});
+
+test("product image rules preserve whole artwork without hover cropping", () => {
+  const css = readFileSync(new URL("../src/storefront.css", import.meta.url), "utf8");
+  for (const selector of [".card-image-wrap img", ".quick-view-image"]) {
+    const declarations = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .filter(([, selectors]) => selectors.trim() === selector)
+      .map(([, , body]) => body).join("\n");
+    const fit = [...declarations.matchAll(/object-fit:\s*([^;]+);/g)].at(-1)?.[1];
+    assert.equal(fit, "contain", selector);
+  }
+  assert.match(css, /\.gzn-product-card:hover \.card-image-wrap img\s*\{\s*transform: none;/);
+});
 
 test("apparel sizes survive cart persistence and quantity changes", () => {
   store.clearCart();
