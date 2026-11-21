@@ -1,3 +1,4 @@
+import { pageFromUrl, setPage } from "./lib/page-routes.js";
 import { isColor, withProductColors } from "./lib/product-colors.js";
 import { attachShipmentForms } from './admin-shipments.js';
 import { loadCommerceTab } from './admin-commerce.js';
@@ -26,6 +27,7 @@ import { formatAddress, formatOrderDate } from './lib/order-format.js';
 import { handlingTime, handlingTimeText, isHandlingTime, withHandlingTime } from './lib/handling-time.js';
 
 let isAdminOpen = false;
+let adminOpenVersion = 0;
 let privateOrdersChannel = null;
 let currentTab = "overview";
 let cachedProducts = [];
@@ -58,18 +60,21 @@ function renderAdminContainer() {
 }
 
 export async function openAdminPanel() {
+  setPage('admin');
+  const version = ++adminOpenVersion;
   isAdminOpen = true;
   playMetallicClick();
   const overlay = document.getElementById("gzn-admin-overlay");
   if (overlay) {
     overlay.classList.add("open");
     if (isDraft()) return renderAdminUI();
-    overlay.innerHTML =
-      '<div class="admin-modal"><p>Checking administrator access…</p></div>';
-    try {
-      if (isAdminUser(await auth.getUser())) return renderAdminUI();
-    } catch {}
     renderAdminGate();
+    try {
+      const session = await auth.getSession();
+      if (!session || version !== adminOpenVersion || !isAdminOpen) return;
+      const user = await auth.getUser();
+      if (version === adminOpenVersion && isAdminOpen && isAdminUser(user)) return renderAdminUI();
+    } catch { /* The sign-in form remains usable if session validation fails. */ }
   }
 }
 
@@ -128,6 +133,8 @@ function renderAdminGate() {
 }
 
 export function closeAdminPanel() {
+  ++adminOpenVersion;
+  if (pageFromUrl(new URL(location.href)) === 'admin') setPage('');
   isAdminOpen = false;
   if (privateOrdersChannel) {
     void supabase.removeChannel(privateOrdersChannel);

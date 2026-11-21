@@ -13,6 +13,8 @@ The first localhost visit starts an editable sample workspace with 12 fictional 
 
 See [sample product guide](docs/sample-products.md) for the fields and sources used, and [admin guide](docs/admin-guide.md) for live owner activation.
 
+Public information pages use `/contact`, `/shipping`, `/returns`, `/privacy`, `/terms`, and `/promotions`; order lookup uses `/tracking` and store management uses `/admin`. Old `?page=...` and `/#admin` bookmarks are normalized in the browser. Back/Forward and closing routed panels keep the address in sync. The build emits per-page HTML metadata, and `vercel.json` maps these paths to those files; another hosting provider must serve the same mappings. Admin code loads only when requested, and admin/tracking pages are marked `noindex`.
+
 The retired belt collection is excluded from the storefront, search, local carts, and management catalog. Existing remote records and historical orders were not deleted. Legacy campaign settings cannot override this clothing direction.
 
 Live admin and order requests require the Supabase migrations and owner activation described in the admin guide. Run `npm run backend:migrate`, `npm run backend:check`, then `npm run backend:owner` with private local configuration. Never place private credentials in browser environment variables.

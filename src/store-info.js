@@ -1,7 +1,12 @@
+import { setPage } from "./lib/page-routes.js";
 import { escapeHTML as e } from './ui.js';
 import { policyFields } from './lib/commerce-config.js';
 let config={};
-export function setStoreInfo(settings={}) { config=settings.commerce || {}; }
+export function setStoreInfo(settings={}) {
+  config=settings.commerce || {};
+  const modal = document.getElementById('store-info-modal');
+  if (modal?.classList.contains('open')) openStoreInfo(modal.dataset.page);
+}
 export function initStoreInfo() {
   const modal=document.createElement('div');modal.id='store-info-modal';modal.className='modal-overlay';
   modal.innerHTML='<div class="modal-content info-modal-card"><button class="modal-close-btn" id="close-store-info" aria-label="Close store information">✕</button><div id="store-info-content"></div></div>';
@@ -9,15 +14,18 @@ export function initStoreInfo() {
   document.getElementById('close-store-info').onclick=()=>modal.classList.remove('open');
   document.addEventListener('click',event=>{
     const link=event.target.closest('[data-store-page]');if(!link)return;
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
     event.preventDefault();openStoreInfo(link.dataset.storePage);
   });
 }
 export function storePolicyLinks() {
-  return policyFields.map(([key,label])=>`<a href="?page=${key}" data-store-page="${key}">${label}</a>`).join('');
+  return policyFields.map(([key,label])=>`<a href="/${key}" data-store-page="${key}">${label}</a>`).join('');
 }
 export function openStoreInfo(page) {
   const field=policyFields.find(([key])=>key===page);
   if(!field && !['contact','promotions'].includes(page))return;
+  setPage(page);
+  document.getElementById('store-info-modal').dataset.page = page;
   const email=config.support_email || document.getElementById('contact-email')?.textContent || '';
   const phone=config.support_phone || document.getElementById('contact-phone')?.textContent || '';
   const contact=`<div class="support-contact">${email?`<a href="mailto:${e(email)}">${e(email)}</a>`:''}${phone?`<a href="tel:${e(phone.replace(/[^+0-9]/g,''))}">${e(phone)}</a>`:''}</div>`;

@@ -12,7 +12,26 @@ import { isDraft } from "./lib/draft-store.js";
 import "./storefront.css";
 import { PRODUCTS, store } from "./store.js";
 import { toggleSound, playMetallicClick } from "./audio.js";
-import { initAdminPanel, openAdminPanel } from "./admin.js";
+import { pageFromUrl, setPage } from './lib/page-routes.js';
+let adminModule;
+let adminLoading;
+async function openAdminPanel() {
+  setPage('admin');
+  try {
+    adminLoading ||= import('./admin.js').then(module => { module.initAdminPanel(); adminModule = module; return module; }).catch(error => { adminLoading = null; throw error; });
+    const module = await adminLoading;
+    if (pageFromUrl(new URL(location.href)) === 'admin') await module.openAdminPanel();
+  } catch { showNotificationToast('Unable to load store manager. Please try again.'); }
+}
+function syncPageRoute() {
+  const page = pageFromUrl(new URL(location.href));
+  setPage(page, true);
+  if (page !== 'admin') adminModule?.closeAdminPanel();
+  document.querySelectorAll('#store-info-modal.open,#customer-orders-modal.open').forEach(node => node.classList.remove('open'));
+  if (page === 'admin') void openAdminPanel();
+  else if (page === 'tracking') openOrderTracking();
+  else if (page) openStoreInfo(page);
+}
 import { initAuthModal, openAuthModal } from "./auth-modal.js";
 import { initModals, openModal } from "./modals.js";
 import { adminApi } from "./lib/admin-api.js";
@@ -39,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initModals();
   initStoreInfo();
   initCustomerOrders();
-  initAdminPanel();
   initAuthModal();
   renderProducts();
   updateCartUI();
@@ -66,14 +84,20 @@ document.addEventListener("DOMContentLoaded", () => {
       "SAMPLE STORE — Editable preview. Products and test orders stay in this browser.";
     document.body.prepend(notice);
   }
-  if (location.hash === "#admin") void openAdminPanel();
+  syncPageRoute();
+  window.addEventListener('popstate', syncPageRoute);
+  window.addEventListener('hashchange', syncPageRoute);
+  for (const id of ['store-info-modal', 'customer-orders-modal']) {
+    const node = document.getElementById(id);
+    new MutationObserver(() => {
+      const page = pageFromUrl(new URL(location.href));
+      const ownsRoute = id === 'customer-orders-modal' ? page === 'tracking' : page && !['admin', 'tracking'].includes(page);
+      if (ownsRoute && !node.classList.contains('open')) setPage('');
+    }).observe(node, {attributes: true, attributeFilter: ['class']});
+  }
   initExperience();
   // The complete local collection renders before optional network work.
-  void refreshStore().then(() => {
-    const page = new URLSearchParams(location.search).get('page');
-    if (page === 'tracking') openOrderTracking();
-    else if (page) openStoreInfo(page);
-  });
+  void refreshStore();
   const stopRefresh = startRefreshLoop(refreshStore);
   const stopReleaseUpdates = startReleaseUpdates();
   if (import.meta.hot) import.meta.hot.dispose(stopReleaseUpdates);
@@ -178,7 +202,11 @@ function setupEvents() {
     .addEventListener("click", () => openAuthModal());
   document
     .getElementById("header-admin-btn")
-    .addEventListener("click", openAdminPanel);
+    .addEventListener("click", event => {
+      if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      void openAdminPanel();
+    });
   document.getElementById("audio-toggle-btn").addEventListener("click", () => {
     document.getElementById("audio-icon").textContent = toggleSound()
       ? "on"

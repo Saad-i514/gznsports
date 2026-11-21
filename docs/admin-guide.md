@@ -7,7 +7,7 @@ blank to leave it unspecified. The range is shown on product cards and in produc
 details, and can be changed or cleared later. It is saved with the existing product
 specifications, so no database migration is required.
 
-Admin entry: the footer's **Store manager** button or `/#admin`.
+Admin entry: the footer's **Store manager** button or `/admin`. The legacy `/#admin` link still works and is normalized to `/admin`.
 Owner email: **gulraizbutt297@gmail.com**. Contact phone: **+92 331 6841666**.
 
 ## Current activation status
