@@ -1,3 +1,4 @@
+import { formattedText } from "./lib/formatted-text.js";
 import { announcementMessages } from "./announcement.js";
 import { productColors } from "./lib/product-colors.js";
 import { initStoreInfo, setStoreInfo, openStoreInfo } from './store-info.js';
@@ -282,7 +283,7 @@ function openQuickView(id) {
   if (!p) return;
   const modal = document.getElementById("quick-view-modal");
   document.getElementById("quick-view-content").innerHTML =
-    `<button class="modal-close-btn" id="modal-close-trigger" aria-label="Close product details">✕</button><div class="quick-view-grid"><div><img class="quick-view-image" id="gallery-main" src="${e(p.image)}" alt="${e(p.title)}" /><div class="product-gallery">${productImages(p).map((url,index)=>`<button type="button" data-gallery-image="${e(url)}" aria-label="View photo ${index+1}" aria-pressed="${index===0}"><img src="${e(url)}" alt="" /></button>`).join('')}</div></div><div><p class="eyebrow">${e(p.category)} / GZNSPORTS</p><h2>${e(displayTitle(p))}</h2><p class="quick-price">${store.formatPrice(p.price)}</p><p class="quick-description">${e(p.description)}</p><dl class="quick-specs">${(p.specs || []).filter(s => !isProductGallery(s)).map((s) => `<div><dt>${e(s.label)}</dt><dd>${e(s.value)}</dd></div>`).join("")}</dl><label class="quick-size" for="quick-size">Choose your ${isApparel(p.category) ? "size" : "option"}</label><select id="quick-size">${p.sizes.map((s) => `<option ${s === p.defaultSize ? "selected" : ""} value="${e(s)}">${e(s)}</option>`).join("")}</select><label class="quick-size" for="quick-color">Choose your color</label><select id="quick-color">${productColors(p).map(c => `<option value="${e(c)}">${e(c)}</option>`).join("")}</select><label class="product-quantity" for="quick-quantity">Quantity<input id="quick-quantity" type="number" min="1" max="${Math.max(1, Math.min(99, p.stock_quantity ?? 99))}" step="1" value="1" required ${p.stock_quantity === 0 ? "disabled" : ""} /></label><button class="action-button dark-button" id="modal-add-btn" ${p.stock_quantity === 0 ? "disabled" : ""}>${p.stock_quantity === 0 ? "Sold out" : "Add to bag"} <span>+</span></button></div></div>`;
+    `<button class="modal-close-btn" id="modal-close-trigger" aria-label="Close product details">✕</button><div class="quick-view-grid"><div><img class="quick-view-image" id="gallery-main" src="${e(p.image)}" alt="${e(p.title)}" /><div class="product-gallery">${productImages(p).map((url,index)=>`<button type="button" data-gallery-image="${e(url)}" aria-label="View photo ${index+1}" aria-pressed="${index===0}"><img src="${e(url)}" alt="" /></button>`).join('')}</div></div><div><p class="eyebrow">${e(p.category)} / GZNSPORTS</p><h2>${e(displayTitle(p))}</h2><p class="quick-price">${store.formatPrice(p.price)}</p><p class="quick-description">${formattedText(p.description)}</p><dl class="quick-specs">${(p.specs || []).filter(s => !isProductGallery(s)).map((s) => `<div><dt>${e(s.label)}</dt><dd>${e(s.value)}</dd></div>`).join("")}</dl><label class="quick-size" for="quick-size">Choose your ${isApparel(p.category) ? "size" : "option"}</label><select id="quick-size">${p.sizes.map((s) => `<option ${s === p.defaultSize ? "selected" : ""} value="${e(s)}">${e(s)}</option>`).join("")}</select><label class="quick-size" for="quick-color">Choose your color</label><select id="quick-color">${productColors(p).map(c => `<option value="${e(c)}">${e(c)}</option>`).join("")}</select><label class="product-quantity" for="quick-quantity">Quantity<input id="quick-quantity" type="number" min="1" max="${Math.max(1, Math.min(99, p.stock_quantity ?? 99))}" step="1" value="1" required ${p.stock_quantity === 0 ? "disabled" : ""} /></label><button class="action-button dark-button" id="modal-add-btn" ${p.stock_quantity === 0 ? "disabled" : ""}>${p.stock_quantity === 0 ? "Sold out" : "Add to bag"} <span>+</span></button></div></div>`;
   modal.classList.add("open");
   document.getElementById("modal-close-trigger").onclick = () =>
     modal.classList.remove("open");
@@ -431,7 +432,7 @@ async function syncSettings() {
       bottom.textContent = hero.headline_bottom || "YOUR WAY.";
       title.append(bottom);
       if (hero.subhead)
-        document.querySelector(".hero-description").textContent = hero.subhead;
+        document.querySelector(".hero-description").innerHTML = formattedText(hero.subhead);
       if (hero.badge_primary)
         document.querySelector(".hero-topline > span").textContent =
           hero.badge_primary;

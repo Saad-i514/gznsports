@@ -11,6 +11,8 @@ npm run build
 
 The first localhost visit starts an editable sample workspace with 12 fictional listings. A sample-store banner distinguishes it from live publishing. Use **Store manager → Products & collections** to replace products and **Storefront & hero editor** to change page copy and images. Samples and test orders persist in this browser only. Exiting the local draft restores the live data connection.
 
+Product colors use a dropdown with removable chips, including custom color names. Product descriptions, page copy, hero subheadings and policies offer visual Bold/Italic controls. Saved copy permits only bare emphasis tags; other HTML is displayed as text, and pasted editor content is plain text. Existing color names are preserved; replace an accidentally combined name such as “Black Red Yellow” with individual selections.
+
 See [sample product guide](docs/sample-products.md) for the fields and sources used, and [admin guide](docs/admin-guide.md) for live owner activation.
 
 Public information pages use `/contact`, `/shipping`, `/returns`, `/privacy`, `/terms`, and `/promotions`; order lookup uses `/tracking` and store management uses `/admin`. Old `?page=...` and `/#admin` bookmarks are normalized in the browser. Back/Forward and closing routed panels keep the address in sync. The build emits per-page HTML metadata, and `vercel.json` maps these paths to those files; another hosting provider must serve the same mappings. Admin code loads only when requested, and admin/tracking pages are marked `noindex`.

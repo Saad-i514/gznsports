@@ -1,6 +1,7 @@
+import { formattedText } from "./lib/formatted-text.js";
 import { escapeHTML } from "./ui.js";
 
-// One schema drives the editor and the public page. Values are text, never HTML.
+// One schema drives the editor and public page; formatted copy accepts only bare emphasis tags.
 export const contentFields = [
   ["contact_email", "Contact email", "#contact-email", "email"],
   ["contact_phone", "Contact phone", "#contact-phone", "phone"],
@@ -80,7 +81,7 @@ export function applyContent(values = {}) {
     } else if (type === "phone") {
       node.textContent = values[key];
       node.href = "tel:" + values[key].replace(/[^+0-9]/g, "");
-    } else node.textContent = values[key];
+    } else node.innerHTML = formattedText(values[key]);
   }
 }
 export function contentEditor(values = {}) {
@@ -93,7 +94,7 @@ export function contentEditor(values = {}) {
           ? node?.getAttribute("src")
           : node?.innerText || node?.textContent) ??
         "";
-      return `<div class="form-group full-width"><label for="content-${key}">${label}</label>${type === "image" ? `<input id="content-${key}" name="${key}" value="${escapeHTML(value)}" required /><small>Use a /images/ path or an HTTPS image URL.</small>` : `<textarea id="content-${key}" name="${key}" rows="3" maxlength="4000">${escapeHTML(value)}</textarea>`}</div>`;
+      return `<div class="form-group full-width"><label for="content-${key}">${label}</label>${type === "image" ? `<input id="content-${key}" name="${key}" value="${escapeHTML(value)}" required /><small>Use a /images/ path or an HTTPS image URL.</small>` : `<textarea ${type ? "" : "data-rich-text"} id="content-${key}" name="${key}" rows="3" maxlength="4000">${escapeHTML(value)}</textarea>`}</div>`;
     })
     .join(
       "",

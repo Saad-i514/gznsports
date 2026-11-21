@@ -1,3 +1,5 @@
+import { formattedText } from "./lib/formatted-text.js";
+import { initRichTextEditors } from "./admin-rich-text.js";
 import { pageFromUrl, setPage } from "./lib/page-routes.js";
 import { isColor, withProductColors } from "./lib/product-colors.js";
 import { attachShipmentForms } from './admin-shipments.js';
@@ -22,7 +24,7 @@ import { escapeHTML } from "./ui.js";
 import { playMetallicClick, playPunchImpact } from "./audio.js";
 import { openPasswordRecovery } from "./password-recovery.js";
 import { nextOrderStatuses } from "./lib/order-rules.js";
-import { initSizePicker } from './admin-sizes.js';
+import { initSizePicker, initOptionPicker } from './admin-sizes.js';
 import { formatAddress, formatOrderDate } from './lib/order-format.js';
 import { handlingTime, handlingTimeText, isHandlingTime, withHandlingTime } from './lib/handling-time.js';
 
@@ -448,7 +450,7 @@ async function loadProductsTab() {
                   <strong>${escapeHTML(p.title)}</strong>
                   ${handlingTimeText(p) ? `<div class="product-handling">Handling: ${escapeHTML(handlingTimeText(p))}</div>` : ''}
                   <div style="font-size:0.75rem; color:var(--gzn-slate); max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                    ${escapeHTML(p.description || "")}
+                    ${formattedText(p.description || "")}
                   </div>
                 </td>
                 <td><span class="mono-tag" style="background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;">${p.category.toUpperCase()}</span></td>
@@ -532,7 +534,7 @@ async function loadProductsTab() {
               </div>
             </fieldset>
 
-            <div class="form-group full-width"><label for="edit-product-colors">AVAILABLE COLORS (comma separated)</label><input id="edit-product-colors" placeholder="Black, Red, Navy" /><small>Leave blank to offer the color as pictured.</small></div>
+            <div class="form-group full-width" id="admin-color-picker"><label for="edit-product-colors">AVAILABLE COLORS</label><select id="edit-product-colors" aria-describedby="admin-colors-help"></select><div class="admin-size-chips" aria-label="Selected colors"></div><small id="admin-colors-help" role="status"></small><div class="admin-custom-color"><label for="custom-product-color">Custom color</label><input id="custom-product-color" data-custom-option maxlength="60" placeholder="e.g. Navy blue" /><button type="button" data-add-option>Add color</button></div></div>
             <div class="form-group full-width" id="admin-size-picker">
               <label for="edit-product-sizes">AVAILABLE SIZES</label>
               <select id="edit-product-sizes" aria-describedby="admin-sizes-help"></select>
@@ -542,7 +544,7 @@ async function loadProductsTab() {
 
             <div class="form-group full-width">
               <label>PRODUCT DESCRIPTION</label>
-              <textarea id="edit-product-desc" rows="3" placeholder="Engineered for champions..."></textarea>
+              <textarea id="edit-product-desc" data-rich-text rows="3" placeholder="Engineered for champions..."></textarea>
             </div>
 
             <div class="form-group full-width"><label for="edit-product-specs">SPECIFICATIONS (one Label: Value per line)</label><textarea id="edit-product-specs" rows="4" placeholder="Color: Black&#10;Material: Cotton jersey&#10;Fit: Regular&#10;Care: Machine wash cold"></textarea></div>
@@ -571,6 +573,8 @@ function attachProductEvents() {
   const editorModal = document.getElementById("product-editor-modal");
   const form = document.getElementById("product-editor-form");
   const sizes = initSizePicker(document.getElementById('admin-size-picker'));
+  const colors = initOptionPicker(document.getElementById('admin-color-picker'), {kind:'color', required:false, options:['Black','White','Red','Blue','Navy','Green','Yellow','Orange','Pink','Purple','Brown','Grey','Beige','Cream','Olive','Charcoal','Multicolor']});
+  const description = initRichTextEditors(form)[0];
   document.getElementById("edit-product-upload").onchange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -596,6 +600,8 @@ function attachProductEvents() {
     ?.addEventListener("click", () => {
       form.reset();
       sizes.set([]);
+      colors.set([]);
+      description.set('');
       delete form.dataset.dirty;
       document.getElementById("edit-product-id").value = "";
       document.getElementById("product-editor-title").textContent =
@@ -632,10 +638,9 @@ function attachProductEvents() {
         prod.stock_quantity ?? 50;
       document.getElementById("edit-product-image").value = prod.image;
       sizes.set(prod.sizes);
-      document.getElementById("edit-product-colors").value = prod.specs?.find(isColor)?.value || "";
+      colors.set(prod.specs?.find(isColor)?.value || "");
       delete form.dataset.dirty;
-      document.getElementById("edit-product-desc").value =
-        prod.description || "";
+      description.set(prod.description || "");
 
       document.getElementById("edit-product-specs").value = (prod.specs || [])
         .filter(s => !isHandlingTime(s) && !isProductGallery(s) && !isColor(s))
@@ -686,7 +691,7 @@ function attachProductEvents() {
     submitBtn.disabled = true;
 
     try {
-      payload.specs = withProductColors(payload.specs, document.getElementById("edit-product-colors").value);
+      payload.specs = withProductColors(payload.specs, colors.get().join(', '));
       payload.specs = withProductGallery(payload.specs, document.getElementById('edit-product-gallery').value);
       payload.specs = withHandlingTime(payload.specs,
         document.getElementById('edit-product-handling-min').value,
@@ -849,7 +854,7 @@ async function loadSettingsTab() {
 
             <div class="form-group full-width">
               <label>HERO SUBHEAD COPY</label>
-              <textarea id="set-hero-subhead" rows="2">${hero.subhead || ""}</textarea>
+              <textarea id="set-hero-subhead" data-rich-text rows="2">${hero.subhead || ""}</textarea>
             </div>
 
             <div class="form-group">
@@ -904,6 +909,7 @@ async function loadSettingsTab() {
       const label = group.querySelector("label");
       if (input && label) label.htmlFor = input.id;
     });
+    initRichTextEditors(content);
     document.getElementById("page-content-form").onsubmit = async (event) => {
       event.preventDefault();
       const form = event.currentTarget;
