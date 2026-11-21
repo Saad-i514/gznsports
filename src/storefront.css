@@ -686,6 +686,23 @@ h2 {
   padding: 16px 0 0;
   gap: 9px;
 }
+/* Share row heights across adjacent cards without truncating product names. */
+@supports (grid-template-rows: subgrid) {
+  .gzn-product-card {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 9;
+    row-gap: 0;
+  }
+  .gzn-product-card .card-info {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 8;
+    row-gap: 9px;
+  }
+  .gzn-product-card .card-title-row { display: contents; }
+}
+.product-handling:empty { visibility: hidden; }
 .product-category {
   font: 8px var(--font-mono);
   letter-spacing: 0.015em;
