@@ -46,6 +46,7 @@ CREATE OR REPLACE FUNCTION public.submit_order_request(payload jsonb)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE
   item jsonb; product public.products%ROWTYPE; count_requested integer;
+  colors text[]; chosen_color text;
   qty integer; subtotal numeric := 0; discount numeric := 0;
   normalized jsonb := '[]'::jsonb; order_id uuid;
   customer text := trim(payload->>'customer_name');
@@ -78,11 +79,17 @@ BEGIN
     IF NOT FOUND THEN RAISE EXCEPTION 'A product is no longer available.'; END IF;
     IF product.category NOT IN ('hoodies','tracksuits','tshirts','fashion','bags','others') OR (product.id || ' ' || product.title) ~* 'belt' THEN RAISE EXCEPTION 'This product is no longer offered.'; END IF;
     IF (product.sizes ? (item->>'size')) IS DISTINCT FROM true THEN RAISE EXCEPTION 'Choose an available size for %.', product.title; END IF;
+    SELECT array_agg(trim(c)) INTO colors FROM regexp_split_to_table(
+      (SELECT spec->>'value' FROM jsonb_array_elements(product.specs) spec
+       WHERE trim(spec->>'label') ~* '^colou?rs?$' LIMIT 1), ',') c WHERE trim(c)<>'';
+    colors := coalesce(colors, ARRAY['As pictured']);
+    chosen_color := coalesce(item->>'color', colors[1]);
+    IF length(chosen_color)>60 OR NOT (chosen_color = ANY(colors)) THEN RAISE EXCEPTION 'Choose an available color for %.', product.title; END IF;
     IF product.price IS NULL OR product.price<0 OR product.price::text IN ('NaN','Infinity','-Infinity') THEN RAISE EXCEPTION 'Product price is unavailable.'; END IF;
     SELECT sum((v->>'quantity')::integer) INTO count_requested FROM jsonb_array_elements(payload->'items') v WHERE v->>'id'=product.id;
     IF count_requested>coalesce(product.stock_quantity,0) OR count_requested>99 THEN RAISE EXCEPTION 'Insufficient stock for %.',product.title; END IF;
     subtotal := subtotal + product.price*qty;
-    normalized := normalized || jsonb_build_array(jsonb_build_object('id',product.id,'title',product.title,'price',product.price,'image',product.image,'size',item->>'size','quantity',qty));
+    normalized := normalized || jsonb_build_array(jsonb_build_object('id',product.id,'title',product.title,'price',product.price,'image',product.image,'size',item->>'size','color',chosen_color,'quantity',qty));
   END LOOP;
   IF upper(payload->>'promo_code')='CHAMPION10' THEN discount:=round(subtotal*0.1,2);
   ELSIF upper(payload->>'promo_code')='GENZVIP' THEN discount:=least(50,subtotal);

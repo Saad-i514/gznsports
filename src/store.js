@@ -1,3 +1,4 @@
+import { productColors } from "./lib/product-colors.js";
 import { SAMPLE_PRODUCTS } from "./sample-products.js";
 import { isCurrentProduct, currentProduct } from "./catalog.js";
 import { correctBranding } from './lib/branding.js';
@@ -90,6 +91,7 @@ class Store {
                 !/belt/i.test(item.id + " " + item.title) &&
                 typeof item.title === "string" &&
                 typeof item.size === "string" &&
+                (item.color == null || (typeof item.color === "string" && item.color.length <= 60)) &&
                 Number.isFinite(item.price) &&
                 item.price >= 0 &&
                 Number.isInteger(item.quantity) &&
@@ -122,7 +124,7 @@ class Store {
     this.listeners.forEach((fn) => fn(this.cart));
   }
 
-  addToCart(productId, size = null, quantity = 1) {
+  addToCart(productId, size = null, quantity = 1, color = null) {
     const product = PRODUCTS.find((p) => p.id === productId);
     if (
       !product ||
@@ -132,6 +134,9 @@ class Store {
     )
       return false;
 
+    const colors = productColors(product);
+    const chosenColor = color ?? colors[0];
+    if (!colors.includes(chosenColor)) return false;
     const chosenSize = size || product.defaultSize || "STANDARD";
     if (!product.sizes.includes(chosenSize)) return false;
     const total = this.cart
@@ -140,7 +145,7 @@ class Store {
     if (total + quantity > Math.min(99, product.stock_quantity ?? 99))
       return false;
     const existingIndex = this.cart.findIndex(
-      (item) => item.id === productId && item.size === chosenSize,
+      (item) => item.id === productId && item.size === chosenSize && (item.color || "As pictured") === chosenColor,
     );
 
     if (existingIndex > -1) {
@@ -154,6 +159,7 @@ class Store {
         title: product.title,
         price: product.price,
         size: chosenSize,
+        color: chosenColor,
         image: product.image,
         quantity: quantity,
       });
@@ -164,16 +170,16 @@ class Store {
     return true;
   }
 
-  removeFromCart(id, size) {
+  removeFromCart(id, size, color) {
     this.cart = this.cart.filter(
-      (item) => !(item.id === id && item.size === size),
+      (item) => !(item.id === id && item.size === size && (color === undefined || (item.color || "As pictured") === color)),
     );
     playMetallicClick();
     this.saveCart();
   }
 
-  updateQuantity(id, size, delta) {
-    const item = this.cart.find((item) => item.id === id && item.size === size);
+  updateQuantity(id, size, delta, color) {
+    const item = this.cart.find((item) => item.id === id && item.size === size && (color === undefined || (item.color || "As pictured") === color));
     if (!item) return;
 
     if (!Number.isInteger(delta)) return;
@@ -188,7 +194,7 @@ class Store {
       return;
     item.quantity = Math.min(99, item.quantity + delta);
     if (item.quantity <= 0) {
-      this.removeFromCart(id, size);
+      this.removeFromCart(id, size, color);
     } else {
       playMetallicClick();
       this.saveCart();

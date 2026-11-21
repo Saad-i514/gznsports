@@ -26,7 +26,7 @@ test("database permissions, authoritative checkout, retries and inventory lifecy
     await db.exec(security);
     await db.exec(security); // Safe to rerun.
     await db.exec(
-      `INSERT INTO products(id,title,category,category_name,price,sizes,image,stock_quantity) VALUES ('tee','Core Tee','tshirts','T-shirts',25,'["M","L"]','/images/test.jpg',3); SET ROLE anon;`,
+      `INSERT INTO products(id,title,category,category_name,price,sizes,image,stock_quantity) VALUES ('tee','Core Tee','tshirts','T-shirts',25,'["M","L"]','/images/test.jpg',3); UPDATE products SET specs='[{"label":"Color","value":"Black, Red"}]'; SET ROLE anon;`,
     );
     assert.equal((await db.query("SELECT * FROM products")).rows.length, 1);
     await assert.rejects(db.query("SELECT * FROM orders"), /permission denied/);
@@ -39,7 +39,7 @@ test("database permissions, authoritative checkout, retries and inventory lifecy
       customer_name: "Test Buyer",
       customer_email: "buyer@example.com",
       shipping_address: { address: "Test address" },
-      items: [{ id: "tee", size: "M", quantity: 2, price: 1 }],
+      items: [{ id: "tee", size: "M", color: "Red", quantity: 2, price: 1 }],
       total: 50,
     };
     const submit = async (p) =>
@@ -57,6 +57,7 @@ test("database permissions, authoritative checkout, retries and inventory lifecy
       submit({ ...payload, total: "NaN" }),
       /Prices changed/,
     );
+    await assert.rejects(submit({...payload, items: [{id: 'tee', size: 'M', color: 'Blue', quantity: 2}]}), /available color/);
     const order = await submit(payload);
     assert.deepEqual(await submit(payload), order);
     await assert.rejects(
@@ -67,6 +68,7 @@ test("database permissions, authoritative checkout, retries and inventory lifecy
     const row = (await db.query("SELECT * FROM orders")).rows[0];
     assert.equal(Number(row.total), 50);
     assert.equal(row.items[0].price, 25);
+    assert.equal(row.items[0].color, "Red");
     assert.equal(row.payment_status, "UNPAID");
     await db.exec("SET ROLE authenticated");
     assert.equal((await db.query("SELECT * FROM orders")).rows.length, 0);

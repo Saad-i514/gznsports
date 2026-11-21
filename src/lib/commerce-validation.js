@@ -1,3 +1,4 @@
+import { productColors } from "./product-colors.js";
 import { isCurrentCategory } from "../catalog.js";
 import { validImage } from "../site-content.js";
 import { handlingTime, isHandlingTime } from './handling-time.js';
@@ -73,10 +74,11 @@ export function validateSelection(cart, products) {
       !Number.isInteger(item.quantity) ||
       item.quantity < 1 ||
       item.quantity > 99 ||
-      !product.sizes.includes(item.size)
+      !product.sizes.includes(item.size) ||
+      !productColors(product).includes(item.color || productColors(product)[0])
     )
       throw new Error(
-        `Please choose an available size and quantity for ${product.title}.`,
+        `Please choose an available size, color and quantity for ${product.title}.`,
       );
     const count = (counts.get(item.id) || 0) + item.quantity;
     counts.set(item.id, count);
@@ -89,6 +91,7 @@ export function validateSelection(cart, products) {
       );
     return {
       ...item,
+      color: item.color || productColors(product)[0],
       title: product.title,
       image: product.image,
       price: product.price,

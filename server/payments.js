@@ -108,6 +108,7 @@ export function normalizePayload(input) {
         i.id.length > 200 ||
         typeof i.size !== "string" ||
         i.size.length > 60 ||
+        (i.color != null && (typeof i.color !== "string" || i.color.length > 60)) ||
         !Number.isInteger(i.quantity) ||
         i.quantity < 1 ||
         i.quantity > 99,
@@ -164,7 +165,7 @@ export function checkoutParams(order, origin) {
           currency: "usd",
           unit_amount: amount,
           product_data: {
-            name: `${correctBranding(item.title)} — ${item.size}`,
+            name: `${correctBranding(item.title)} — ${item.size}${item.color ? ` — ${item.color}` : ""}`,
             ...(discount
               ? { description: "Store discount included in this price." }
               : {}),

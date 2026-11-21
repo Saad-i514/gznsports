@@ -101,3 +101,25 @@ test("known local JPEG paths use optimized images; remote paths remain intact", 
     "https://example.com/product.jpg",
   );
 });
+
+
+test("colors stay separate in the cart and survive quantity changes and reload", () => {
+  store.clearCart();
+  const product = PRODUCTS[0];
+  const original = product.specs;
+  product.specs = [{label: 'Color', value: 'Black, Red'}];
+  try {
+    assert.equal(store.addToCart(product.id, 'S', 1, 'Black'), true);
+    assert.equal(store.addToCart(product.id, 'S', 2, 'Red'), true);
+    assert.equal(store.addToCart(product.id, 'S', 1, 'Blue'), false);
+    assert.equal(store.cart.length, 2);
+    store.updateQuantity(product.id, 'S', 1, 'Red');
+    assert.deepEqual(store.loadCart().map(i => [i.color, i.quantity]), [['Black', 1], ['Red', 3]]);
+    store.removeFromCart(product.id, 'S', 'Black');
+    assert.equal(store.cart[0].color, 'Red');
+    assert.match(productCard(product, String), /card-color-select/);
+  } finally {
+    product.specs = original;
+    store.clearCart();
+  }
+});

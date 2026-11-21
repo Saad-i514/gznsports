@@ -1,3 +1,4 @@
+import { isColor, withProductColors } from "./lib/product-colors.js";
 import { attachShipmentForms } from './admin-shipments.js';
 import { loadCommerceTab } from './admin-commerce.js';
 import { isProductGallery, productImages, withProductGallery } from './lib/product-gallery.js';
@@ -524,6 +525,7 @@ async function loadProductsTab() {
               </div>
             </fieldset>
 
+            <div class="form-group full-width"><label for="edit-product-colors">AVAILABLE COLORS (comma separated)</label><input id="edit-product-colors" placeholder="Black, Red, Navy" /><small>Leave blank to offer the color as pictured.</small></div>
             <div class="form-group full-width" id="admin-size-picker">
               <label for="edit-product-sizes">AVAILABLE SIZES</label>
               <select id="edit-product-sizes" aria-describedby="admin-sizes-help"></select>
@@ -623,12 +625,13 @@ function attachProductEvents() {
         prod.stock_quantity ?? 50;
       document.getElementById("edit-product-image").value = prod.image;
       sizes.set(prod.sizes);
+      document.getElementById("edit-product-colors").value = prod.specs?.find(isColor)?.value || "";
       delete form.dataset.dirty;
       document.getElementById("edit-product-desc").value =
         prod.description || "";
 
       document.getElementById("edit-product-specs").value = (prod.specs || [])
-        .filter(s => !isHandlingTime(s) && !isProductGallery(s))
+        .filter(s => !isHandlingTime(s) && !isProductGallery(s) && !isColor(s))
         .map((s) => `${s.label}: ${s.value}`)
         .join("\n");
       document.getElementById('edit-product-gallery').value = productImages(prod).filter(url => url !== prod.image).join('\n');
@@ -676,6 +679,7 @@ function attachProductEvents() {
     submitBtn.disabled = true;
 
     try {
+      payload.specs = withProductColors(payload.specs, document.getElementById("edit-product-colors").value);
       payload.specs = withProductGallery(payload.specs, document.getElementById('edit-product-gallery').value);
       payload.specs = withHandlingTime(payload.specs,
         document.getElementById('edit-product-handling-min').value,
@@ -864,8 +868,8 @@ async function loadSettingsTab() {
           <h4 class="setting-card-title">${adminIcon("announcement")} ANNOUNCEMENT BAR</h4>
           <form id="announcements-form" class="admin-form-grid">
             <div class="form-group">
-              <label>TICKER HEADLINE</label>
-              <input type="text" id="set-ann-ticker" value="${announcements.banner_text || ""}" />
+              <label for="set-ann-ticker">SALE / ANNOUNCEMENT TEXT</label>
+              <input type="text" id="set-ann-ticker" value="${announcements.banner_text || ""}" placeholder="Sale announcement or offer details" /><small>Scrolls across the top of the store. Update this text when a sale starts or ends; it does not change product prices.</small>
             </div>
 
             <div class="form-group">
@@ -1042,7 +1046,7 @@ async function loadOrdersTab() {
                         .map(
                           (it) => `
                   <div class="order-sub-item">
-                    <div class="order-item-description"><strong>${escapeHTML(it.title || "GZNSPORTS Product")}</strong><small>Quantity: ${escapeHTML(String(it.quantity || 1))} · Size: ${escapeHTML(it.size || "STD")}</small></div>
+                    <div class="order-item-description"><strong>${escapeHTML(it.title || "GZNSPORTS Product")}</strong><small>Quantity: ${escapeHTML(String(it.quantity || 1))} · Size: ${escapeHTML(it.size || "STD")}${it.color ? ` · Color: ${escapeHTML(it.color)}` : ""}</small></div>
                     <span style="font-family:var(--font-mono); font-weight:700;">$${((parseFloat(it.price) || 0) * (it.quantity || 1)).toFixed(2)}</span>
                   </div>
                 `,

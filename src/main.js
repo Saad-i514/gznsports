@@ -1,3 +1,5 @@
+import { announcementMessages } from "./announcement.js";
+import { productColors } from "./lib/product-colors.js";
 import { initStoreInfo, setStoreInfo, openStoreInfo } from './store-info.js';
 import { initCustomerOrders, openOrderTracking, confirmationMarkup, bindConfirmation } from './customer-orders.js';
 import { productImages, isProductGallery } from './lib/product-gallery.js';
@@ -111,6 +113,14 @@ function filterCategory(category) {
   renderProducts();
 }
 function setupEvents() {
+  document.querySelector('.announcement-pause').onclick = (event) => {
+    const button = event.currentTarget;
+    const paused = button.getAttribute('aria-pressed') !== 'true';
+    button.setAttribute('aria-pressed', String(paused));
+    button.setAttribute('aria-label', paused ? 'Resume announcements' : 'Pause announcements');
+    button.textContent = paused ? 'Resume' : 'Pause';
+    document.querySelector('.announcement').classList.toggle('is-paused', paused);
+  };
   document.getElementById("cart-promo-remove").onclick = () => {
     store.removePromoCode();
     document.getElementById("cart-promo-status").textContent =
@@ -130,7 +140,8 @@ function setupEvents() {
         .querySelector(".card-size-select").value;
       const quantity = add.closest(".gzn-product-card").querySelector(".card-quantity-input");
       if (!quantity.reportValidity()) return;
-      const result = store.addToCart(add.dataset.id, size, Number(quantity.value));
+      const color = add.closest(".gzn-product-card").querySelector(".card-color-select").value;
+      const result = store.addToCart(add.dataset.id, size, Number(quantity.value), color);
       if (result === false)
         return showNotificationToast(
           "The requested quantity is not available.",
@@ -144,9 +155,10 @@ function setupEvents() {
         qty.dataset.id,
         qty.dataset.size,
         Number(qty.dataset.quantity),
+        qty.dataset.color,
       );
     const remove = event.target.closest("[data-remove]");
-    if (remove) store.removeFromCart(remove.dataset.id, remove.dataset.size);
+    if (remove) store.removeFromCart(remove.dataset.id, remove.dataset.size, remove.dataset.color);
   });
   document
     .getElementById("catalog-sort")
@@ -229,7 +241,7 @@ function updateCartUI() {
     ? store.cart
         .map(
           (item) => `
-    <div class="cart-item"><img src="${e(item.image)}" alt="${e(item.title)}" class="cart-item-img" /><div><h4 class="cart-item-title">${e(item.title)}</h4><p class="cart-item-size">${e(item.size)}</p><div class="cart-qty-ctrl"><button class="qty-btn" data-id="${e(item.id)}" data-size="${e(item.size)}" data-quantity="-1" aria-label="Decrease quantity of ${e(item.title)}">−</button><span>${item.quantity}</span><button class="qty-btn" data-id="${e(item.id)}" data-size="${e(item.size)}" data-quantity="1" aria-label="Increase quantity of ${e(item.title)}">+</button></div></div><div class="cart-item-end"><strong>${store.formatPrice(item.price * item.quantity)}</strong><button data-remove data-id="${e(item.id)}" data-size="${e(item.size)}" aria-label="Remove ${e(item.title)}">Remove</button></div></div>`,
+    <div class="cart-item"><img src="${e(item.image)}" alt="${e(item.title)}" class="cart-item-img" /><div><h4 class="cart-item-title">${e(item.title)}</h4><p class="cart-item-size">${e(item.size)} · ${e(item.color || "As pictured")}</p><div class="cart-qty-ctrl"><button class="qty-btn" data-id="${e(item.id)}" data-size="${e(item.size)}" data-color="${e(item.color || "As pictured")}" data-quantity="-1" aria-label="Decrease quantity of ${e(item.title)}">−</button><span>${item.quantity}</span><button class="qty-btn" data-id="${e(item.id)}" data-size="${e(item.size)}" data-color="${e(item.color || "As pictured")}" data-quantity="1" aria-label="Increase quantity of ${e(item.title)}">+</button></div></div><div class="cart-item-end"><strong>${store.formatPrice(item.price * item.quantity)}</strong><button data-remove data-id="${e(item.id)}" data-size="${e(item.size)}" data-color="${e(item.color || "As pictured")}" aria-label="Remove ${e(item.title)}">Remove</button></div></div>`,
         )
         .join("")
     : '<div class="bag-empty"><span>YOUR NEXT<br>STATEMENT.</span><p>Your bag is waiting. Discover your next piece.</p><a href="#armory" id="empty-shop">Explore the collection ↗</a></div>';
@@ -250,7 +262,7 @@ function openQuickView(id) {
   if (!p) return;
   const modal = document.getElementById("quick-view-modal");
   document.getElementById("quick-view-content").innerHTML =
-    `<button class="modal-close-btn" id="modal-close-trigger" aria-label="Close product details">✕</button><div class="quick-view-grid"><div><img class="quick-view-image" id="gallery-main" src="${e(p.image)}" alt="${e(p.title)}" /><div class="product-gallery">${productImages(p).map((url,index)=>`<button type="button" data-gallery-image="${e(url)}" aria-label="View photo ${index+1}" aria-pressed="${index===0}"><img src="${e(url)}" alt="" /></button>`).join('')}</div></div><div><p class="eyebrow">${e(p.category)} / GZNSPORTS</p><h2>${e(displayTitle(p))}</h2><p class="quick-price">${store.formatPrice(p.price)}</p><p class="quick-description">${e(p.description)}</p><dl class="quick-specs">${(p.specs || []).filter(s => !isProductGallery(s)).map((s) => `<div><dt>${e(s.label)}</dt><dd>${e(s.value)}</dd></div>`).join("")}</dl><label class="quick-size" for="quick-size">Choose your ${isApparel(p.category) ? "size" : "option"}</label><select id="quick-size">${p.sizes.map((s) => `<option ${s === p.defaultSize ? "selected" : ""} value="${e(s)}">${e(s)}</option>`).join("")}</select><label class="product-quantity" for="quick-quantity">Quantity<input id="quick-quantity" type="number" min="1" max="${Math.max(1, Math.min(99, p.stock_quantity ?? 99))}" step="1" value="1" required ${p.stock_quantity === 0 ? "disabled" : ""} /></label><button class="action-button dark-button" id="modal-add-btn" ${p.stock_quantity === 0 ? "disabled" : ""}>${p.stock_quantity === 0 ? "Sold out" : "Add to bag"} <span>+</span></button></div></div>`;
+    `<button class="modal-close-btn" id="modal-close-trigger" aria-label="Close product details">✕</button><div class="quick-view-grid"><div><img class="quick-view-image" id="gallery-main" src="${e(p.image)}" alt="${e(p.title)}" /><div class="product-gallery">${productImages(p).map((url,index)=>`<button type="button" data-gallery-image="${e(url)}" aria-label="View photo ${index+1}" aria-pressed="${index===0}"><img src="${e(url)}" alt="" /></button>`).join('')}</div></div><div><p class="eyebrow">${e(p.category)} / GZNSPORTS</p><h2>${e(displayTitle(p))}</h2><p class="quick-price">${store.formatPrice(p.price)}</p><p class="quick-description">${e(p.description)}</p><dl class="quick-specs">${(p.specs || []).filter(s => !isProductGallery(s)).map((s) => `<div><dt>${e(s.label)}</dt><dd>${e(s.value)}</dd></div>`).join("")}</dl><label class="quick-size" for="quick-size">Choose your ${isApparel(p.category) ? "size" : "option"}</label><select id="quick-size">${p.sizes.map((s) => `<option ${s === p.defaultSize ? "selected" : ""} value="${e(s)}">${e(s)}</option>`).join("")}</select><label class="quick-size" for="quick-color">Choose your color</label><select id="quick-color">${productColors(p).map(c => `<option value="${e(c)}">${e(c)}</option>`).join("")}</select><label class="product-quantity" for="quick-quantity">Quantity<input id="quick-quantity" type="number" min="1" max="${Math.max(1, Math.min(99, p.stock_quantity ?? 99))}" step="1" value="1" required ${p.stock_quantity === 0 ? "disabled" : ""} /></label><button class="action-button dark-button" id="modal-add-btn" ${p.stock_quantity === 0 ? "disabled" : ""}>${p.stock_quantity === 0 ? "Sold out" : "Add to bag"} <span>+</span></button></div></div>`;
   modal.classList.add("open");
   document.getElementById("modal-close-trigger").onclick = () =>
     modal.classList.remove("open");
@@ -261,7 +273,7 @@ function openQuickView(id) {
   document.getElementById("modal-add-btn").onclick = () => {
     if (!document.getElementById("quick-quantity").reportValidity()) return;
     if (
-      store.addToCart(id, document.getElementById("quick-size").value, Number(document.getElementById("quick-quantity").value)) === false
+      store.addToCart(id, document.getElementById("quick-size").value, Number(document.getElementById("quick-quantity").value), document.getElementById("quick-color").value) === false
     )
       return showNotificationToast("The requested quantity is not available.");
     modal.classList.remove("open");
@@ -416,13 +428,9 @@ async function syncSettings() {
           hero.badge_secondary;
     }
     if (settings.announcements?.visual_direction === CURRENT_DIRECTION) {
-      const announcement = settings.announcements;
-      if (announcement.banner_text)
-        document.querySelector(".announcement > span:first-child").textContent =
-          announcement.banner_text;
-      if (announcement.shipping_text)
-        document.querySelector(".announcement > span:last-child").textContent =
-          announcement.shipping_text;
+      const track = document.querySelector('.announcement-track');
+      const markup = announcementMessages(settings.announcements);
+      if (track.innerHTML !== markup) track.innerHTML = markup;
     }
     if (Number(settings.announcements?.shipping_threshold) > 0) {
       store.shippingThreshold = Number(

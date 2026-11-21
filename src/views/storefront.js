@@ -1,3 +1,4 @@
+import { announcementMessages } from "../announcement.js";
 import { storePolicyLinks } from '../store-info.js';
 import { CATEGORIES } from "../catalog.js";
 import { icon, wordmark } from "../ui.js";
@@ -13,7 +14,7 @@ const category = (id, number, title, copy, image) => `
 export function storefront() {
   return `
   <a class="skip-link" href="#main-content">Skip to content</a>
-  <div class="announcement"><span>BUILT FOR THE MOMENT. MADE FOR THE EVERYDAY.</span><span>SHIPPING DETAILS ON REQUEST <i>↗</i></span></div>
+  <div class="announcement" role="region" aria-label="Store announcements"><div class="announcement-window"><div class="announcement-track">${announcementMessages()}</div></div><button type="button" class="announcement-pause" aria-label="Pause announcements" aria-pressed="false">Pause</button></div>
   <header class="site-header" id="site-header">
     <a class="wordmark" href="#" aria-label="GZNSPORTS home">${wordmark}</a>
     <nav class="desktop-nav" aria-label="Main navigation">
