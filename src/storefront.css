@@ -109,19 +109,16 @@ svg {
   font-weight: 650;
 }
 .announcement-window { overflow: hidden; flex: 1; min-width: 0; }
-.announcement-track { display: flex; width: max-content; min-width: 200%; animation: announcement-scroll 35s linear infinite; }
+.announcement-track { display: flex; width: max-content; min-width: 200%; animation: announcement-scroll 28s linear infinite; }
 .announcement-group { display: flex; align-items: center; justify-content: space-around; gap: 48px; padding-right: 48px; flex: 1 0 auto; white-space: nowrap; }
-.announcement-pause { flex: none; margin-left: 16px; padding: 6px; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; }
-.announcement-pause:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .announcement:hover .announcement-track,
-.announcement:focus-within .announcement-track,
-.announcement.is-paused .announcement-track { animation-play-state: paused; }
+.announcement:focus-within .announcement-track { animation-play-state: paused; }
 @keyframes announcement-scroll { to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) {
   .announcement { height: auto !important; min-height: 32px; padding-block: 8px !important; }
   .announcement-track { animation: none; width: 100%; min-width: 0; }
   .announcement-group { white-space: normal; flex-wrap: wrap; gap: 12px; padding: 0; flex-basis: 0; overflow-wrap: anywhere; min-width: 0; }
-  .announcement-group[aria-hidden="true"], .announcement-pause { display: none; }
+  .announcement-group[aria-hidden="true"] { display: none; }
 }
 .site-header {
   height: 88px;

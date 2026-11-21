@@ -113,14 +113,6 @@ function filterCategory(category) {
   renderProducts();
 }
 function setupEvents() {
-  document.querySelector('.announcement-pause').onclick = (event) => {
-    const button = event.currentTarget;
-    const paused = button.getAttribute('aria-pressed') !== 'true';
-    button.setAttribute('aria-pressed', String(paused));
-    button.setAttribute('aria-label', paused ? 'Resume announcements' : 'Pause announcements');
-    button.textContent = paused ? 'Resume' : 'Pause';
-    document.querySelector('.announcement').classList.toggle('is-paused', paused);
-  };
   document.getElementById("cart-promo-remove").onclick = () => {
     store.removePromoCode();
     document.getElementById("cart-promo-status").textContent =
